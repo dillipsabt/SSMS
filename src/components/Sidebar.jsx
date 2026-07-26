@@ -373,10 +373,6 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
             label: "Raise Request List",
           },
           {
-            to: "/teacher-personal-details",
-            label: "Teacher Details",
-          },
-          {
             to: "/teacher-attendance",
             label: "Attendance",
           },
@@ -472,7 +468,6 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         icon: <Users size={20} />,
         label: "Student",
         children: [
-          { to: "/student-details", label: "Student Details" },
           { to: "/student-attendance", label: "Attendance" },
         ],
       },

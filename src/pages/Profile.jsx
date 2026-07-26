@@ -1,8 +1,19 @@
 import React, { useState } from "react";
+import { useSelector } from "react-redux";
 import { Camera, Mail, Phone, MapPin, Calendar, Edit2, Save, X } from "lucide-react";
 import MainLayout from "../layout/MainLayout";
+import TeacherLayout from "../layout/TeacherLayout";
+import StudentLayout from "../layout/StudentLayout";
+import TeacherPersonalDetails from "./Teacher/TeacherPersonalDetails";
+import StudentDetails from "./Student/StudentDetails";
+
+const roleProfileViews = {
+  "teacher-portal": { Layout: TeacherLayout, View: TeacherPersonalDetails },
+  "student-portal": { Layout: StudentLayout, View: StudentDetails },
+};
 
 const Profile = () => {
+  const role = useSelector((state) => state.auth.role) || localStorage.getItem("role");
   const [isEditing, setIsEditing] = useState(false);
   const [profile, setProfile] = useState({
     name: "Mr. Herald",
@@ -39,6 +50,17 @@ const Profile = () => {
       [name]: value,
     });
   };
+
+  const roleProfile = roleProfileViews[role];
+
+  if (roleProfile) {
+    const { Layout, View } = roleProfile;
+    return (
+      <Layout>
+        <View />
+      </Layout>
+    );
+  }
 
   return (
     <MainLayout>

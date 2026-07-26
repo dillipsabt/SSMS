@@ -1,238 +1,135 @@
-import React from "react";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { BookOpen, FileText, GraduationCap, ShieldCheck, Users } from "lucide-react";
 import girl from "../../assets/girl.png";
 import bgimage from "../../assets/bgimage.png";
-import { useSelector, useDispatch } from "react-redux";
-import { useEffect } from "react";
-import {
-  fetchStudentDetails,
-  fetchStudentDetailsByProfile,
-} from "../../features/student/studentDetails/studentDetailsSlice";
+import { fetchStudentDetailsByProfile } from "../../features/student/studentDetails/studentDetailsSlice";
 
-// const studentData = {
-//   name: "Hari Priya",
-//   admissionNo: "AD1256589",
-//   class: "2nd",
-//   section: "A",
-//   rollNo: "10",
-//   subjects: ["Telugu", "Hindi", "English", "Maths", "Science", "Social"],
-//   languages: "English, Hindi, Telugu",
-//   personal: {
-//     age: "8Y",
-//     gender: "Female",
-//     dob: "01/01/2018",
-//     hobbies: "Playing Cricket, Listening Music",
-//     fatherName: "Johnson",
-//     motherName: "Mathew",
-//     phone: "9876543210",
-//     altPhone: "8765432109",
-//     email: "xyz@gmail.com",
-//     presentAddress: "2A/102, Gachibowli, Hyderabad, Telangana",
-//     permanentAddress: "2A/102, Gachibowli, Hyderabad, Telangana",
-//   },
-//   previousSchool: "Stuyvesant High School",
-//   documents: [{ label: "Aadhar Upload", file: "aadhar.pdf", url: "#" }],
-// };
-
-function Section({ title, children }) {
+function DetailCard({ title, icon, children }) {
   return (
-    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden mb-3">
-      <p className="text-md font-semibold text-black  px-5 py-3 border-b border-gray-100">
-        {title}
-      </p>
+    <section className="overflow-hidden rounded-xl border border-[var(--theme-border)] bg-[var(--theme-surface)] shadow-[var(--theme-shadow)]">
+      <div className="flex items-center gap-2 border-b border-[var(--theme-divider)] bg-[var(--theme-surface-raised)] px-4 py-3 sm:px-5">
+        {icon}
+        <h2 className="text-sm font-semibold text-[var(--theme-text)]">{title}</h2>
+      </div>
       {children}
-    </div>
+    </section>
   );
 }
 
-function InfoRow({ label, children }) {
+function DetailList({ items }) {
   return (
-    <tr className="">
-      <td className="px-5 py-2.5 text-black text-md w-52 whitespace-nowrap">
-        {label}
-      </td>
-      <td className="px-5 py-2.5 text-gray-800 text-sm">{children}</td>
-    </tr>
+    <dl className="grid grid-cols-1 divide-y divide-[var(--theme-divider)] sm:grid-cols-2 sm:divide-x sm:divide-y-0">
+      {items.map(({ label, value }) => (
+        <div key={label} className="px-4 py-3 sm:px-5">
+          <dt className="text-xs font-medium uppercase tracking-wide text-[var(--theme-text-muted)]">{label}</dt>
+          <dd className="mt-1 break-words text-sm font-medium text-[var(--theme-text)]">{value || "-"}</dd>
+        </div>
+      ))}
+    </dl>
   );
 }
 
 export default function StudentDetails() {
   const dispatch = useDispatch();
-  const { studentDetails, loading, error } = useSelector(
-    (state) => state.studentDetails,
-  );
-  // useEffect(() => {
-  //   dispatch(fetchStudentDetails(7));
-  // }, [dispatch]);
+  const profileId = useSelector((state) => state.auth.profileId);
+  const { studentDetails, loading, error } = useSelector((state) => state.studentDetails);
 
   useEffect(() => {
-    dispatch(fetchStudentDetailsByProfile());
-  }, [dispatch]);
-  const {
-    fullName,
-    admissionNo,
-    className,
-    section,
-    rollNo,
-    dob,
-    gender,
-    hobbies,
-    fatherName,
-    motherName,
-    phoneNo,
-    altPhoneNo,
-    email,
-    presentAddress,
-    permanentAddress,
-    previousSchoolName,
-    subjects,
-    languages,
-    documents,
-  } = studentDetails || {};
+    if (profileId && !studentDetails && !loading && !error) {
+      dispatch(fetchStudentDetailsByProfile(profileId));
+    }
+  }, [dispatch, error, loading, profileId, studentDetails]);
+
+  if (loading && !studentDetails) {
+    return <div className="p-5 text-center text-sm text-[var(--theme-text-muted)]">Loading profile...</div>;
+  }
+
+  if (!studentDetails) {
+    return <div className="p-5 text-center text-sm text-[var(--theme-text-muted)]">Student details are unavailable.</div>;
+  }
+
+  const academicInformation = [
+    { label: "Admission number", value: studentDetails.admissionNo },
+    { label: "Roll number", value: studentDetails.rollNo },
+    { label: "Class", value: studentDetails.className },
+    { label: "Section", value: studentDetails.section },
+    { label: "Academic year", value: studentDetails.academicYear },
+    { label: "Branch", value: studentDetails.branchName },
+  ];
+
+  const personalInformation = [
+    { label: "Gender", value: studentDetails.gender },
+    { label: "Date of birth", value: studentDetails.dob },
+    { label: "Phone", value: studentDetails.parentPhoneNo },
+    { label: "Alternative phone", value: studentDetails.altPhoneNo },
+    { label: "Email", value: studentDetails.email },
+    { label: "Hobbies", value: studentDetails.hobbies },
+    { label: "Present address", value: studentDetails.presentAddress },
+    { label: "Permanent address", value: studentDetails.permanentAddress },
+  ];
 
   return (
-    <div className="min-h-screen  ">
-      <div className="px-2">
-        {/* Header */}
-        <h1 className="text-2xl font-bold text-gray-800">Student Details</h1>
+    <div className="mx-auto w-full max-w-7xl space-y-4 sm:space-y-6">
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-600">My profile</p>
+        <h1 className="mt-1 text-2xl font-bold tracking-tight text-[var(--theme-text)] sm:text-3xl">Student profile</h1>
+        <p className="mt-1 text-sm text-[var(--theme-text-muted)]">Your academic and personal information.</p>
+      </div>
 
-        <p className="text-sm text-gray-500 mb-6">Student / Student Details</p>
-
-        {/* Top Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          {/* Banner */}
-          <div
-            className="h-62 rounded-lg overflow-hidden relative flex items-center justify-center text-center"
-            style={{
-              backgroundImage: `url(${bgimage})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-            }}
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-700/70 to-blue-500/60"></div>
-
-            <div className="relative z-10 flex flex-col items-center">
-              <img
-                src={girl}
-                alt="Student"
-                className="w-24 h-24 rounded-full object-cover border-4 border-yellow-400"
-              />
-
-              <h2 className="text-white text-2xl font-semibold mt-3">
-                {studentDetails?.fullName}
-              </h2>
-
-              <p className="text-white/90 text-sm mt-1">
-                Admission No.: {studentDetails?.admissionNo}
-              </p>
+      <section className="relative overflow-hidden rounded-2xl border border-brand-600/20 shadow-[var(--theme-shadow)]">
+        <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${bgimage})` }} />
+        <div className="absolute inset-0 bg-gradient-to-br from-brand-700/95 via-brand-600/90 to-slate-900/85" />
+        <div className="relative flex flex-col gap-5 p-5 text-white sm:flex-row sm:items-center sm:p-7">
+          <img src={studentDetails.profileUrl || studentDetails.photoUrl || girl} alt={studentDetails.fullName || "Student"} className="h-24 w-24 rounded-2xl border-4 border-white/30 object-cover shadow-lg" />
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="truncate text-2xl font-bold sm:text-3xl">{studentDetails.fullName || "Student"}</h2>
+              <span className="rounded-full bg-white/15 px-2.5 py-1 text-xs font-semibold ring-1 ring-white/30">Student</span>
+              <span className="rounded-full bg-emerald-400/20 px-2.5 py-1 text-xs font-semibold text-emerald-50 ring-1 ring-emerald-200/40">Active</span>
             </div>
-          </div>
-
-          {/* Student Details Card */}
-          <div className=" bg-white border border-gray-200 rounded-lg p-4">
-            <p className="text-md font-semibold text-black mb-3">
-              Student Details
-            </p>
-
-            <div className="grid grid-cols-[120px_1fr] gap-y-2 text-md">
-              <span className="text-gray-800">Class</span>
-              <span>{studentDetails?.className}</span>
-
-              <span className="text-gray-800">Section</span>
-              <span>{studentDetails?.section}</span>
-
-              <span className="text-gray-800 ">Roll No</span>
-              <span className="font-sm text-gray-700">
-                {studentDetails?.rollNo}
-              </span>
-
-              <span className="text-gray-800">Subjects</span>
-              <div className="flex flex-wrap gap-2 max-w-[260px]">
-                {studentDetails?.subjects?.map((sub) => (
-                  <span
-                    key={sub}
-                    className="text-xs px-2 py-0.5 rounded-md bg-blue-100 text-gray-700"
-                  >
-                    {sub}
-                  </span>
-                ))}
-              </div>
-
-              <span className="text-gray-800">Languages</span>
-              <span>{studentDetails?.languages}</span>
+            <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm text-white/85">
+              <span>Admission no: {studentDetails.admissionNo || "-"}</span>
+              <span>{[studentDetails.className, studentDetails.section].filter(Boolean).join(" · ") || "Class unavailable"}</span>
             </div>
           </div>
         </div>
+      </section>
 
-        {/* Personal Info */}
-        <Section title="Personal Information" className="mb-4 tetx-semibold">
-          <table className="w-full">
-            <tbody>
-              {/* <InfoRow className="text-gray-800" label="Age">
-                {age}
-              </InfoRow> */}
-              <InfoRow className="text-gray-800" label="Gender">
-                {studentDetails?.gender}
-              </InfoRow>
-              <InfoRow className="text-gray-800" label="DOB">
-                {studentDetails?.dob}
-              </InfoRow>
-              <InfoRow className="text-gray-800" label="Hobbies">
-                {studentDetails?.hobbies}
-              </InfoRow>
-              <InfoRow className="text-gray-800" label="Father/Guardian Name">
-                {studentDetails?.fatherName}
-              </InfoRow>
-              <InfoRow className="text-gray-800" label="Mother Name">
-                {studentDetails?.motherName}
-              </InfoRow>
-              <InfoRow className="text-gray-800" label="Phone">
-                {studentDetails?.phoneNo}
-              </InfoRow>
-              <InfoRow className="text-gray-800" label="Alternative Phone">
-                {studentDetails?.altPhoneNo}
-              </InfoRow>
-              <InfoRow className="text-gray-800" label="Email">
-                {studentDetails?.email}
-              </InfoRow>
-              <InfoRow className="text-gray-800" label="Present Address">
-                {studentDetails?.presentAddress}
-              </InfoRow>
-              <InfoRow className="text-gray-800" label="Permanent Address">
-                {studentDetails?.permanentAddress}
-              </InfoRow>
-            </tbody>
-          </table>
-        </Section>
-
-        {/* Previous School */}
-        <Section title="Previous School Details">
-          <table className="w-full">
-            <tbody>
-              <InfoRow className="text-gray-800" label="School">
-                {studentDetails?.previousSchoolName}
-              </InfoRow>
-            </tbody>
-          </table>
-        </Section>
-
-        {/* Documents */}
-        <Section title="Documents">
-          <table className="w-full">
-            <tbody>
-              {studentDetails?.documents?.map((doc) => (
-                <InfoRow key={doc.label} label={doc.label}>
-                  <a
-                    href={doc.url}
-                    className="text-blue-600 hover:text-blue-800 underline"
-                  >
-                    {doc.file}
-                  </a>
-                </InfoRow>
-              ))}
-            </tbody>
-          </table>
-        </Section>
+      <div className="grid gap-4 xl:grid-cols-2">
+        <DetailCard title="Academic information" icon={<GraduationCap size={17} className="text-brand-600" />}>
+          <DetailList items={academicInformation} />
+          {studentDetails.subjects?.length ? <div className="border-t border-[var(--theme-divider)] px-4 py-3 sm:px-5"><p className="text-xs font-medium uppercase tracking-wide text-[var(--theme-text-muted)]">Subjects</p><div className="mt-2 flex flex-wrap gap-2">{studentDetails.subjects.map((subject) => <span key={subject} className="rounded-full bg-brand-50 px-2.5 py-1 text-xs font-semibold text-brand-700">{subject}</span>)}</div></div> : null}
+        </DetailCard>
+        <DetailCard title="Personal information" icon={<ShieldCheck size={17} className="text-brand-600" />}>
+          <DetailList items={personalInformation} />
+        </DetailCard>
       </div>
+
+      <div className="grid gap-4 xl:grid-cols-2">
+        <DetailCard title="Parent details" icon={<Users size={17} className="text-brand-600" />}>
+          <DetailList items={[
+            { label: "Father / guardian", value: studentDetails.fatherName },
+            { label: "Mother", value: studentDetails.motherName },
+          ]} />
+        </DetailCard>
+        <DetailCard title="Previous school" icon={<BookOpen size={17} className="text-brand-600" />}>
+          <DetailList items={[{ label: "School", value: studentDetails.previousSchoolName }, { label: "Languages", value: studentDetails.languages }]} />
+        </DetailCard>
+      </div>
+
+      {studentDetails.documents?.length ? (
+        <DetailCard title="Documents" icon={<FileText size={17} className="text-brand-600" />}>
+          <ul className="divide-y divide-[var(--theme-divider)]">
+            {studentDetails.documents.map((document, index) => (
+              <li key={`${document.label}-${index}`} className="flex items-center justify-between gap-4 px-4 py-3 sm:px-5">
+                <div className="min-w-0"><p className="truncate text-sm font-medium text-[var(--theme-text)]">{document.label || "Document"}</p><p className="mt-1 truncate text-xs text-[var(--theme-text-muted)]">{document.file || "Available document"}</p></div>
+                {document.url ? <a href={document.url} target="_blank" rel="noopener noreferrer" className="shrink-0 rounded-lg border border-brand-600/30 px-3 py-2 text-sm font-semibold text-brand-600 hover:bg-brand-50">View file</a> : <span className="text-sm text-[var(--theme-text-muted)]">Not available</span>}
+              </li>
+            ))}
+          </ul>
+        </DetailCard>
+      ) : null}
     </div>
   );
 }

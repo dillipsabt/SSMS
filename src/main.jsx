@@ -7,9 +7,9 @@ import { store } from "./app/store";
 import { ThemeProvider } from "./theme/ThemeProvider";
 
 createRoot(document.getElementById("root")).render(
-  <ThemeProvider>
-    <Provider store={store}>
+  <Provider store={store}>
+    <ThemeProvider>
       <App />
-    </Provider>
-  </ThemeProvider>
+    </ThemeProvider>
+  </Provider>
 );
