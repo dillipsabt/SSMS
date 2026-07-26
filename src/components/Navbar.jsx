@@ -84,7 +84,7 @@ const Navbar = ({ onToggleSidebar }) => {
   return (
     <header className="fixed left-0 top-0 z-50 flex h-16 w-full items-center justify-between border-b border-gray-200/80 bg-gradient-to-r from-white via-white to-brand-50/30 px-3 shadow-sm backdrop-blur-md sm:px-5">
       {/* LEFT */}
-      <div className="flex min-w-0 items-center gap-2 sm:gap-4">
+      <div className="flex min-w-0 shrink items-center gap-2 sm:gap-4">
         <button
           onClick={onToggleSidebar}
           aria-label="Toggle navigation"
@@ -94,15 +94,15 @@ const Navbar = ({ onToggleSidebar }) => {
         </button>
 
         <div className="flex min-w-0 items-center gap-3 sm:gap-4">
-          <div className="flex h-12 w-32 shrink-0 items-center justify-center rounded-xl border border-brand-100 bg-gradient-to-br from-brand-50 via-white to-white px-2 shadow-sm ring-1 ring-white sm:h-[3.25rem] sm:w-36">
+          <div className="flex h-10 w-24 shrink-0 items-center justify-center rounded-xl border border-brand-100 bg-gradient-to-br from-brand-50 via-white to-white px-2 shadow-sm ring-1 ring-white sm:h-[3.25rem] sm:w-36">
             <img
               src={logoUrl || logo}
               alt={schoolName || "Walkout SSMS"}
               className="max-h-full max-w-full object-contain transition-transform duration-200 hover:scale-[1.03]"
             />
           </div>
-          <span className="hidden h-9 w-px bg-gradient-to-b from-transparent via-gray-200 to-transparent sm:block" />
-          <div className="hidden min-w-0 border-l-2 border-brand-600/70 pl-3 sm:block">
+          <span className="hidden h-9 w-px bg-gradient-to-b from-transparent via-gray-200 to-transparent lg:block" />
+          <div className="hidden min-w-0 border-l-2 border-brand-600/70 pl-3 lg:block">
             <p className="truncate text-sm font-bold tracking-tight text-gray-900 lg:text-base">
               {schoolName || "Walkout SSMS"}
             </p>
@@ -115,7 +115,7 @@ const Navbar = ({ onToggleSidebar }) => {
       </div>
 
       {/* SEARCH (hidden on mobile) */}
-      <div className="hidden md:block w-[400px] lg:w-[500px]">
+      <div className="hidden w-[min(36vw,500px)] md:block lg:w-[500px]">
         <div className="relative">
           <input
             type="text"
@@ -132,8 +132,8 @@ const Navbar = ({ onToggleSidebar }) => {
       </div>
 
       {/* RIGHT */}
-      <div className="flex items-center gap-3 sm:gap-5">
-        <Mail className="text-gray-600 cursor-pointer" />
+      <div className="flex shrink-0 items-center gap-2 sm:gap-5">
+        <Mail size={20} className="shrink-0 cursor-pointer text-gray-600 sm:size-6" />
 
         {/* Notification - Visible for Student, Teacher, Parent (NOT Admin) */}
         {role !== "admin" && (

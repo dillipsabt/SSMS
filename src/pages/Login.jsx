@@ -51,7 +51,7 @@ export default function Login() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-50 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(420px,0.8fr)]">
+    <main className="min-h-screen min-w-0 bg-slate-50 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(420px,0.8fr)]">
       <section className="relative hidden min-h-screen overflow-hidden bg-gradient-to-br from-brand-900 via-[#312e81] to-brand-700 px-12 py-14 text-white lg:flex lg:flex-col lg:justify-between xl:px-20">
         <div className="pointer-events-none absolute -right-32 -top-32 h-96 w-96 rounded-full bg-brand-400/20 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-40 -left-20 h-[28rem] w-[28rem] rounded-full border border-white/10 bg-white/5 blur-2xl" />
@@ -88,26 +88,26 @@ export default function Login() {
         <p className="relative z-10 text-sm text-white/50">Secure access for authorized administrators.</p>
       </section>
 
-      <section className="flex min-h-screen items-center justify-center bg-slate-50 px-5 py-10 sm:px-8 lg:px-12">
-        <div className="card w-full max-w-md rounded-2xl border-white/80 bg-white/95 p-7 shadow-xl shadow-slate-200/70 sm:p-10">
+      <section className="flex min-h-screen min-w-0 items-center justify-center bg-slate-50 px-4 py-6 sm:px-8 sm:py-10 lg:px-12">
+        <div className="card w-full min-w-0 max-w-md rounded-2xl border-white/80 bg-white/95 p-5 shadow-xl shadow-slate-200/70 sm:p-10">
           <header className="text-center">
-            <div className="mx-auto mb-5 flex h-28 w-28 items-center justify-center rounded-3xl bg-brand-50 p-3 shadow-sm ring-1 ring-brand-100">
+            <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-3xl bg-brand-50 p-3 shadow-sm ring-1 ring-brand-100 sm:mb-5 sm:h-28 sm:w-28">
               <img
                 src={logoUrl || logo}
                 alt={schoolName || "Walkout SSMS"}
                 className="max-h-full max-w-full object-contain"
               />
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-gray-900">
+            <h1 className="break-words text-xl font-bold tracking-tight text-gray-900 sm:text-2xl">
               {schoolName || "Walkout SSMS"}
             </h1>
           </header>
 
-          <div className="mt-9 border-t border-gray-100 pt-8">
-            <h2 className="text-center text-2xl font-bold tracking-tight text-brand-900">Welcome back</h2>
+          <div className="mt-7 border-t border-gray-100 pt-6 sm:mt-9 sm:pt-8">
+            <h2 className="text-center text-xl font-bold tracking-tight text-brand-900 sm:text-2xl">Welcome back</h2>
             <p className="mt-2 text-center text-sm leading-6 text-gray-500">Sign in to continue to your dashboard.</p>
 
-            <form onSubmit={handleSubmit} className="mt-7 space-y-5">
+            <form onSubmit={handleSubmit} className="mt-6 space-y-5 sm:mt-7">
               <div>
                 <label htmlFor="email" className="form-label">Email address</label>
                 <input
@@ -141,15 +141,15 @@ export default function Login() {
                     aria-label={showPassword ? "Hide password" : "Show password"}
                   >
                     {showPassword ? (
-                      <EyeIcon width={18} height={13} style={{ color: "#4f39f6" }} />
+                      <EyeIcon width={18} height={13} className="text-brand-600" />
                     ) : (
-                      <EyeOff size={18} color="#4f39f6" />
+                      <EyeOff size={18} className="text-brand-600" />
                     )}
                   </button>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between gap-4 text-sm">
+              <div className="flex flex-col items-start gap-3 text-sm sm:flex-row sm:items-center sm:justify-between sm:gap-4">
                 <label className="flex items-center gap-2 text-gray-600">
                   <input type="checkbox" className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-600" />
                   Remember me
@@ -168,7 +168,7 @@ export default function Login() {
             </form>
           </div>
 
-          <footer className="mt-8 border-t border-gray-100 pt-5 text-center text-xs leading-5 text-gray-400">
+          <footer className="mt-7 border-t border-gray-100 pt-5 text-center text-xs leading-5 text-gray-400 sm:mt-8">
             Authorized access only. Your activity may be monitored for security.
           </footer>
         </div>

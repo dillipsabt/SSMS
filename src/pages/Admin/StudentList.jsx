@@ -57,7 +57,7 @@ const StudentList = () => {
       class: `${s.className} (${s.section})`,
       age: `${s.age}Y / ${s.gender}`,
       dob: s.dob,
-      phone: s.phoneNo,
+      parentPhoneNo: s.parentPhoneNo,
       email: s.email,
       joining: s.schoolJoiningDate,
       status: s.status || "Active",
@@ -217,7 +217,7 @@ const StudentList = () => {
                   <td className="px-3 py-2">{s.class}</td>
                   <td className="px-3 py-2">{s.age}</td>
                   <td className="px-3 py-2">{s.dob}</td>
-                  <td className="px-3 py-2">{s.phone}</td>
+                  <td className="px-3 py-2">{s.parentPhoneNo}</td>
                   <td className="px-3 py-2">{s.email}</td>
                   <td className="px-3 py-2">{s.joining}</td>
 
@@ -362,7 +362,7 @@ const StudentList = () => {
                   <b>DOB:</b> {s.dob}
                 </p>
                 <p>
-                  <b>Phone:</b> {s.phone}
+                  <b>Phone:</b> {s.parentPhoneNo}
                 </p>
                 <p>
                   <b>Email:</b> {s.email}

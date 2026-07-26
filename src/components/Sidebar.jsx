@@ -38,11 +38,11 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     navItems = [
       {
         to: "/dashboard",
-        icon: <LayoutDashboard size={18} />,
+        icon: <LayoutDashboard size={20} />,
         label: "Dashboard",
       },
       {
-        icon: <Users size={18} />,
+        icon: <Users size={20} />,
         label: "Students",
         children: [
           { to: "/add-student", label: "Add Student Admission" },
@@ -50,7 +50,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         ],
       },
       {
-        icon: <UserCog size={18} />,
+        icon: <UserCog size={20} />,
         label: "Teacher",
         children: [
           { to: "/add-teacher", label: "Add New Teacher" },
@@ -62,7 +62,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         ],
       },
       {
-        icon: <UserCog size={18} />,
+        icon: <UserCog size={20} />,
         label: "Staff",
         children: [
           { to: "/add-staff", label: "Add New Staff" },
@@ -71,11 +71,11 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       },
       {
         to: "/leave-list",
-        icon: <CalendarX size={18} />,
+        icon: <CalendarX size={20} />,
         label: "Leave Management",
       },
       {
-        icon: <ClipboardList size={18} />,
+        icon: <ClipboardList size={20} />,
         label: "Transfer Certificate",
         children: [
           {
@@ -89,7 +89,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         ],
       },
       {
-        icon: <ClipboardList size={18} />,
+        icon: <ClipboardList size={20} />,
         label: "Bonafide Certificate",
         children: [
           {
@@ -105,10 +105,10 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       {
         to: "/student-performance",
         label: "Student Performance",
-        icon: <BarChart3 size={16} />,
+        icon: <BarChart3 size={20} />,
       },
       {
-        icon: <Bus size={18} />,
+        icon: <Bus size={20} />,
         label: "Student Transportation",
         children: [
           { to: "/student-transportation", label: "Student Transportation" },
@@ -127,7 +127,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       //   ],
       // },
       {
-        icon: <Wallet size={18} />,
+        icon: <Wallet size={20} />,
         label: "Fees Management",
         children: [
           { to: "/fees-config", label: "Class Wise Fees Configure" },
@@ -144,7 +144,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         ],
       },
       {
-        icon: <ClipboardList size={18} />,
+        icon: <ClipboardList size={20} />,
         label: "Assignment / Homework",
         children: [
           { to: "/Assignment-List", label: "Teacher Assignment List" },
@@ -155,7 +155,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         ],
       },
       {
-        icon: <BookOpen size={18} />,
+        icon: <BookOpen size={20} />,
         label: "Exam & Results",
         children: [
           { to: "/add-exam", label: "Add Exam Schedule" },
@@ -168,7 +168,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         ],
       },
       {
-        icon: <Bell size={18} />,
+        icon: <Bell size={20} />,
         label: "Notifications & Alerts",
         children: [
           { to: "/add-notifications", label: "Add Notifications" },
@@ -176,7 +176,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         ],
       },
       {
-        icon: <Megaphone size={18} />,
+        icon: <Megaphone size={20} />,
         label: "Announcements",
         children: [
           { to: "/add-announcements", label: "Add Announcements" },
@@ -185,11 +185,11 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       },
       {
         to: "/bulk-upload",
-        icon: <Upload size={18} />,
+        icon: <Upload size={20} />,
         label: "Bulk Upload",
       },
       {
-        icon: <MessageSquare size={18} />,
+        icon: <MessageSquare size={20} />,
         label: "Feedback",
         children: [
           { to: "/Add-Feedback", label: "Add Feedback" },
@@ -201,7 +201,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         ],
       },
       {
-        icon: <BarChart3 size={18} />,
+        icon: <BarChart3 size={20} />,
         label: "Analytics Dashboard",
         children: [
           {
@@ -211,7 +211,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         ],
       },
       {
-        icon: <ChartNoAxesCombined size={18} />,
+        icon: <ChartNoAxesCombined size={20} />,
         label: "Predictive Analysis",
         children: [
           { to: "/predictive-analysis-dashboard", label: "Dashboard" },
@@ -221,7 +221,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       },
 
       {
-        icon: <GraduationCap  size={18} />,
+        icon: <GraduationCap size={20} />,
         label: "LMS",
         children: [
           { to: "/add-vertual-class", label: "Add Virtual Class" },
@@ -239,11 +239,11 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
 
       {
         to: "/textbooks",
-        icon: <BookOpen size={18} />,
+        icon: <BookOpen size={20} />,
         label: "Textbooks",
       },
       {
-        icon: <Ticket size={18} />,
+        icon: <Ticket size={20} />,
         label: "Hall Ticket",
         children: [
           {
@@ -264,35 +264,35 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       {
         label: "Classes",
         to: "/classes",
-        icon: <BookOpen size={18} />,
+        icon: <BookOpen size={20} />,
       },
       {
         label: "Departments",
         to: "/departments",
-        icon: <Users size={18} />,
+        icon: <Users size={20} />,
       },
       {
         label: "Branches",
         to: "/branches",
-        icon: <MapPinned size={18} />,
+        icon: <MapPinned size={20} />,
       },
       {
         label: "Academic Year",
         to: "/academic-year",
-        icon: <CalendarX size={18} />,
+        icon: <CalendarX size={20} />,
       },
       {
         label: "Examination Type",
         to: "/examination-type",
-        icon: <ClipboardList size={18} />,
+        icon: <ClipboardList size={20} />,
       },
       {
         label: "Financial Overview",
         to: "/financial-overview",
-        icon: <ChartColumn size={16} />,
+        icon: <ChartColumn size={20} />,
       },
       {
-        icon: <FileText size={16} />,
+        icon: <FileText size={20} />,
         label: "Payslips",
         children: [
           { to: "/add-payslips", label: "Add Payslips" },
@@ -300,7 +300,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         ],
       },
       {
-        icon: <UserCog size={18} />,
+        icon: <UserCog size={20} />,
         label: "School Details",
         children: [
           { to: "/add-school-details", label: "Add School Details" },
@@ -308,7 +308,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         ],
       },
       {
-        icon: <FileText size={16} />,
+        icon: <FileText size={20} />,
         label: "Transportation",
         children: [
           { to: "/transportation", label: "Transportation" },
@@ -318,22 +318,22 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       {
         to: "/new-expenses",
         label: "New Expenses",
-        icon: <Wallet size={16} />,
+        icon: <Wallet size={20} />,
       },
       {
         to: "/upcoming-events",
         label: "Upcoming Events",
-        icon: <CheckSquare size={16} />,
+        icon: <CheckSquare size={20} />,
       },
       {
         to: "/notice-board",
         label: "Notice Board",
-        icon: <FileText size={16} />,
+        icon: <FileText size={20} />,
       },
       {
         to: "/class-timing-schedule",
         label: "Class Timing Schedule",
-        icon: <Clock size={16} />,  
+        icon: <Clock size={20} />,
       },
     ];
   }
@@ -343,11 +343,11 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     navItems = [
       {
         to: "/teacher-dashboard",
-        icon: <LayoutDashboard size={18} />,
+        icon: <LayoutDashboard size={20} />,
         label: "Dashboard",
       },
       {
-        icon: <Users size={18} />,
+        icon: <Users size={20} />,
         label: "Student",
         children: [
           {
@@ -361,7 +361,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         ],
       },
       {
-        icon: <GraduationCap size={18} />,
+        icon: <GraduationCap size={20} />,
         label: "Teacher",
         children: [
           {
@@ -399,7 +399,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         ],
       },
       {
-        icon: <ClipboardList size={18} />,
+        icon: <ClipboardList size={20} />,
         label: "Assignment / Homework",
         children: [
           {
@@ -413,7 +413,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         ],
       },
       {
-        icon: <BookOpen size={18} />,
+        icon: <BookOpen size={20} />,
         label: "Exam & Result",
         children: [
           {
@@ -427,7 +427,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         ],
       },
       {
-        icon: <FileText size={18} />,
+        icon: <FileText size={20} />,
         label: "Student Performance",
         children: [
           {
@@ -442,7 +442,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       },
 
       {
-        icon: <BookOpen size={18} />,
+        icon: <BookOpen size={20} />,
         label: "LMS",
         children: [
           { to: "/teacher-add-vertual-class", label: "Add Virtual Class" },
@@ -465,11 +465,11 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     navItems = [
       {
         to: "/student-dashboard",
-        icon: <LayoutDashboard size={18} />,
+        icon: <LayoutDashboard size={20} />,
         label: "Dashboard",
       },
       {
-        icon: <Users size={18} />,
+        icon: <Users size={20} />,
         label: "Student",
         children: [
           { to: "/student-details", label: "Student Details" },
@@ -477,17 +477,17 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         ],
       },
       {
-        icon: <ClipboardList size={18} />,
+        icon: <ClipboardList size={20} />,
         label: "Homework & Assignments",
         children: [{ to: "/student-homework", label: "Assignments" }],
       },
       {
         to: "/student-hall-ticket",
-        icon: <Ticket size={18} />,
+        icon: <Ticket size={20} />,
         label: "Hall Ticket List",
       },
       {
-        icon: <BookOpen size={18} />,
+        icon: <BookOpen size={20} />,
         label: "Exams",
         children: [
           { to: "/student-exam-timetable", label: "Exam Timetable" },
@@ -495,7 +495,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         ],
       },
       {
-        icon: <NotebookPen size={18} />,
+        icon: <NotebookPen size={20} />,
         label: "LMS",
         children: [
           {
@@ -516,11 +516,11 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     navItems = [
       {
         to: "/parent-dashboard",
-        icon: <LayoutDashboard size={18} />,
+        icon: <LayoutDashboard size={20} />,
         label: "Dashboard",
       },
       {
-        icon: <Clock size={18} />,
+        icon: <Clock size={20} />,
         label: "Attendance",
         children: [
           { to: "/parent-attendance", label: "Attendance" },
@@ -529,16 +529,16 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       },
       {
         to: "/parent-fees",
-        icon: <Wallet size={18} />,
+        icon: <Wallet size={20} />,
         label: "Fees",
       },
       {
-        icon: <ClipboardList size={18} />,
+        icon: <ClipboardList size={20} />,
         label: "Assignment / Homework",
         children: [{ to: "/parent-assignment-homework", label: "Assignments" }],
       },
       {
-        icon: <BookOpen size={18} />,
+        icon: <BookOpen size={20} />,
         label: "Exam & Result",
         children: [
           { to: "/parent-exam-timetable", label: "Exam Timetable" },
@@ -547,17 +547,17 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       },
       {
         to: "/parent-feedback",
-        icon: <MessageSquare size={18} />,
+        icon: <MessageSquare size={20} />,
         label: "Feedback",
       },
       {
         to: "/parent-student-profile",
-        icon: <GraduationCap size={18} />,
+        icon: <GraduationCap size={20} />,
         label: "Student Profile",
       },
       {
         to: "/parent-transportation",
-        icon: <Bus size={18} />,
+        icon: <Bus size={20} />,
         label: "Transportation Details",
       },
     ];
@@ -568,7 +568,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     navItems = [
       {
         to: "/staff-dashboard",
-        icon: <LayoutDashboard size={18} />,
+        icon: <LayoutDashboard size={20} />,
         label: "Dashboard",
       },
     ];
@@ -579,24 +579,22 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       {/* Overlay (Mobile only) */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/40 z-40 lg:hidden"
+          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-[1px] sm:hidden"
           onClick={() => setIsOpen(false)}
         />
       )}
 
       <aside
         className={`
-    fixed top-16 left-0 h-[calc(100vh-64px)] bg-white shadow-md z-40
-    overflow-y-auto transition-all duration-300
-
-    ${isOpen ? "w-67" : "w-20"}
-
-    translate-x-0 lg:translate-x-0
+    fixed left-0 top-16 z-40 h-[calc(100vh-64px)]
+    w-[min(78vw,18rem)] max-w-[18rem] overflow-y-auto overscroll-contain bg-white shadow-xl
+    transition-transform duration-300 ease-out
+    ${isOpen ? "translate-x-0 sm:w-67" : "-translate-x-full sm:translate-x-0 sm:w-20"}
   `}
       >
-        {isOpen && <div className="p-4 border-b font-semibold">Menu</div>}
+        {isOpen && <div className="sticky top-0 z-10 border-b bg-white px-4 py-3 font-semibold">Menu</div>}
 
-        <ul className={`${isOpen ? "p-3" : "p-2"} space-y-2`}>
+        <ul className={`${isOpen ? "p-3" : "p-2"} space-y-1.5`}>
           {navItems.map((item) => {
             if (item.isSectionHeader) {
               return isOpen ? (
@@ -620,11 +618,11 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                     className="flex items-center w-full p-2 rounded hover:bg-gray-100"
                     title={item.label}
                   >
-                    <div className="min-w-[20px] flex justify-center">{item.icon}</div>
+                    <div className="w-5 h-5 flex-shrink-0 flex items-center justify-center">{item.icon}</div>
 
                     {isOpen && (
                       <>
-                        <span className="ml-3 flex-1 text-left whitespace-nowrap text-[14px] overflow-hidden text-ellipsis">
+                        <span className="ml-3 flex-1 text-left text-sm leading-5 truncate">
                           {item.label}
                         </span>
 
@@ -645,7 +643,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                             to={sub.to}
                             onClick={() => {
                               // Only close sidebar on mobile (lg:hidden)
-                              if (window.innerWidth < 1024) {
+                              if (window.innerWidth < 640) {
                                 setIsOpen(false);
                               }
                             }}
@@ -677,20 +675,29 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                   to={item.to}
                   onClick={() => {
                     // Only close sidebar on mobile (lg:hidden)
-                    if (window.innerWidth < 1024) {
+                    if (window.innerWidth < 640) {
                       setIsOpen(false);
                     }
                   }}
                   className={({ isActive }) =>
-                    `flex items-center p-2 rounded transition justify-center lg:justify-start ${isActive
+                    `flex items-center p-2 rounded transition justify-center sm:justify-start ${isActive
                       ? "bg-brand-100 text-brand-600 font-semibold"
                       : "hover:bg-gray-100 text-gray-700"
                     }`
                   }
                   title={!isOpen ? item.label : ""}
                 >
-                  {item.icon && <span>{item.icon}</span>}
-                  {isOpen && <span className="ml-3">{item.label}</span>}
+                  {item.icon && (
+                    <span className="w-5 h-5 flex-shrink-0 flex items-center justify-center">
+                      {item.icon}
+                    </span>
+                  )}
+
+                  {isOpen && (
+                    <span className="ml-3 flex-1 text-left text-sm leading-5 truncate">
+                      {item.label}
+                    </span>
+                  )}
                 </NavLink>
               </li>
             );
