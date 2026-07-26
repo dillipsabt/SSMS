@@ -168,7 +168,7 @@ const FeesRefund = ({ rollNumber = "", handleRollNumberChange }) => {
   };
 
   return (
-    <div className="p-4 sm:p-5">
+    <div className="p-4 sm:p-5 fees-theme-scope">
       {/* Header */}
       <h2 className="text-lg font-bold text-gray-800">Fees Refund</h2>
       <p className="text-xs text-gray-500 mb-4">

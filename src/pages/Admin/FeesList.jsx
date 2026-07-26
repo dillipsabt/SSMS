@@ -51,7 +51,7 @@ export default function FeesList() {
   const handlePrint = () => window.print();
 
   return (
-    <div className="p-4 sm:p-6">
+    <div className="p-4 sm:p-6 fees-theme-scope">
 
       {/* HEADER */}
       <h2 className="text-base sm:text-[18px] font-semibold text-[#333333]">Fees List</h2>

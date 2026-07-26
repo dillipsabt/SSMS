@@ -6,6 +6,18 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>school-management-frontend</title>
+    <script>
+      (function () {
+        var storedTheme = localStorage.getItem("school-theme");
+        var theme = storedTheme === "dark" || storedTheme === "light" || storedTheme === "system" || storedTheme === "auto" ? storedTheme : "light";
+        var resolvedTheme = theme === "system" || theme === "auto"
+          ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
+          : theme;
+        document.documentElement.dataset.theme = resolvedTheme;
+        document.documentElement.classList.toggle("dark", resolvedTheme === "dark");
+        document.documentElement.style.colorScheme = resolvedTheme;
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

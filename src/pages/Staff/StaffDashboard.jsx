@@ -144,7 +144,7 @@ export default function StaffDashboard() {
   return (
     <div className="p-2 sm:p-4 lg:p-5 bg-white min-h-screen font-sans text-[13px] text-gray-800">
       {/* ── BANNER ── */}
-      <div className="bg-gradient-to-r from-[#5A42F3] to-[#1F26C9] rounded-md px-4 sm:px-6 py-4 mb-4 flex flex-col lg:flex-row justify-between items-start lg:items-center min-h-[150px] relative overflow-hidden">
+      <div className="dashboard-welcome bg-gradient-to-r from-[#5A42F3] to-[#1F26C9] rounded-md px-4 sm:px-6 py-4 mb-4 flex flex-col lg:flex-row justify-between items-start lg:items-center min-h-[150px] relative overflow-hidden">
         <div className="flex flex-col justify-center h-full">
           <h1 className="text-[22px] font-bold text-white">
             Good Morning, {profile?.fullName || "Ms. Hamsa Nandhini"}

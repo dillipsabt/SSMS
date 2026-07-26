@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { Bell, Lock, Eye, EyeOff, Save, X, Check, AlertCircle } from "lucide-react";
 import MainLayout from "../layout/MainLayout";
+import { useTheme } from "../theme/useTheme";
 
 const Settings = () => {
+  const { theme, setTheme } = useTheme();
   const [activeTab, setActiveTab] = useState("account");
   const [showPassword, setShowPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -33,7 +35,6 @@ const Settings = () => {
   });
 
   const [themeSettings, setThemeSettings] = useState({
-    theme: "light",
     compactMode: false,
     autoLogout: true,
     autoLogoutTime: 30,
@@ -94,6 +95,10 @@ const Settings = () => {
 
   const handleThemeChange = (key, value) => {
     setSaveSuccess(false);
+    if (key === "theme") {
+      setTheme(value);
+      return;
+    }
     setThemeSettings({
       ...themeSettings,
       [key]: value,
@@ -355,7 +360,7 @@ const Settings = () => {
                       {[
                         { value: "light", label: "Light Theme", icon: "☀️" },
                         { value: "dark", label: "Dark Theme", icon: "🌙" },
-                        { value: "auto", label: "Auto (System preference)", icon: "⚙️" },
+                        { value: "system", label: "System preference", icon: "⚙️" },
                       ].map((option) => (
                         <label
                           key={option.value}
@@ -365,7 +370,7 @@ const Settings = () => {
                             type="radio"
                             name="theme"
                             value={option.value}
-                            checked={themeSettings.theme === option.value}
+                            checked={theme === option.value}
                             onChange={(e) => handleThemeChange("theme", e.target.value)}
                             className="w-4 h-4 cursor-pointer"
                           />

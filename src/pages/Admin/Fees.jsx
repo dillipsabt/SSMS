@@ -384,7 +384,7 @@ const Fees = () => {
   };
 
   return (
-    <div className="page-wrap p-4 sm:p-6">
+    <div className="page-wrap p-4 sm:p-6 fees-theme-scope">
       {/* Header */}
       <h2 className="text-base sm:text-xl font-bold text-gray-800 mb-1">
         Fees

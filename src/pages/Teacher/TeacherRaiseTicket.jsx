@@ -273,6 +273,7 @@ const TeacherRaiseTicket = () => {
                 })
               }
               placeholder="Select"
+              classNamePrefix="react-select"
             />
           </div>
 
@@ -304,6 +305,7 @@ const TeacherRaiseTicket = () => {
                 })
               }
               placeholder="Select"
+              classNamePrefix="react-select"
             />
           </div>
 
@@ -333,6 +335,7 @@ const TeacherRaiseTicket = () => {
                 })
               }
               placeholder="Select"
+              classNamePrefix="react-select"
             />
           </div>
 

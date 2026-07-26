@@ -94,7 +94,7 @@ export default function PrincipleFeeRefundList() {
     const totalPages = Math.ceil(filteredData.length / rowsPerPage);
 
     return (
-        <div className="w-full bg-white min-h-screen p-4 md:p-4">
+        <div className="w-full bg-white min-h-screen p-4 md:p-4 fees-theme-scope">
 
             <div className="mb-4">
 

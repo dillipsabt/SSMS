@@ -194,3 +194,481 @@
 .recharts-surface:focus {
   outline: none;
 }
+
+:root {
+  --theme-bg: #f4f6f9;
+  --theme-surface: #ffffff;
+  --theme-surface-raised: #f8fafc;
+  --theme-sidebar: #ffffff;
+  --theme-navbar: #ffffff;
+  --theme-input: #ffffff;
+  --theme-hover: #f3f4f6;
+  --theme-active: #ede9fe;
+  --theme-border: #e5e7eb;
+  --theme-divider: #e5e7eb;
+  --theme-text: #111827;
+  --theme-text-secondary: #4b5563;
+  --theme-text-muted: #6b7280;
+  --theme-focus-ring: color-mix(in srgb, var(--color-brand-600) 28%, transparent);
+  --theme-shadow: 0 1px 3px 0 rgb(15 23 42 / 0.08), 0 1px 2px -1px rgb(15 23 42 / 0.05);
+  --theme-success: #16a34a;
+  --theme-warning: #d97706;
+  --theme-danger: #dc2626;
+  --theme-info: #2563eb;
+}
+
+.dark {
+  --theme-bg: #0f172a;
+  --theme-surface: #111827;
+  --theme-surface-raised: #1e293b;
+  --theme-sidebar: #111827;
+  --theme-navbar: #111827;
+  --theme-input: #1e293b;
+  --theme-hover: #273449;
+  --theme-active: #2e2968;
+  --theme-border: #334155;
+  --theme-divider: #334155;
+  --theme-text: #f8fafc;
+  --theme-text-secondary: #cbd5e1;
+  --theme-text-muted: #94a3b8;
+  --theme-focus-ring: color-mix(in srgb, var(--color-brand-400) 45%, transparent);
+  --theme-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.32), 0 1px 2px -1px rgb(0 0 0 / 0.22);
+  --theme-success: #4ade80;
+  --theme-warning: #fbbf24;
+  --theme-danger: #fb7185;
+  --theme-info: #60a5fa;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+  background: var(--theme-bg);
+  color: var(--theme-text);
+}
+
+body,
+.card,
+.page-wrap,
+input,
+textarea,
+select,
+button,
+[class*="bg-"],
+[class*="border-"],
+[class*="text-"] {
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease, box-shadow 150ms ease;
+}
+
+.page-wrap { background-color: var(--theme-bg); }
+.card { background-color: var(--theme-surface); border-color: var(--theme-border); box-shadow: var(--theme-shadow); }
+.card-section { background-color: var(--theme-surface-raised); border-color: var(--theme-divider); color: var(--theme-text-secondary); }
+.form-label { color: var(--theme-text-secondary); }
+.form-input,
+.form-select,
+.form-textarea,
+.table-input,
+.input { background-color: var(--theme-input); border-color: var(--theme-border); color: var(--theme-text); }
+.form-input::placeholder,
+.form-textarea::placeholder,
+.table-input::placeholder,
+.input::placeholder { color: var(--theme-text-muted); opacity: 1; }
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus,
+.table-input:focus,
+.input:focus { border-color: var(--color-brand-600); box-shadow: 0 0 0 3px var(--theme-focus-ring); }
+.btn-secondary { background-color: var(--theme-surface); color: var(--theme-text-secondary); border-color: var(--theme-border); }
+.btn-secondary:hover { background-color: var(--theme-hover); }
+.thead-row { background-color: var(--theme-surface-raised); color: var(--theme-text-secondary); }
+
+.dark .bg-white,
+.dark .bg-\[\#fff\],
+.dark .bg-\[\#ffffff\] { background-color: var(--theme-surface) !important; }
+.dark .bg-slate-50,
+.dark .bg-gray-50,
+.dark .bg-gray-100,
+.dark .bg-\[\#fafafa\] { background-color: var(--theme-surface-raised) !important; }
+.dark .bg-gray-200 { background-color: var(--theme-hover) !important; }
+.dark .hover\:bg-gray-50:hover,
+.dark .hover\:bg-gray-100:hover,
+.dark .hover\:bg-slate-50:hover { background-color: var(--theme-hover) !important; }
+.dark .text-gray-900,
+.dark .text-gray-800,
+.dark .text-\[\#333333\],
+.dark .text-\[\#24242b\] { color: var(--theme-text) !important; }
+.dark .text-gray-700,
+.dark .text-gray-600 { color: var(--theme-text-secondary) !important; }
+.dark .text-gray-500,
+.dark .text-gray-400 { color: var(--theme-text-muted) !important; }
+.dark .border-gray-100,
+.dark .border-gray-200,
+.dark .border-gray-300,
+.dark .border-gray-400,
+.dark .border-slate-200 { border-color: var(--theme-border) !important; }
+.dark .divide-gray-100 > :not([hidden]) ~ :not([hidden]),
+.dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]) { border-color: var(--theme-divider) !important; }
+.dark input:not([type="checkbox"]):not([type="radio"]),
+.dark textarea,
+.dark select { background-color: var(--theme-input); color: var(--theme-text); border-color: var(--theme-border); }
+.dark input::placeholder,
+.dark textarea::placeholder { color: var(--theme-text-muted); opacity: 1; }
+.dark input:disabled,
+.dark textarea:disabled,
+.dark select:disabled { background-color: var(--theme-hover); color: var(--theme-text-muted); }
+.dark input[type="checkbox"],
+.dark input[type="radio"] { accent-color: var(--color-brand-600); }
+.dark :focus-visible { outline: 2px solid var(--color-brand-400); outline-offset: 2px; }
+.dark table { border-color: var(--theme-border); }
+.dark tr { border-color: var(--theme-divider); }
+.dark .recharts-cartesian-axis-tick-value,
+.dark .recharts-legend-item-text { fill: var(--theme-text-secondary) !important; color: var(--theme-text-secondary) !important; }
+.dark .recharts-cartesian-grid line { stroke: var(--theme-border) !important; }
+.dark .recharts-tooltip-wrapper .recharts-default-tooltip { background-color: var(--theme-surface-raised) !important; border-color: var(--theme-border) !important; }
+.dark .recharts-tooltip-label,
+.dark .recharts-tooltip-item { color: var(--theme-text) !important; }
+.dark .sa-app,
+.dark .sa-login,
+.dark .sa-header,
+.dark .sa-sidebar { background: var(--theme-surface) !important; color: var(--theme-text) !important; border-color: var(--theme-border) !important; }
+.dark .sa-search,
+.dark .sa-secondary-button { background: var(--theme-surface-raised) !important; color: var(--theme-text-secondary) !important; }
+.dark .sa-nav-link,
+.dark .sa-header-actions { color: var(--theme-text-secondary) !important; }
+
+.dark .text-black,
+.dark .text-slate-900,
+.dark .text-slate-800,
+.dark .text-slate-700,
+.dark [class*="text-[#"] { color: var(--theme-text) !important; }
+.dark .text-slate-600,
+.dark .text-slate-500,
+.dark .text-slate-400 { color: var(--theme-text-secondary) !important; }
+.dark [class*="border-[#"] { border-color: var(--theme-border) !important; }
+.dark [class*="bg-[#"] { background-color: var(--theme-surface-raised) !important; }
+
+.dark header,
+.dark header .text-gray-900,
+.dark header .text-gray-800,
+.dark header .text-gray-700,
+.dark header .text-gray-600,
+.dark header .text-gray-500,
+.dark header button,
+.dark header svg { color: var(--theme-text-secondary) !important; }
+.dark header { background: var(--theme-navbar) !important; background-image: none !important; border-color: var(--theme-border) !important; }
+.dark header input { background-color: var(--theme-input) !important; color: var(--theme-text) !important; }
+.dark header input::placeholder { color: var(--theme-text-muted) !important; }
+.dark header .bg-white,
+.dark header .bg-gray-50 { background-color: var(--theme-surface-raised) !important; }
+.dark header .hover\:bg-gray-100:hover { background-color: var(--theme-hover) !important; }
+.dark header .text-red-500 { color: #fda4af !important; }
+
+.dark .text-green-800,
+.dark .text-green-700,
+.dark .text-green-600 { color: #86efac !important; }
+.dark .text-red-800,
+.dark .text-red-700,
+.dark .text-red-600,
+.dark .text-red-500 { color: #fda4af !important; }
+.dark .text-orange-800,
+.dark .text-orange-700,
+.dark .text-orange-600,
+.dark .text-orange-500,
+.dark .text-amber-800,
+.dark .text-amber-700,
+.dark .text-amber-600,
+.dark .text-amber-500 { color: #fcd34d !important; }
+.dark .text-blue-800,
+.dark .text-blue-700,
+.dark .text-blue-600,
+.dark .text-blue-500,
+.dark .text-indigo-800,
+.dark .text-indigo-700,
+.dark .text-indigo-600,
+.dark .text-indigo-500 { color: #93c5fd !important; }
+.dark .text-purple-800,
+.dark .text-purple-700,
+.dark .text-purple-600,
+.dark .text-purple-500,
+.dark .text-pink-800,
+.dark .text-pink-700,
+.dark .text-pink-600 { color: #d8b4fe !important; }
+.dark .text-gray-300,
+.dark .text-gray-200 { color: var(--theme-text-secondary) !important; }
+
+.dark .bg-green-50,
+.dark .bg-green-100 { background-color: #123524 !important; }
+.dark .bg-red-50,
+.dark .bg-red-100 { background-color: #451a24 !important; }
+.dark .bg-orange-50,
+.dark .bg-orange-100,
+.dark .bg-amber-50,
+.dark .bg-amber-100,
+.dark .bg-yellow-50,
+.dark .bg-yellow-100 { background-color: #3b2f0f !important; }
+.dark .bg-blue-50,
+.dark .bg-blue-100,
+.dark .bg-indigo-50,
+.dark .bg-indigo-100 { background-color: #172554 !important; }
+.dark .bg-purple-50,
+.dark .bg-purple-100,
+.dark .bg-pink-50,
+.dark .bg-pink-100 { background-color: #2e1065 !important; }
+.dark .border-green-200,
+.dark .border-green-300,
+.dark .border-red-200,
+.dark .border-red-300,
+.dark .border-orange-200,
+.dark .border-orange-300,
+.dark .border-amber-200,
+.dark .border-amber-300,
+.dark .border-blue-200,
+.dark .border-blue-300,
+.dark .border-indigo-200,
+.dark .border-indigo-300 { border-color: var(--theme-border) !important; }
+
+.dark .hover\:bg-green-50:hover,
+.dark .hover\:bg-green-100:hover,
+.dark .hover\:bg-red-50:hover,
+.dark .hover\:bg-red-100:hover,
+.dark .hover\:bg-blue-50:hover,
+.dark .hover\:bg-blue-100:hover { background-color: var(--theme-hover) !important; }
+
+.dark .recharts-text,
+.dark .recharts-label,
+.dark .recharts-default-tooltip,
+.dark .recharts-default-tooltip .recharts-tooltip-item,
+.dark .recharts-default-tooltip .recharts-tooltip-label { fill: var(--theme-text-secondary); color: var(--theme-text-secondary) !important; }
+.dark .recharts-default-tooltip { background-color: var(--theme-surface-raised) !important; border-color: var(--theme-border) !important; }
+.dark .recharts-cartesian-axis-line,
+.dark .recharts-xAxis line,
+.dark .recharts-yAxis line { stroke: var(--theme-border) !important; }
+
+.dark .fees-theme-scope .bg-white,
+.dark .fees-theme-scope .bg-gray-50,
+.dark .fees-theme-scope .bg-gray-100,
+.dark .fees-theme-scope .bg-\[\#eef2f7\],
+.dark .fees-theme-scope .bg-\[\#edf4ff\] { background-color: var(--theme-surface) !important; }
+.dark .fees-theme-scope .bg-gradient-to-br,
+.dark .fees-theme-scope .bg-gradient-to-r { background-image: none !important; background-color: var(--theme-surface-raised) !important; }
+.dark .fees-theme-scope [class*="bg-[#"] { background-color: var(--theme-surface-raised) !important; }
+.dark .fees-theme-scope [class*="border-[#"] { border-color: var(--theme-border) !important; }
+.dark .fees-theme-scope .text-black,
+.dark .fees-theme-scope [class*="text-[#"],
+.dark .fees-theme-scope .text-gray-900,
+.dark .fees-theme-scope .text-gray-800 { color: var(--theme-text) !important; }
+.dark .fees-theme-scope .text-gray-700,
+.dark .fees-theme-scope .text-gray-600,
+.dark .fees-theme-scope .text-gray-500,
+.dark .fees-theme-scope .text-slate-600,
+.dark .fees-theme-scope .text-slate-500 { color: var(--theme-text-secondary) !important; }
+.dark .fees-theme-scope .text-gray-400,
+.dark .fees-theme-scope .text-slate-400 { color: var(--theme-text-muted) !important; }
+.dark .fees-theme-scope .border-gray-100,
+.dark .fees-theme-scope .border-gray-200,
+.dark .fees-theme-scope .border-gray-300 { border-color: var(--theme-border) !important; }
+.dark .fees-theme-scope .divide-gray-200 > :not([hidden]) ~ :not([hidden]) { border-color: var(--theme-divider) !important; }
+.dark .fees-theme-scope .hover\:bg-gray-50:hover,
+.dark .fees-theme-scope .hover\:bg-gray-100:hover { background-color: var(--theme-hover) !important; }
+.dark .fees-theme-scope .bg-blue-50,
+.dark .fees-theme-scope .bg-indigo-50 { background-color: #172554 !important; }
+.dark .fees-theme-scope .bg-green-50,
+.dark .fees-theme-scope .bg-green-100 { background-color: #123524 !important; }
+.dark .fees-theme-scope .bg-yellow-50,
+.dark .fees-theme-scope .bg-yellow-100,
+.dark .fees-theme-scope .bg-amber-50 { background-color: #3b2f0f !important; }
+.dark .fees-theme-scope .bg-emerald-50 { background-color: #123524 !important; }
+.dark .fees-theme-scope .bg-rose-50 { background-color: #451a24 !important; }
+.dark .fees-theme-scope .bg-teal-50,
+.dark .fees-theme-scope .bg-teal-100 { background-color: #123b3b !important; }
+.dark .fees-theme-scope .text-green-600,
+.dark .fees-theme-scope .text-green-700,
+.dark .fees-theme-scope .text-emerald-600,
+.dark .fees-theme-scope .text-teal-600,
+.dark .fees-theme-scope .text-teal-700 { color: #86efac !important; }
+.dark .fees-theme-scope .text-yellow-600,
+.dark .fees-theme-scope .text-amber-600,
+.dark .fees-theme-scope .text-orange-500 { color: #fcd34d !important; }
+.dark .fees-theme-scope .text-rose-500,
+.dark .fees-theme-scope .text-red-600,
+.dark .fees-theme-scope .text-red-700 { color: #fda4af !important; }
+.dark .fees-theme-scope .text-blue-600,
+.dark .fees-theme-scope .text-indigo-600,
+.dark .fees-theme-scope .text-purple-600,
+.dark .fees-theme-scope .text-pink-600 { color: #a5b4fc !important; }
+.dark .fees-theme-scope .recharts-cartesian-axis-tick-value,
+.dark .fees-theme-scope .recharts-text,
+.dark .fees-theme-scope .recharts-legend-item-text { fill: var(--theme-text-secondary) !important; color: var(--theme-text-secondary) !important; }
+.dark .fees-theme-scope .recharts-cartesian-axis-line,
+.dark .fees-theme-scope .recharts-xAxis line,
+.dark .fees-theme-scope .recharts-yAxis line,
+.dark .fees-theme-scope .recharts-cartesian-grid line { stroke: var(--theme-border) !important; }
+.dark .fees-theme-scope .recharts-tooltip-wrapper .recharts-default-tooltip { background-color: var(--theme-surface-raised) !important; border-color: var(--theme-border) !important; }
+.dark .fees-theme-scope .recharts-tooltip-label,
+.dark .fees-theme-scope .recharts-tooltip-item { color: var(--theme-text) !important; }
+.dark .fees-theme-scope .react-datepicker,
+.dark .fees-theme-scope .react-datepicker__header,
+.dark .fees-theme-scope .react-datepicker__month-container { background-color: var(--theme-surface) !important; border-color: var(--theme-border) !important; color: var(--theme-text) !important; }
+.dark .fees-theme-scope .react-datepicker__current-month,
+.dark .fees-theme-scope .react-datepicker__day-name,
+.dark .fees-theme-scope .react-datepicker__day { color: var(--theme-text-secondary) !important; }
+.dark .fees-theme-scope .react-datepicker__day:hover { background-color: var(--theme-hover) !important; }
+
+.dark .portal-theme-scope,
+.dark .portal-theme-scope .bg-white,
+.dark .portal-theme-scope .bg-\[\#fff\],
+.dark .portal-theme-scope .bg-\[\#ffffff\] { background-color: var(--theme-surface) !important; }
+.dark .portal-theme-scope .bg-gray-50,
+.dark .portal-theme-scope .bg-gray-100,
+.dark .portal-theme-scope .bg-slate-50,
+.dark .portal-theme-scope .bg-gray-200 { background-color: var(--theme-surface-raised) !important; }
+.dark .portal-theme-scope .bg-gradient-to-r,
+.dark .portal-theme-scope .bg-gradient-to-br,
+.dark .portal-theme-scope .bg-gradient-to-b { background-image: none !important; background-color: var(--theme-surface-raised) !important; }
+.dark .portal-theme-scope [class*="bg-[#"] { background-color: var(--theme-surface-raised) !important; }
+.dark .portal-theme-scope [class*="border-[#"] { border-color: var(--theme-border) !important; }
+.dark .portal-theme-scope .text-black,
+.dark .portal-theme-scope .text-gray-900,
+.dark .portal-theme-scope .text-gray-800,
+.dark .portal-theme-scope .text-slate-900,
+.dark .portal-theme-scope .text-slate-800,
+.dark .portal-theme-scope [class*="text-[#"] { color: var(--theme-text) !important; }
+.dark .portal-theme-scope .text-gray-700,
+.dark .portal-theme-scope .text-gray-600,
+.dark .portal-theme-scope .text-gray-500,
+.dark .portal-theme-scope .text-slate-700,
+.dark .portal-theme-scope .text-slate-600,
+.dark .portal-theme-scope .text-slate-500 { color: var(--theme-text-secondary) !important; }
+.dark .portal-theme-scope .text-gray-400,
+.dark .portal-theme-scope .text-gray-300,
+.dark .portal-theme-scope .text-slate-400 { color: var(--theme-text-muted) !important; }
+.dark .portal-theme-scope .border-gray-100,
+.dark .portal-theme-scope .border-gray-200,
+.dark .portal-theme-scope .border-gray-300,
+.dark .portal-theme-scope .border-slate-200 { border-color: var(--theme-border) !important; }
+.dark .portal-theme-scope .divide-gray-200 > :not([hidden]) ~ :not([hidden]),
+.dark .portal-theme-scope .divide-gray-100 > :not([hidden]) ~ :not([hidden]) { border-color: var(--theme-divider) !important; }
+.dark .portal-theme-scope .hover\:bg-gray-50:hover,
+.dark .portal-theme-scope .hover\:bg-gray-100:hover { background-color: var(--theme-hover) !important; }
+.dark .portal-theme-scope .bg-blue-50,
+.dark .portal-theme-scope .bg-indigo-50,
+.dark .portal-theme-scope .bg-purple-50 { background-color: #172554 !important; }
+.dark .portal-theme-scope .bg-blue-100,
+.dark .portal-theme-scope .bg-indigo-100,
+.dark .portal-theme-scope .bg-purple-100 { background-color: #2e2968 !important; }
+.dark .portal-theme-scope .bg-green-50,
+.dark .portal-theme-scope .bg-green-100 { background-color: #123524 !important; }
+.dark .portal-theme-scope .bg-red-50,
+.dark .portal-theme-scope .bg-red-100 { background-color: #451a24 !important; }
+.dark .portal-theme-scope .bg-yellow-50,
+.dark .portal-theme-scope .bg-yellow-100,
+.dark .portal-theme-scope .bg-amber-50,
+.dark .portal-theme-scope .bg-amber-100 { background-color: #3b2f0f !important; }
+.dark .portal-theme-scope .bg-teal-50,
+.dark .portal-theme-scope .bg-teal-100 { background-color: #123b3b !important; }
+.dark .portal-theme-scope .text-green-600,
+.dark .portal-theme-scope .text-green-700,
+.dark .portal-theme-scope .text-emerald-600,
+.dark .portal-theme-scope .text-teal-600,
+.dark .portal-theme-scope .text-teal-700 { color: #86efac !important; }
+.dark .portal-theme-scope .text-red-500,
+.dark .portal-theme-scope .text-red-600,
+.dark .portal-theme-scope .text-red-700,
+.dark .portal-theme-scope .text-rose-500 { color: #fda4af !important; }
+.dark .portal-theme-scope .text-yellow-500,
+.dark .portal-theme-scope .text-yellow-600,
+.dark .portal-theme-scope .text-amber-500,
+.dark .portal-theme-scope .text-amber-600,
+.dark .portal-theme-scope .text-orange-500 { color: #fcd34d !important; }
+.dark .portal-theme-scope .text-blue-500,
+.dark .portal-theme-scope .text-blue-600,
+.dark .portal-theme-scope .text-indigo-500,
+.dark .portal-theme-scope .text-indigo-600,
+.dark .portal-theme-scope .text-purple-600 { color: #a5b4fc !important; }
+.dark .portal-theme-scope input:not([type="checkbox"]):not([type="radio"]),
+.dark .portal-theme-scope textarea,
+.dark .portal-theme-scope select { background-color: var(--theme-input); color: var(--theme-text); border-color: var(--theme-border); }
+.dark .portal-theme-scope input::placeholder,
+.dark .portal-theme-scope textarea::placeholder { color: var(--theme-text-muted) !important; }
+.dark .portal-theme-scope table { color: var(--theme-text); }
+.dark .portal-theme-scope .recharts-cartesian-axis-tick-value,
+.dark .portal-theme-scope .recharts-text,
+.dark .portal-theme-scope .recharts-legend-item-text { fill: var(--theme-text-secondary) !important; color: var(--theme-text-secondary) !important; }
+.dark .portal-theme-scope .recharts-cartesian-grid line,
+.dark .portal-theme-scope .recharts-cartesian-axis-line { stroke: var(--theme-border) !important; }
+.dark .portal-theme-scope .recharts-tooltip-wrapper .recharts-default-tooltip { background-color: var(--theme-surface-raised) !important; border-color: var(--theme-border) !important; }
+.dark .portal-theme-scope .recharts-tooltip-label,
+.dark .portal-theme-scope .recharts-tooltip-item { color: var(--theme-text) !important; }
+.dark .portal-theme-scope .react-datepicker,
+.dark .portal-theme-scope .react-datepicker__header,
+.dark .portal-theme-scope .react-datepicker__month-container { background-color: var(--theme-surface) !important; border-color: var(--theme-border) !important; color: var(--theme-text) !important; }
+.dark .portal-theme-scope .react-datepicker__current-month,
+.dark .portal-theme-scope .react-datepicker__day-name,
+.dark .portal-theme-scope .react-datepicker__day { color: var(--theme-text-secondary) !important; }
+.dark .portal-theme-scope .react-datepicker__day:hover { background-color: var(--theme-hover) !important; }
+.dark .portal-theme-scope button[class*="bg-[#4F46E5]"],
+.dark .portal-theme-scope button[class*="bg-[#5A42F3]"],
+.dark .portal-theme-scope button[class*="bg-[#4F37F5]"] { background-color: var(--color-brand-600) !important; color: #ffffff !important; }
+.dark .portal-theme-scope button[class*="bg-[#4F46E5]"]:hover,
+.dark .portal-theme-scope button[class*="bg-[#5A42F3]"]:hover,
+.dark .portal-theme-scope button[class*="bg-[#4F37F5]"]:hover { background-color: var(--color-brand-700) !important; }
+.dark .portal-theme-scope button.bg-red-600,
+.dark .portal-theme-scope button.bg-red-700 { color: #ffffff !important; }
+.dark .portal-theme-scope .react-select__control { background-color: var(--theme-input) !important; border-color: var(--theme-border) !important; color: var(--theme-text) !important; box-shadow: none !important; }
+.dark .portal-theme-scope .react-select__control:hover,
+.dark .portal-theme-scope .react-select__control--is-focused { border-color: var(--color-brand-400) !important; }
+.dark .portal-theme-scope .react-select__single-value,
+.dark .portal-theme-scope .react-select__input-container,
+.dark .portal-theme-scope .react-select__placeholder { color: var(--theme-text) !important; }
+.dark .portal-theme-scope .react-select__placeholder { color: var(--theme-text-muted) !important; }
+.dark .portal-theme-scope .react-select__menu,
+.dark .portal-theme-scope .react-select__menu-list { background-color: var(--theme-surface) !important; border-color: var(--theme-border) !important; }
+.dark .portal-theme-scope .react-select__option { background-color: var(--theme-surface) !important; color: var(--theme-text-secondary) !important; }
+.dark .portal-theme-scope .react-select__option:hover,
+.dark .portal-theme-scope .react-select__option--is-focused { background-color: var(--theme-hover) !important; color: var(--theme-text) !important; }
+.dark .portal-theme-scope .react-select__option--is-selected { background-color: var(--color-brand-600) !important; color: #ffffff !important; }
+.dark .portal-theme-scope .react-select__indicator,
+.dark .portal-theme-scope .react-select__indicator-separator { color: var(--theme-text-muted) !important; background-color: transparent !important; }
+.dark .portal-theme-scope .react-select__indicator:hover { color: var(--theme-text) !important; }
+.dark .portal-theme-scope .react-select__value-container,
+.dark .portal-theme-scope .react-select__input,
+.dark .portal-theme-scope .react-select__input input { color: var(--theme-text) !important; }
+.dark .portal-theme-scope .react-select__input input { background: transparent !important; }
+.dark .portal-theme-scope .react-select__clear-indicator { color: var(--theme-text-muted) !important; }
+.dark .portal-theme-scope .react-select__clear-indicator:hover { color: var(--theme-text) !important; }
+.dark .portal-theme-scope input[type="file"] { color: var(--theme-text-secondary) !important; }
+.dark .portal-theme-scope input[type="file"]::file-selector-button { background-color: var(--color-brand-600); color: #ffffff; border: 0; }
+.dark .portal-theme-scope input[type="file"]::file-selector-button:hover { background-color: var(--color-brand-700); }
+.dark .portal-theme-scope .react-datepicker__day--selected,
+.dark .portal-theme-scope .react-datepicker__day--keyboard-selected { background-color: var(--color-brand-600) !important; color: #ffffff !important; }
+.dark .portal-theme-scope .react-datepicker__day--disabled { color: var(--theme-text-muted) !important; }
+.dark .portal-theme-scope .react-datepicker__navigation-icon::before { border-color: var(--theme-text-secondary) !important; }
+.dark .portal-theme-scope .react-datepicker__triangle { fill: var(--theme-surface) !important; color: var(--theme-surface) !important; stroke: var(--theme-border) !important; }
+
+.dark .react-select__menu,
+.dark .react-select__menu-list { background-color: var(--theme-surface) !important; border-color: var(--theme-border) !important; }
+.dark .react-select__option { background-color: var(--theme-surface) !important; color: var(--theme-text-secondary) !important; }
+.dark .react-select__option:hover,
+.dark .react-select__option--is-focused { background-color: var(--theme-hover) !important; color: var(--theme-text) !important; }
+.dark .react-select__option--is-selected { background-color: var(--color-brand-600) !important; color: #ffffff !important; }
+.dark .react-select__single-value,
+.dark .react-select__value-container,
+.dark .react-select__input-container,
+.dark .react-select__input,
+.dark .react-select__input input { color: var(--theme-text) !important; }
+.dark .react-select__placeholder { color: var(--theme-text-muted) !important; }
+.dark .react-select__input input { background: transparent !important; }
+.dark .react-select__indicator,
+.dark .react-select__indicator-separator { color: var(--theme-text-muted) !important; background-color: transparent !important; }
+.dark .react-select__indicator:hover { color: var(--theme-text) !important; }
+
+.dark .dashboard-welcome,
+.dark .portal-theme-scope .dashboard-welcome {
+  background-image: linear-gradient(90deg, #9333ea, #7e22ce) !important;
+  background-color: #9333ea !important;
+  color: #ffffff !important;
+}
+.dark .dashboard-welcome h1,
+.dark .dashboard-welcome h2,
+.dark .dashboard-welcome p,
+.dark .dashboard-welcome strong { color: #ffffff !important; }

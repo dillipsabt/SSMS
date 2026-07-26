@@ -333,7 +333,7 @@ export default function FinancialOverview() {
     );
 
     return (
-        <div className="min-h-screen bg-white p-3 lg:p-6">
+        <div className="min-h-screen bg-white p-3 lg:p-6 fees-theme-scope">
             <div className="max-w-[1450px] mx-auto">
                 <div className="flex justify-between items-start mb-2">
                     <div>

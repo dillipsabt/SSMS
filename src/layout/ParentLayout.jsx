@@ -6,7 +6,7 @@ const ParentLayout = ({ children }) => {
   const [isOpen, setIsOpen] = useState(true);
 
   return (
-    <div className="min-h-screen bg-[#fff]">
+    <div className="min-h-screen bg-[#fff] portal-theme-scope">
       {/* Navbar */}
       <Navbar onToggleSidebar={() => setIsOpen(!isOpen)} />
 

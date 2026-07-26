@@ -141,7 +141,7 @@ const StudentDashboard = () => {
       {/* TOP GRID: Welcome Card + Mini Stat Blocks */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* LEFT BIG CARD */}
-        <div className="lg:col-span-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl p-5 sm:p-6 md:p-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+        <div className="dashboard-welcome lg:col-span-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl p-5 sm:p-6 md:p-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
           {/* TEXT */}
           <div className="space-y-4 w-full sm:max-w-[70%]">
             <div>

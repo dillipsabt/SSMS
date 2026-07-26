@@ -113,7 +113,7 @@ export default function ParentsDashboard() {
 
           {/* STUDENT CARD */}
           <div className="card overflow-hidden">
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6 text-white flex items-start justify-between">
+            <div className="dashboard-welcome bg-gradient-to-r from-blue-600 to-purple-600 p-6 text-white flex items-start justify-between">
               <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 text-center sm:text-left">
                 <img
                   src={studentProfile?.photoUrl || defaultProfileImage}

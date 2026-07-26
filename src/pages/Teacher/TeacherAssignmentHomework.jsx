@@ -202,6 +202,7 @@ const TeacherAssignmentHomework = () => {
                 setSelectedTeacherId(selected?.value || "")
               }
               placeholder="Select"
+              classNamePrefix="react-select"
             />
           </div>
 
@@ -233,6 +234,7 @@ const TeacherAssignmentHomework = () => {
                 });
               }}
               placeholder="Select"
+              classNamePrefix="react-select"
             />
           </div>
 
@@ -276,6 +278,7 @@ const TeacherAssignmentHomework = () => {
                 })
               }
               placeholder="Select"
+              classNamePrefix="react-select"
             />
           </div>
 
@@ -330,6 +333,7 @@ const TeacherAssignmentHomework = () => {
                 })
               }
               placeholder="Select"
+              classNamePrefix="react-select"
             />
           </div>
 
@@ -403,6 +407,7 @@ const TeacherAssignmentHomework = () => {
                 setSelectedTeacherId(selected?.value || "")
               }
               placeholder="Select"
+              classNamePrefix="react-select"
             />
 
             <DatePicker
@@ -438,6 +443,7 @@ const TeacherAssignmentHomework = () => {
                 { value: "pdf", label: "PDF" },
               ]}
               placeholder="Export"
+              classNamePrefix="react-select"
             />
           </div>
         </div>

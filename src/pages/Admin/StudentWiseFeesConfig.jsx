@@ -224,7 +224,7 @@ const StudentWiseFeesConfig = () => {
   };
 
   return (
-    <div className="page-wrap">
+    <div className="page-wrap fees-theme-scope">
       <h2 className="text-xl font-bold text-gray-800 mb-1">
         Student Wise Fees Configure
       </h2>

@@ -340,7 +340,7 @@ export default function FeesRefundList() {
     }
 
     return (
-        <div className="min-h-screen ">
+        <div className="min-h-screen fees-theme-scope">
             {/* Header */}
             <div className="mb-4">
                 <h1 className="text-xl font-semibold text-black">Fees Refund List</h1>

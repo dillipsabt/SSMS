@@ -170,6 +170,7 @@ const TeacherResultsList = () => {
           <div>
             <Select
               className="w-full"
+              classNamePrefix="react-select"
               options={[
                 { value: "", label: "Academic Year" },
                 ...(academicYears?.map((year) => ({
@@ -197,6 +198,7 @@ const TeacherResultsList = () => {
           <div>
             <Select
               className="w-full"
+              classNamePrefix="react-select"
               options={[
                 { value: "", label: "Class" },
                 ...(classes?.map((cls) => ({
@@ -221,6 +223,7 @@ const TeacherResultsList = () => {
           <div>
             <Select
               className="w-full"
+              classNamePrefix="react-select"
               options={[
                 { value: "", label: "Subject" },
                 ...(subjects?.map((subject) => ({
@@ -245,6 +248,7 @@ const TeacherResultsList = () => {
           <div>
             <Select
               className="w-full"
+              classNamePrefix="react-select"
               options={[
                 { value: "", label: "Exam Type" },
                 ...(examinationTypes?.map((exam) => ({

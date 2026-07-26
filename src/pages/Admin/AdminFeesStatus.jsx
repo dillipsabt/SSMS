@@ -74,7 +74,9 @@ export default function AdminFeesStatus() {
       width: "150px",
       minHeight: "30px",
       height: "30px",
-      borderColor: "#e5e7eb",
+      borderColor: "var(--theme-border)",
+      backgroundColor: "var(--theme-input)",
+      color: "var(--theme-text)",
       boxShadow: "none",
     }),
     valueContainer: (provided) => ({
@@ -86,10 +88,28 @@ export default function AdminFeesStatus() {
       ...provided,
       height: "30px",
     }),
+    menu: (provided) => ({
+      ...provided,
+      backgroundColor: "var(--theme-surface)",
+      border: "1px solid var(--theme-border)",
+    }),
+    option: (provided, state) => ({
+      ...provided,
+      backgroundColor: state.isFocused ? "var(--theme-hover)" : "var(--theme-surface)",
+      color: "var(--theme-text)",
+    }),
+    singleValue: (provided) => ({
+      ...provided,
+      color: "var(--theme-text)",
+    }),
+    placeholder: (provided) => ({
+      ...provided,
+      color: "var(--theme-text-muted)",
+    }),
   };
 
   return (
-    <div className="min-h-screen bg-white p-2 sm:p-6">
+    <div className="min-h-screen bg-white p-2 sm:p-6 fees-theme-scope">
       <h1 className="text-xl font-bold text-gray-800">Fees Status</h1>
       <p className="text-gray-500 mt-1">Fees Management / Fees Status</p>
 

@@ -250,6 +250,7 @@ const TeacherAddExamResults = () => {
             </label>
             <Select
               className="w-full"
+              classNamePrefix="react-select"
               options={[
                 { value: "", label: "Select Academic Year" },
                 ...(academicYears?.map((year) => ({
@@ -278,6 +279,7 @@ const TeacherAddExamResults = () => {
             </label>
             <Select
               className="w-full"
+              classNamePrefix="react-select"
               options={[
                 { value: "", label: "Select Class" },
                 ...(classes?.map((cls) => ({
@@ -307,6 +309,7 @@ const TeacherAddExamResults = () => {
             </label>
             <Select
               className="w-full"
+              classNamePrefix="react-select"
               options={[
                 { value: "", label: "Select Subject" },
                 ...(subjects?.map((subject) => ({
@@ -335,6 +338,7 @@ const TeacherAddExamResults = () => {
             </label>
             <Select
               className="w-full"
+              classNamePrefix="react-select"
               options={[
                 { value: "", label: "Select Exam Type" },
                 ...(examinationTypes?.map((exam) => ({

@@ -256,6 +256,7 @@ export default function TeacherAssignmentSubmission() {
                 setSelectedTeacherId(selected?.value || "")
               }
               placeholder="Select"
+              classNamePrefix="react-select"
             />
 
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -280,6 +281,7 @@ export default function TeacherAssignmentSubmission() {
                 })
               }
               placeholder="Select"
+              classNamePrefix="react-select"
             />
           </div>
 
@@ -312,6 +314,7 @@ export default function TeacherAssignmentSubmission() {
                 });
               }}
               placeholder="Select"
+              classNamePrefix="react-select"
             />
           </div>
 
@@ -366,6 +369,7 @@ export default function TeacherAssignmentSubmission() {
                 })
               }
               placeholder="Select"
+              classNamePrefix="react-select"
             />
           </div>
 
@@ -404,6 +408,7 @@ export default function TeacherAssignmentSubmission() {
                 { value: "pdf", label: "PDF" },
               ]}
               placeholder="Export"
+              classNamePrefix="react-select"
             />
           </div>
         </div>

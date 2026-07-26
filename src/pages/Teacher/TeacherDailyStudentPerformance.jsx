@@ -551,6 +551,7 @@ export default function TeacherDailyStudentPerformance() {
                             <Select
                                 isDisabled={true}
                                 className="w-full"
+                                classNamePrefix="react-select"
                                 menuPortalTarget={document.body}
                                 styles={{
                                     menuPortal: (base) => ({ ...base, zIndex: 9999 }),
@@ -611,6 +612,7 @@ export default function TeacherDailyStudentPerformance() {
 
                             <Select
                                 className="w-full"
+                                classNamePrefix="react-select"
                                 menuPortalTarget={document.body}
                                 menuPlacement="auto"
                                 styles={{
@@ -708,6 +710,7 @@ export default function TeacherDailyStudentPerformance() {
                                         <td className="border border-gray-300 px-3 py-2">
                                             <Select
                                                 className="w-full min-w-[180px]"
+                                                classNamePrefix="react-select"
                                                 menuPortalTarget={document.body}
                                                 menuPlacement="auto"
                                                 menuShouldBlockScroll
@@ -742,6 +745,7 @@ export default function TeacherDailyStudentPerformance() {
                                         <td className="border border-gray-300 px-3 py-2">
                                             <Select
                                                 className="w-full min-w-[180px]"
+                                                classNamePrefix="react-select"
                                                 menuPortalTarget={document.body}
                                                 menuPlacement="auto"
                                                 menuShouldBlockScroll
@@ -776,6 +780,7 @@ export default function TeacherDailyStudentPerformance() {
                                         <td className="border border-gray-300 px-3 py-2">
                                             <Select
                                                 className="w-full min-w-[180px]"
+                                                classNamePrefix="react-select"
                                                 menuPortalTarget={document.body}
                                                 menuPlacement="auto"
                                                 menuShouldBlockScroll
@@ -810,6 +815,7 @@ export default function TeacherDailyStudentPerformance() {
                                         <td className="border border-gray-300 px-3 py-2">
                                             <Select
                                                 className="w-full min-w-[180px]"
+                                                classNamePrefix="react-select"
                                                 menuPortalTarget={document.body}
                                                 menuPlacement="auto"
                                                 menuShouldBlockScroll
@@ -898,6 +904,7 @@ export default function TeacherDailyStudentPerformance() {
                                         <td className="border border-gray-300 px-3 py-2">
                                             <Select
                                                 className="w-full min-w-[160px]"
+                                                classNamePrefix="react-select"
                                                 menuPortalTarget={document.body}
                                                 menuPlacement="auto"
                                                 menuShouldBlockScroll
@@ -997,6 +1004,7 @@ export default function TeacherDailyStudentPerformance() {
                     <Select
                         isDisabled={true}
                         className="w-full md:w-[300px]"
+                        classNamePrefix="react-select"
                         menuPortalTarget={document.body}
                         styles={{
                             menuPortal: (base) => ({ ...base, zIndex: 9999 }),

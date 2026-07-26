@@ -111,6 +111,7 @@ export default function StudentAttendanceSummary() {
               onChange={(selected) => setSelectedClass(selected?.value)}
               placeholder="Select Class"
               className="w-full text-sm"
+              classNamePrefix="react-select"
             />
 
             <Select
@@ -127,6 +128,7 @@ export default function StudentAttendanceSummary() {
               onChange={(selected) => setSelectedSubject(selected?.value)}
               placeholder="Select Subject"
               className="w-full text-sm"
+              classNamePrefix="react-select"
             />
           </div>
 

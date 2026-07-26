@@ -48,7 +48,7 @@ const FeesManagementDashboard = () => {
 
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100 fees-theme-scope">
 
       {/* Main Content */}
       <div className="p-4 sm:p-6">
