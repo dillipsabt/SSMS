@@ -11,6 +11,8 @@ import ParentLayout from "./layout/ParentLayout";
 import StaffLayout from "./layout/StaffLayout";
 import SuperAdminRoutes from "./SuperAdmin/Routes/SuperAdminRoutes";
 import { isSuperAdminTenant } from "./api/tenant";
+import { useDispatch } from "react-redux";
+import { fetchSchoolInfo } from "./features/Admin/SchoolBranding/schoolBrandingSlice";
 
 // ADMIN
 const Dashboard = lazy(() => import("./pages/Admin/Dashboard"));
@@ -252,6 +254,14 @@ const Settings = lazy(() => import("./pages/Settings"));
 const Notifications = lazy(() => import("./pages/common/Notifications"));
 
 function App() {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (!isSuperAdminTenant()) {
+      dispatch(fetchSchoolInfo());
+    }
+  }, [dispatch]);
+
   // ✅ Auto token expiry check
   useEffect(() => {
     const token = localStorage.getItem("token");

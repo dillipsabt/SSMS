@@ -2,8 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { Bell, Menu, UserCircle, Search, Mail } from "lucide-react";
-// import logo from "../assets/logo-color 1.png";
-import logo from "../assets/logo_greenfield_school.png";
+import logo from "../assets/logo-color 1.png";
 import {
   fetchStudentNotifications,
   fetchTeacherNotifications,
@@ -14,8 +13,13 @@ const Navbar = ({ onToggleSidebar }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const role = localStorage.getItem("role");
-  // const tenantName = localStorage.getItem("tenantName");
-  const tenantLogo = localStorage.getItem("tenantLogo");
+  const portalLabel = {
+    admin: "Admin Portal",
+    "teacher-portal": "Teacher Portal",
+    "student-portal": "Student Portal",
+    "parent-portal": "Parent Portal",
+    "staff-portal": "Staff Portal",
+  }[role] || "Portal";
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -24,6 +28,7 @@ const Navbar = ({ onToggleSidebar }) => {
   const notificationRef = useRef(null);
 
   const { unreadCount } = useSelector((state) => state.userNotifications);
+  const { schoolName, logoUrl } = useSelector((state) => state.schoolBranding);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -77,22 +82,36 @@ const Navbar = ({ onToggleSidebar }) => {
   };
 
   return (
-    <header className="fixed top-0 left-0 w-full h-16 bg-white shadow z-50 flex items-center justify-between px-4">
+    <header className="fixed left-0 top-0 z-50 flex h-16 w-full items-center justify-between border-b border-gray-200/80 bg-gradient-to-r from-white via-white to-brand-50/30 px-3 shadow-sm backdrop-blur-md sm:px-5">
       {/* LEFT */}
-      <div className="flex items-center gap-2 sm:gap-3">
+      <div className="flex min-w-0 items-center gap-2 sm:gap-4">
         <button
           onClick={onToggleSidebar}
-          className="p-2 bg-gray-100 rounded-md"
+          aria-label="Toggle navigation"
+          className="rounded-lg border border-gray-200 bg-gray-50 p-2 text-gray-600 transition hover:border-brand-100 hover:bg-brand-50 hover:text-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-600/20"
         >
           <Menu size={20} />
         </button>
 
-        <img
-          src={tenantLogo || logo}
-          alt="logo"
-          className="w-32 sm:w-40 object-contain"
-        />
-        <span className="hidden sm:block text-lg font-semibold">{"Green Field Convent School"}</span>
+        <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+          <div className="flex h-12 w-32 shrink-0 items-center justify-center rounded-xl border border-brand-100 bg-gradient-to-br from-brand-50 via-white to-white px-2 shadow-sm ring-1 ring-white sm:h-[3.25rem] sm:w-36">
+            <img
+              src={logoUrl || logo}
+              alt={schoolName || "Walkout SSMS"}
+              className="max-h-full max-w-full object-contain transition-transform duration-200 hover:scale-[1.03]"
+            />
+          </div>
+          <span className="hidden h-9 w-px bg-gradient-to-b from-transparent via-gray-200 to-transparent sm:block" />
+          <div className="hidden min-w-0 border-l-2 border-brand-600/70 pl-3 sm:block">
+            <p className="truncate text-sm font-bold tracking-tight text-gray-900 lg:text-base">
+              {schoolName || "Walkout SSMS"}
+            </p>
+            <p className="mt-0.5 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-brand-600">
+              <span className="h-1.5 w-1.5 rounded-full bg-brand-600" />
+              {portalLabel}
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* SEARCH (hidden on mobile) */}

@@ -77,6 +77,7 @@ import superAdminSchoolsReducer from "../features/SuperAdmin/Schools/superAdminS
 import teacherAttendanceReducer from "../features/teacher/Attendance/teacherAttendanceSlice";
 import academicYearReducer from "../features/Admin/AcademicYear/academicYearSlice";
 import examinationTypeReducer from "../features/Admin/ExaminationType/examinationTypeSlice";
+import schoolBrandingReducer from "../features/Admin/SchoolBranding/schoolBrandingSlice";
 export const store = configureStore({
   reducer: {
      auth: authReducer,
@@ -156,6 +157,7 @@ export const store = configureStore({
     superAdminLocation: superAdminLocationReducer,
     academicYear: academicYearReducer,
     examinationType: examinationTypeReducer,
+    schoolBranding: schoolBrandingReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
