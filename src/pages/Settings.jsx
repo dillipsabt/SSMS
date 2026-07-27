@@ -1,10 +1,18 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { toast } from "sonner";
 import { Bell, Lock, Eye, EyeOff, Save, X, Check, AlertCircle } from "lucide-react";
 import MainLayout from "../layout/MainLayout";
 import { useTheme } from "../theme/useTheme";
+import {
+  changePasswordAsync,
+  clearPasswordChangeStatus,
+} from "../features/Settings/passwordChangeSlice";
 
 const Settings = () => {
   const { theme, setTheme } = useTheme();
+  const dispatch = useDispatch();
+  const isChangingPassword = useSelector((state) => state.passwordChange.loading);
   const [activeTab, setActiveTab] = useState("account");
   const [showPassword, setShowPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -49,22 +57,41 @@ const Settings = () => {
     });
   };
 
-  const handleSavePassword = () => {
+  const handleSavePassword = async () => {
+    if (isChangingPassword) return;
+
+    if (!accountSettings.currentPassword) {
+      toast.error("Current password is required");
+      return;
+    }
+    if (!accountSettings.newPassword) {
+      toast.error("New password is required");
+      return;
+    }
+    if (!accountSettings.confirmPassword) {
+      toast.error("Confirm password is required");
+      return;
+    }
     if (accountSettings.newPassword !== accountSettings.confirmPassword) {
-      alert("Passwords do not match!");
+      toast.error("Passwords do not match!");
       return;
     }
-    if (accountSettings.newPassword.length < 8) {
-      alert("Password must be at least 8 characters!");
-      return;
+
+    try {
+      await dispatch(changePasswordAsync(accountSettings)).unwrap();
+      toast.success("Password changed successfully");
+    } catch (error) {
+      if (!error?.status) {
+        toast.error(error?.message || "Unable to change password. Please try again.");
+      }
+    } finally {
+      setAccountSettings({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+      dispatch(clearPasswordChangeStatus());
     }
-    setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 3000);
-    setAccountSettings({
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-    });
   };
 
   const handleNotificationChange = (key) => {
@@ -227,10 +254,12 @@ const Settings = () => {
                   <div className="flex gap-3 mt-6">
                     <button
                       onClick={handleSavePassword}
-                      className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition"
+                      disabled={isChangingPassword}
+                      aria-busy={isChangingPassword}
+                      className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition disabled:cursor-not-allowed disabled:opacity-70"
                     >
                       <Lock size={18} />
-                      Change Password
+                      {isChangingPassword ? "Changing Password..." : "Change Password"}
                     </button>
                   </div>
                 </div>

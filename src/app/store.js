@@ -78,6 +78,7 @@ import teacherAttendanceReducer from "../features/teacher/Attendance/teacherAtte
 import academicYearReducer from "../features/Admin/AcademicYear/academicYearSlice";
 import examinationTypeReducer from "../features/Admin/ExaminationType/examinationTypeSlice";
 import schoolBrandingReducer from "../features/Admin/SchoolBranding/schoolBrandingSlice";
+import passwordChangeReducer from "../features/Settings/passwordChangeSlice";
 export const store = configureStore({
   reducer: {
      auth: authReducer,
@@ -158,6 +159,7 @@ export const store = configureStore({
     academicYear: academicYearReducer,
     examinationType: examinationTypeReducer,
     schoolBranding: schoolBrandingReducer,
+    passwordChange: passwordChangeReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

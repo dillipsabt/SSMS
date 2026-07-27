@@ -167,7 +167,6 @@ const StudentAdmission = () => {
   const classOptions = classes?.map((c) => ({
     label: c.classCode,
     value: String(c.id),
-    section: c.section,
   }));
   const branchOptions = branches?.map((branch) => ({
     label: branch.name,
@@ -221,7 +220,6 @@ const StudentAdmission = () => {
         title: student.title || "",
         classId: selectedClass ? String(selectedClass.id) : "",
         branchId: student.branchId ? String(student.branchId) : "",
-        section: student.section || "",
         dob: student.dob || "",
         age: student.age || "",
         gender: student.gender || "",
@@ -237,6 +235,8 @@ const StudentAdmission = () => {
         guardianName: student.guardianName || "",
         guardianOccupation: student.guardianOccupation || "",
         fatherName: student.fatherName || "",
+        surname: student.surname || "",
+        parentEmail: student.parentEmail || "",
         fatherOccupation: student.fatherOccupation || "",
         motherName: student.motherName || "",
         motherOccupation: student.motherOccupation || "",
@@ -323,7 +323,6 @@ const StudentAdmission = () => {
       setFormData((prev) => ({
         ...prev,
         classId: value,
-        section: selectedClass?.section || "",
       }));
 
       return;
@@ -341,7 +340,6 @@ const StudentAdmission = () => {
     if (!formData.fullName) return toast.error("Full Name Required");
     if (!formData.classId) return toast.error("Class Required");
     if (!formData.branchId) return toast.error("Branch Required");
-    if (!formData.section) return toast.error("Section Required");
     if (!formData.dob) return toast.error("DOB Required");
     if (!formData.age) return toast.error("Age Required");
     if (!/^[0-9]+$/.test(formData.age))
@@ -396,6 +394,7 @@ const StudentAdmission = () => {
 
     try {
       const formDataObj = new FormData();
+console.log("Form Data Before Submission:", formData);
 
       const dto = {
         fullName: formData.fullName,
@@ -409,8 +408,6 @@ const StudentAdmission = () => {
 
         classId: Number(formData.classId),
         branchId: Number(formData.branchId),
-
-        section: formData.section,
 
         dob: formData.dob,
 
@@ -437,6 +434,8 @@ const StudentAdmission = () => {
         guardianOccupation: formData.guardianOccupation || "",
 
         fatherName: formData.fatherName,
+        surname: formData.surname,
+        parentEmail: formData.parentEmail || "",
         fatherOccupation: formData.fatherOccupation || "",
 
         motherName: formData.motherName,
@@ -450,6 +449,8 @@ const StudentAdmission = () => {
 
         permanentAddress: formData.permanentAddress,
       };
+
+      console.log("Submitting DTO:", dto);
 
       formDataObj.append(
         "dto",
@@ -532,15 +533,6 @@ const StudentAdmission = () => {
           />
 
           <Input
-            label="Section"
-            required
-            name="section"
-            onChange={handleChange}
-            value={formData.section}
-            disabled
-          />
-
-          <Input
             label="DOB"
             type="date"
             name="dob"
@@ -549,6 +541,13 @@ const StudentAdmission = () => {
           />
 
           <Input label="Age" name="age" value={formData.age} disabled />
+
+          <Input
+            label="Student Email"
+            name="email"
+            onChange={handleChange}
+            value={formData.email}
+          />
 
           <Input
             label="Phone Number"
@@ -637,6 +636,12 @@ const StudentAdmission = () => {
             value={formData.fatherName}
           />
           <Input
+            label="Father surname"
+            name="surname"
+            onChange={handleChange}
+            value={formData.surname}
+          />
+          <Input
             label="Father Occupation"
             name="fatherOccupation"
             onChange={handleChange}
@@ -667,10 +672,10 @@ const StudentAdmission = () => {
             value={formData.guardianOccupation}
           />
           <Input
-            label="Email"
-            name="email"
+            label="ParentEmail"
+            name="parentEmail"
             onChange={handleChange}
-            value={formData.email}
+            value={formData.parentEmail}
           />
           <Input
             label="Phone Number"
