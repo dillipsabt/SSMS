@@ -10,6 +10,8 @@ import {
   punchOutTeacherAPI,
   fetchTeacherAttendanceAPI,
   fetchTeacherAttendanceHistoryAPI,
+  enrollTeacherFaceAPI,
+  verifyTeacherFaceAPI,
 } from "./teacherAttendanceAPI";
 
 export const punchInTeacher = createAppAsyncThunk(
@@ -33,6 +35,16 @@ export const fetchTeacherAttendance = createAppAsyncThunk(
 export const fetchTeacherAttendanceHistory = createAppAsyncThunk(
   "teacherAttendance/fetchHistory",
   (teacherId) => fetchTeacherAttendanceHistoryAPI(teacherId)
+);
+
+export const enrollTeacherFace = createAppAsyncThunk(
+  "teacherAttendance/enrollFace",
+  (data) => enrollTeacherFaceAPI(data)
+);
+
+export const verifyTeacherFace = createAppAsyncThunk(
+  "teacherAttendance/verifyFace",
+  (data) => verifyTeacherFaceAPI(data)
 );
 
 const toLocalDateKey = (value) => {
@@ -61,6 +73,7 @@ const initialState = {
   totalHalfDay: 0,
   history: [],
   punchLoading: false,
+  faceLoading: false,
   ...commonState,
 };
 
@@ -102,6 +115,30 @@ const teacherAttendanceSlice = createSlice({
       })
       .addCase(punchOutTeacher.rejected, (state, action) => {
         state.punchLoading = false;
+        handleRejected(state, action);
+      })
+
+      .addCase(enrollTeacherFace.pending, (state) => {
+        state.faceLoading = true;
+        state.error = null;
+      })
+      .addCase(enrollTeacherFace.fulfilled, (state) => {
+        state.faceLoading = false;
+      })
+      .addCase(enrollTeacherFace.rejected, (state, action) => {
+        state.faceLoading = false;
+        handleRejected(state, action);
+      })
+
+      .addCase(verifyTeacherFace.pending, (state) => {
+        state.faceLoading = true;
+        state.error = null;
+      })
+      .addCase(verifyTeacherFace.fulfilled, (state) => {
+        state.faceLoading = false;
+      })
+      .addCase(verifyTeacherFace.rejected, (state, action) => {
+        state.faceLoading = false;
         handleRejected(state, action);
       })
 

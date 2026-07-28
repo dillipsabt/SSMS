@@ -358,9 +358,6 @@ const StudentAdmission = () => {
     if (!formData.parentPhoneNo) return toast.error("Parent Phone Required");
     if (!/^[0-9]{10}$/.test(formData.parentPhoneNo))
       return toast.error("Parent Phone must be 10 digit");
-    if (!formData.studentPhoneNo) return toast.error("Student Phone Required");
-    if (!/^[0-9]{10}$/.test(formData.studentPhoneNo))
-      return toast.error("Student Phone must be 10 digit");
     if (!formData.presentAddress)
       return toast.error("Present Address Required");
     if (!formData.permanentAddress)

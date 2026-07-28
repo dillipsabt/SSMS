@@ -67,7 +67,7 @@ const Class = () => {
 
   // SAVE
   const handleSubmit = async () => {
-    if (!formData.className || !formData.section || !formData.board) {
+    if (!formData.className) {
       toast.error("Please fill all required fields");
       return;
     }

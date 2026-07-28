@@ -13,3 +13,19 @@ export const fetchTeacherAttendanceHistoryAPI = (teacherId) =>
   API.get(`/teacher-attendance/teacher/${teacherId}`, {
     skipErrorToast: true,
   });
+
+const createFaceFormData = (file) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  return formData;
+};
+
+export const enrollTeacherFaceAPI = ({ userId, file }) =>
+  API.post(`/face/enroll/${userId}`, createFaceFormData(file), {
+    skipErrorToast: true,
+  });
+
+export const verifyTeacherFaceAPI = ({ userId, file }) =>
+  API.post(`/face/verify/${userId}`, createFaceFormData(file), {
+    skipErrorToast: true,
+  });

@@ -27,6 +27,8 @@ import {
   punchInTeacher,
   punchOutTeacher,
   fetchTeacherAttendance,
+  enrollTeacherFace,
+  verifyTeacherFace,
 } from "../../features/teacher/Attendance/teacherAttendanceSlice";
 
 const WEEK_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -107,10 +109,11 @@ export default function TeacherDashboard() {
    Punch In States
 ========================= */
 
-  const { profileId } = useSelector((state) => state.auth);
+  const { profileId, userId } = useSelector((state) => state.auth);
   const {
     todayAttendance,
     punchLoading,
+    faceLoading,
   } = useSelector((state) => state.teacherAttendance) || {};
   const [currentTime, setCurrentTime] = useState(0);
   const hasCurrentTeacherAttendance =
@@ -131,8 +134,14 @@ export default function TeacherDashboard() {
   });
 
   const [capturedImage, setCapturedImage] = useState(null);
-  const [isFaceEnrolled, setIsFaceEnrolled] = useState(false);
   const [verificationStep, setVerificationStep] = useState("camera");
+
+  const faceEnrollmentStorageKey = userId
+    ? `teacher-face-enrolled-${userId}`
+    : null;
+  const isFaceEnrolled = Boolean(
+    faceEnrollmentStorageKey && localStorage.getItem(faceEnrollmentStorageKey)
+  );
 
   /*
 camera
@@ -280,29 +289,58 @@ identitySuccess
     );
   };
 
+  const imageToFile = async (image, name) => {
+    const blob = await fetch(image).then((response) => response.blob());
+    return new File([blob], name, { type: blob.type || "image/jpeg" });
+  };
+
+  const getErrorMessage = (error, fallback) =>
+    typeof error === "object" ? error.message || fallback : String(error || fallback);
+
+  const handleCameraError = () => {
+    toast.error("Camera is unavailable or permission was denied. Please allow camera access and try again.");
+  };
+
   const capture = () => {
-    const imageSrc = webcamRef.current.getScreenshot();
+    const imageSrc = webcamRef.current?.getScreenshot();
 
     if (!imageSrc) {
-      alert("Unable to capture image");
+      toast.error("Unable to capture image. Please check camera permissions and try again.");
       return;
     }
 
     setCapturedImage(imageSrc);
-
-    if (!isFaceEnrolled) {
-      setVerificationStep("enrollSuccess");
-    } else {
-      setVerificationStep("preview");
-    }
+    setVerificationStep("preview");
   };
 
-  const verifyFace = () => {
+  const verifyFace = async () => {
+    if (!capturedImage || !userId) return;
+
     setVerificationStep("verifying");
 
-    setTimeout(() => {
+    try {
+      const file = await imageToFile(capturedImage, "punch-in.jpg");
+
+      if (!isFaceEnrolled) {
+        await dispatch(enrollTeacherFace({ userId, file })).unwrap();
+        localStorage.setItem(faceEnrollmentStorageKey, "true");
+        setVerificationStep("enrollSuccess");
+        toast.success("Face enrolled successfully");
+        return;
+      }
+
+      const verified = await dispatch(verifyTeacherFace({ userId, file })).unwrap();
+      if (verified !== true) {
+        setVerificationStep("preview");
+        toast.error("Face verification failed. Please try again.");
+        return;
+      }
+
       setVerificationStep("identitySuccess");
-    }, 2000);
+    } catch (error) {
+      setVerificationStep("preview");
+      toast.error(getErrorMessage(error, isFaceEnrolled ? "Face verification failed. Please try again." : "Face enrolment failed. Please try again."));
+    }
   };
 
   const retakePhoto = () => {
@@ -461,10 +499,10 @@ success
   // =====================================
 
   const capturePunchOut = () => {
-    const imageSrc = webcamRef.current.getScreenshot();
+    const imageSrc = webcamRef.current?.getScreenshot();
 
     if (!imageSrc) {
-      alert("Unable to capture image.");
+      toast.error("Unable to capture image. Please check camera permissions and try again.");
 
       return;
     }
@@ -488,12 +526,26 @@ success
   // Verify Punch-Out Face
   // =====================================
 
-  const verifyPunchOut = () => {
+  const verifyPunchOut = async () => {
+    if (!capturedPunchOutImage || !userId) return;
+
     setPunchOutStep("verifying");
 
-    setTimeout(() => {
+    try {
+      const file = await imageToFile(capturedPunchOutImage, "punch-out.jpg");
+      const verified = await dispatch(verifyTeacherFace({ userId, file })).unwrap();
+
+      if (verified !== true) {
+        setPunchOutStep("preview");
+        toast.error("Face verification failed. Please try again.");
+        return;
+      }
+
       setPunchOutStep("success");
-    }, 2000);
+    } catch (error) {
+      setPunchOutStep("preview");
+      toast.error(getErrorMessage(error, "Face verification failed. Please try again."));
+    }
   };
 
   // =====================================
@@ -1216,6 +1268,7 @@ success
                   audio={false}
                   screenshotFormat="image/jpeg"
                   videoConstraints={videoConstraints}
+                  onUserMediaError={handleCameraError}
                   className="w-full"
                 />
               </div>
@@ -1268,6 +1321,7 @@ success
 
                 <button
                   onClick={verifyFace}
+                  disabled={faceLoading}
                   className="h-11 bg-[#4F46E5] text-white rounded"
                 >
                   Verify
@@ -1303,12 +1357,17 @@ success
               </div>
 
               <div className="grid grid-cols-2 gap-3 mt-5">
-                <button onClick={retakePhoto} className="h-11 border rounded">
+                <button
+                  onClick={retakePhoto}
+                  disabled={faceLoading}
+                  className="h-11 border rounded"
+                >
                   Retake
                 </button>
 
                 <button
                   onClick={verifyFace}
+                  disabled={faceLoading}
                   className="h-11 rounded bg-[#4F46E5] text-white"
                 >
                   Verify
@@ -1357,8 +1416,6 @@ success
 
               <button
                 onClick={() => {
-                  setIsFaceEnrolled(true);
-
                   setCapturedImage(null);
 
                   setVerificationStep("camera");
@@ -1468,6 +1525,7 @@ success
                   audio={false}
                   screenshotFormat="image/jpeg"
                   videoConstraints={videoConstraints}
+                  onUserMediaError={handleCameraError}
                   className="w-full"
                 />
               </div>
@@ -1551,6 +1609,7 @@ success
 
                 <button
                   onClick={verifyPunchOut}
+                  disabled={faceLoading}
                   className="h-11 rounded bg-[#4F46E5] hover:bg-[#4338CA] text-white font-medium"
                 >
                   Verify

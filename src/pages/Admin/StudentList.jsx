@@ -54,7 +54,7 @@ const StudentList = () => {
       id: s.id,
       rollNo: s.rollNo,
       name: s.fullName,
-      class: `${s.className} (${s.section})`,
+      class: `${s.className}`,
       age: `${s.age}Y / ${s.gender}`,
       dob: s.dob,
       parentPhoneNo: s.parentPhoneNo,
@@ -108,9 +108,7 @@ const StudentList = () => {
     const matchesClass =
       selectedClass === ""
         ? true
-        : ["NUR", "LKG", "UKG"].includes(selectedClass)
-          ? s.raw.className === selectedClass
-          : `${s.raw.className} ${s.raw.section}` === selectedClass;
+        : s.raw.className === selectedClass;
 
     return matchesSearch && matchesStatus && matchesClass;
   });
@@ -169,18 +167,11 @@ const StudentList = () => {
             >
               <option value="">All Classes</option>
 
-              {classes?.map((cls) => (
-                <option
-                  key={cls.id}
-                  value={
-                    ["NUR", "LKG", "UKG"].includes(cls.className)
-                      ? cls.className
-                      : `${cls.className} ${cls.section}`
-                  }
-                >
-                  {["NUR", "LKG", "UKG"].includes(cls.className)
-                    ? cls.className
-                    : `${cls.className} ${cls.section}`}
+              {[...new Map(
+                classes?.map(item => [item.className, item])
+              ).values()].map((cls) => (
+                <option key={cls.className} value={cls.className}>
+                  {cls.className}
                 </option>
               ))}
             </select>
@@ -224,8 +215,8 @@ const StudentList = () => {
                   <td className="px-3 py-2">
                     <span
                       className={`px-2 py-1 text-xs rounded ${s.status === "Active"
-                          ? "bg-green-100 text-green-600"
-                          : "bg-red-100 text-red-600"
+                        ? "bg-green-100 text-green-600"
+                        : "bg-red-100 text-red-600"
                         }`}
                     >
                       {s.status}
@@ -375,8 +366,8 @@ const StudentList = () => {
               <div className="mt-2">
                 <span
                   className={`px-2 py-1 text-xs rounded ${s.status === "Active"
-                      ? "bg-green-100 text-green-600"
-                      : "bg-red-100 text-red-600"
+                    ? "bg-green-100 text-green-600"
+                    : "bg-red-100 text-red-600"
                     }`}
                 >
                   {s.status}
