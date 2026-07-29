@@ -1,7 +1,6 @@
 import API from "../../../services/api";
 
-export const getHallTicketExams = () =>
-  API.get("/exams");
+export const getHallTicketExams = () => API.get("/exams");
 
 export const generateHallTickets = (data) =>
   API.post("/hall-ticket/generate", data);

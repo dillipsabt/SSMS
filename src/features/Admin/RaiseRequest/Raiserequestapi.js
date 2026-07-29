@@ -1,40 +1,10 @@
-import API from "../../../services/api";
+import API from "../../../api/axios";
 
-// ✅ GET REQUESTS BY TEACHER ID
-export const getTeacherRequests = (teacherId) => {
-  return API.get(
-    `/teacher/timetable/requests/${teacherId}`
-  );
-};
+export const getTeacherRequests = (params = {}) =>
+  API.get("/api/teacher-schedules/admin-request-list", { params });
 
-// ✅ APPROVE REQUEST
-export const approveTeacherRequest = (
-  id,
-  payload
-) => {
-  return API.put(
-    `/admin/timetable/requests/${id}/approve`,
-    null,
-    {
-      params: {
-        reason: payload.reason,
-      },
-    }
-  );
-};
+export const approveTeacherRequest = (id, payload) =>
+  API.put(`/api/teacher-schedules/${id}/approve`, payload);
 
-// ✅ REJECT REQUEST
-export const rejectTeacherRequest = (
-  id,
-  payload
-) => {
-  return API.put(
-    `/admin/timetable/requests/${id}/reject`,
-    null,
-    {
-      params: {
-        reason: payload.reason,
-      },
-    }
-  );
-};
+export const rejectTeacherRequest = (id, payload) =>
+  API.put(`/api/teacher-schedules/${id}/reject`, payload);

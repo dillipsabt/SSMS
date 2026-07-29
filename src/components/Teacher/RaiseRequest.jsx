@@ -1,233 +1,29 @@
-// ===============================================
-// FILE: src/components/Teacher/RaiseRequest.jsx
-// ===============================================
-
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 import { X } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
-
-import {
-  fetchSubjectsAsync,
-  fetchClassesAsync,
-  fetchTimeSlotsAsync,
-  createTeacherTimetableRequestAsync,
-  fetchTeacherTimetableAsync,
-} from "../../features/teacher/timetable/teacherTimetableSlice";
 import { toast } from "sonner";
+import { createTeacherTimetableRequestAsync, fetchTeacherTimetableRequestsAsync } from "../../features/teacher/Timetable/teacherTimetableSlice";
 
-const RaiseRequest = ({ open, onClose, teacherId }) => {
+export default function RaiseRequest({ open, onClose, scheduleItems }) {
   const dispatch = useDispatch();
-
-  const { subjects, classes, timeSlots, loading } = useSelector(
-    (state) => state.teacherTimetable
-  );
-
-  const [formData, setFormData] = useState({
-    subjectId: "",
-    classId: "",
-    date: "",
-    time: "",
-    comments: "",
-  });
-
-  // =========================
-  // FETCH SUBJECTS & CLASSES
-  // =========================
-  useEffect(() => {
-    if (open) {
-      dispatch(fetchSubjectsAsync());
-      dispatch(fetchClassesAsync());
-      dispatch(fetchTimeSlotsAsync());
-    }
-  }, [dispatch, open]);
-
-  // =========================
-  // HANDLE CHANGE
-  // =========================
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  // =========================
-  // SUBMIT
-  // =========================
-  const handleSubmit = async () => {
-    // formData.time already contains the slot ID from dropdown
-    const slotId = Number(formData.time || 0);
-
-    const payload = {
-      teacherId: Number(teacherId),
-      date: formData.date,
-      slotId: slotId,
-      requestedSlotId: slotId,
-      newSubjectId: Number(formData.subjectId || 0),
-      newClassId: Number(formData.classId || 0),
-      reason: formData.comments,
-    };
-
-    const result = await dispatch(
-      createTeacherTimetableRequestAsync(payload)
-    );
-
-    // SUCCESS
-    if (createTeacherTimetableRequestAsync.fulfilled.match(result)) {
-      toast.success(
-        result.payload?.message || "Request submitted successfully"
-      );
-
-      dispatch(fetchTeacherTimetableAsync(Number(teacherId)));
-
-      onClose();
-
-      setFormData({
-        subjectId: "",
-        classId: "",
-        date: "",
-        time: "",
-        comments: "",
-      });
-    }
-
-    // ERROR
-    if (createTeacherTimetableRequestAsync.rejected.match(result)) {
-      toast.error(
-        result.payload?.message ||
-        result.payload ||
-        result.error?.message ||
-        "Something went wrong"
-      );
-    }
-  };
-
+  const { loading } = useSelector((state) => state.teacherTimetable);
+  const [detailId, setDetailId] = useState("");
+  const [requestDate, setRequestDate] = useState("");
+  const [comments, setComments] = useState("");
   if (!open) return null;
 
-  return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="bg-white w-[90%] sm:w-[380px] rounded-lg shadow-lg overflow-hidden">
-        {/* HEADER */}
-        <div className="bg-indigo-600 text-white px-4 py-3 flex justify-between items-center">
-          <h2 className="text-sm font-semibold">Raise Request</h2>
-          <X onClick={onClose} className="cursor-pointer w-5 h-5" />
-        </div>
+  const close = () => { setDetailId(""); setRequestDate(""); setComments(""); onClose(); };
+  const submit = async () => {
+    if (!detailId || !requestDate || !comments.trim()) return toast.error("Schedule item, request date, and comments are required");
+    try {
+      await dispatch(createTeacherTimetableRequestAsync({ teacherScheduleDetailId: Number(detailId), requestDate, comments: comments.trim() })).unwrap();
+      toast.success("Request submitted successfully");
+      dispatch(fetchTeacherTimetableRequestsAsync());
+      close();
+    } catch (error) {
+      toast.error(error?.message ?? "Unable to submit request");
+    }
+  };
 
-        {/* BODY */}
-        <div className="p-4 space-y-4 text-sm">
-          {/* SUBJECT */}
-          <div>
-            <label className="block text-gray-700 mb-1">
-              Subject <span className="text-red-500">*</span>
-            </label>
-            <select
-              name="subjectId"
-              value={formData.subjectId}
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"
-            >
-              <option value="">Select Subject</option>
-              {subjects?.map((subject) => (
-                <option key={subject.id} value={subject.id}>
-                  {subject.name || subject.subjectName}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* CLASS */}
-          <div>
-            <label className="block text-gray-700 mb-1">
-              Class <span className="text-red-500">*</span>
-            </label>
-            <select
-              name="classId"
-              value={formData.classId}
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"
-            >
-              <option value="">Select Class</option>
-              {classes?.map((cls) => (
-                <option key={cls.id} value={cls.id}>
-                  {cls.name || cls.classCode}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* DATE */}
-          <div>
-            <label className="block text-gray-700 mb-1">
-              Date <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="date"
-              name="date"
-              value={formData.date}
-              onChange={handleChange}
-              placeholder="dd/mm/yyyy"
-              className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"
-            />
-          </div>
-
-          {/* TIME */}
-          <div>
-            <label className="block text-gray-700 mb-1">
-              Time <span className="text-red-500">*</span>
-            </label>
-            <select
-              name="time"
-              value={formData.time}
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"
-            >
-              <option value="">--:--</option>
-              {timeSlots?.map((slot, index) => {
-                const slotValue = slot.id || slot.slotId || slot.timeSlotId;
-                return (
-                  <option key={slotValue || index} value={slotValue}>
-                    {slot.startTime} - {slot.endTime}
-                  </option>
-                );
-              })}
-            </select>
-          </div>
-
-          {/* COMMENTS */}
-          <div>
-            <label className="block text-gray-700 mb-1">
-              Comments <span className="text-red-500">*</span>
-            </label>
-            <textarea
-              name="comments"
-              value={formData.comments}
-              onChange={handleChange}
-              placeholder="Write here"
-              rows={3}
-              className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 resize-none"
-            />
-          </div>
-
-          {/* BUTTONS */}
-          <div className="flex justify-end gap-3 pt-2">
-            <button
-              onClick={onClose}
-              className="border border-indigo-600 text-indigo-600 px-4 py-2 rounded text-sm hover:bg-indigo-50"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleSubmit}
-              disabled={loading}
-              className="bg-indigo-600 text-white text-sm px-4 py-2 rounded hover:bg-indigo-700 disabled:opacity-50"
-            >
-              {loading ? "Submitting..." : "Submit Request"}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default RaiseRequest;
+  return <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"><div className="w-full max-w-md overflow-hidden rounded-xl bg-white shadow-xl"><div className="flex items-center justify-between bg-brand-600 px-5 py-4 text-white"><h2 className="text-lg font-semibold">Raise Request</h2><button onClick={close} aria-label="Close"><X /></button></div><div className="space-y-4 p-5"><div><label className="form-label">Schedule Item <span className="text-red-500">*</span></label><select value={detailId} onChange={(event) => setDetailId(event.target.value)} className="form-select"><option value="">Select</option>{scheduleItems.map((item, index) => <option key={item.id ?? index} value={item.id}>{item.subjectName ?? item.subject?.subjectName ?? item.subject?.name} · {item.className ?? item.class?.className} · {item.startTime ?? item.timeSlot?.startTime}</option>)}</select></div><div><label className="form-label">Request Date <span className="text-red-500">*</span></label><input type="date" value={requestDate} onChange={(event) => setRequestDate(event.target.value)} className="form-input" /></div><div><label className="form-label">Comments <span className="text-red-500">*</span></label><textarea value={comments} onChange={(event) => setComments(event.target.value)} className="form-textarea" placeholder="Write here" /></div><div className="flex justify-end gap-3"><button onClick={close} className="btn-secondary">Cancel</button><button disabled={loading} onClick={submit} className="btn-primary disabled:opacity-50">{loading ? "Submitting..." : "Submit Request"}</button></div></div></div></div>;
+}

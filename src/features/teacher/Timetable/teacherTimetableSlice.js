@@ -1,347 +1,102 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { createAppAsyncThunk } from "../../../utils/createAppAsyncThunk";
-
 import {
-    fetchTeachersAPI,
-    fetchTeacherTimetableAPI,
-    fetchSubjectsAPI,
-    fetchClassesAPI,
-    fetchTeacherTimetableRequestsAPI,
-    createTeacherTimetableRequestAPI,
-    fetchTimeSlotsAPI,
+  createTeacherTimetableRequestAPI,
+  fetchClassesAPI,
+  fetchSubjectsAPI,
+  fetchTeacherTimetableAPI,
+  fetchTeacherTimetableRequestsAPI,
+  fetchTimeSlotsAPI,
 } from "./teacherTimetableAPI";
 
-export const fetchTeachersAsync = createAppAsyncThunk(
-    "teacherTimetable/fetchTeachers",
-    () => fetchTeachersAPI()
-);
+const getPayload = (payload) => payload?.data ?? payload;
+const getList = (payload) => {
+  const data = getPayload(payload);
+  return data?.content ?? data?.items ?? data?.scheduleItems ?? data?.teacherScheduleDetails ?? (Array.isArray(data) ? data : []);
+};
 
 export const fetchTeacherTimetableAsync = createAppAsyncThunk(
-    "teacherTimetable/fetchTimetable",
-    ({ teacherId, date }) =>
-        fetchTeacherTimetableAPI(
-            teacherId,
-            date
-        )
+  "teacherTimetable/fetchTimetable",
+  () => fetchTeacherTimetableAPI(),
+);
+
+export const fetchTeacherTimetableRequestsAsync = createAppAsyncThunk(
+  "teacherTimetable/fetchRequests",
+  (params = {}) => fetchTeacherTimetableRequestsAPI(params),
+);
+
+export const createTeacherTimetableRequestAsync = createAppAsyncThunk(
+  "teacherTimetable/createRequest",
+  (payload) => createTeacherTimetableRequestAPI(payload),
 );
 
 export const fetchSubjectsAsync = createAppAsyncThunk(
-    "teacherTimetable/fetchSubjects",
-    () => fetchSubjectsAPI()
+  "teacherTimetable/fetchSubjects",
+  () => fetchSubjectsAPI(),
 );
 
 export const fetchClassesAsync = createAppAsyncThunk(
-    "teacherTimetable/fetchClasses",
-    () => fetchClassesAPI()
+  "teacherTimetable/fetchClasses",
+  () => fetchClassesAPI(),
 );
 
-export const fetchTeacherTimetableRequestsAsync =
-    createAppAsyncThunk(
-        "teacherTimetable/fetchRequests",
-        (teacherId) =>
-            fetchTeacherTimetableRequestsAPI(
-                teacherId
-            )
-    );
+export const fetchTimeSlotsAsync = createAppAsyncThunk(
+  "teacherTimetable/fetchTimeSlots",
+  () => fetchTimeSlotsAPI(),
+);
 
-export const createTeacherTimetableRequestAsync =
-    createAppAsyncThunk(
-        "teacherTimetable/createRequest",
-        (data) =>
-            createTeacherTimetableRequestAPI(
-                data
-            )
-    );
-
-export const fetchTimeSlotsAsync =
-    createAppAsyncThunk(
-        "teacherTimetable/fetchTimeSlots",
-        () => fetchTimeSlotsAPI()
-    );
-
-const teacherTimetableSlice =
-    createSlice({
-        name: "teacherTimetable",
-
-        initialState: {
-            teachers: [],
-            timetable: [],
-            subjects: [],
-            classes: [],
-            requests: [],
-            timeSlots: [],
-            loading: false,
-            error: null,
-            success: false,
-        },
-
-        reducers: {
-            clearError: (state) => {
-                state.error = null;
-            },
-
-            clearSuccess: (state) => {
-                state.success = false;
-            },
-        },
-
-        extraReducers: (builder) => {
-            builder
-
-                // =========================
-                // FETCH TEACHERS
-                // =========================
-                .addCase(
-                    fetchTeachersAsync.pending,
-                    (state) => {
-                        state.loading = true;
-                        state.error = null;
-                    }
-                )
-
-                .addCase(
-                    fetchTeachersAsync.fulfilled,
-                    (state, action) => {
-                        state.loading = false;
-                        state.teachers =
-                            action.payload;
-                    }
-                )
-
-                .addCase(
-                    fetchTeachersAsync.rejected,
-                    (state, action) => {
-                        state.loading = false;
-                        state.error =
-                            action.payload?.message ||
-                            action.payload ||
-                            "Failed to fetch teachers";
-                    }
-                )
-
-                // =========================
-                // FETCH TIMETABLE
-                // =========================
-                .addCase(
-                    fetchTeacherTimetableAsync.pending,
-                    (state) => {
-                        state.loading = true;
-                        state.error = null;
-                    }
-                )
-
-                .addCase(
-                    fetchTeacherTimetableAsync.fulfilled,
-                    (state, action) => {
-                        state.loading = false;
-
-                        state.timetable =
-                            action.payload ||
-                            [];
-                    }
-                )
-
-                .addCase(
-                    fetchTeacherTimetableAsync.rejected,
-                    (state, action) => {
-                        state.loading = false;
-                        state.error =
-                            action.payload?.message ||
-                            action.payload ||
-                            "Failed to fetch timetable";
-                    }
-                )
-
-                // =========================
-                // SUBJECTS
-                // =========================
-                .addCase(
-                    fetchSubjectsAsync.pending,
-                    (state) => {
-                        state.loading = true;
-                        state.error = null;
-                    }
-                )
-
-                .addCase(
-                    fetchSubjectsAsync.fulfilled,
-                    (state, action) => {
-                        state.loading = false;
-
-                        state.subjects =
-                            action.payload ||
-                            [];
-                    }
-                )
-
-                .addCase(
-                    fetchSubjectsAsync.rejected,
-                    (state, action) => {
-                        state.loading = false;
-                        state.error =
-                            action.payload?.message ||
-                            action.payload ||
-                            "Failed to fetch subjects";
-                    }
-                )
-
-                // =========================
-                // CLASSES
-                // =========================
-                .addCase(
-                    fetchClassesAsync.pending,
-                    (state) => {
-                        state.loading = true;
-                        state.error = null;
-                    }
-                )
-
-                .addCase(
-                    fetchClassesAsync.fulfilled,
-                    (state, action) => {
-                        state.loading = false;
-
-                        state.classes =
-                            action.payload ||
-                            [];
-                    }
-                )
-
-                .addCase(
-                    fetchClassesAsync.rejected,
-                    (state, action) => {
-                        state.loading = false;
-                        state.error =
-                            action.payload?.message ||
-                            action.payload ||
-                            "Failed to fetch classes";
-                    }
-                )
-
-                // =========================
-                // FETCH REQUESTS
-                // =========================
-                .addCase(
-                    fetchTeacherTimetableRequestsAsync.pending,
-                    (state) => {
-                        state.loading = true;
-                        state.error = null;
-                    }
-                )
-
-                .addCase(
-                    fetchTeacherTimetableRequestsAsync.fulfilled,
-                    (state, action) => {
-                        state.loading = false;
-
-                        state.requests =
-                            action.payload ||
-                            [];
-                    }
-                )
-
-                .addCase(
-                    fetchTeacherTimetableRequestsAsync.rejected,
-                    (state, action) => {
-                        state.loading = false;
-                        state.error =
-                            action.payload?.message ||
-                            action.payload ||
-                            "Failed to fetch requests";
-                    }
-                )
-
-                // =========================
-                // CREATE REQUEST
-                // =========================
-                .addCase(
-                    createTeacherTimetableRequestAsync.pending,
-                    (state) => {
-                        state.loading = true;
-                        state.error = null;
-                        state.success = false;
-                    }
-                )
-
-                .addCase(
-                    createTeacherTimetableRequestAsync.fulfilled,
-                    (state, action) => {
-                        state.loading = false;
-
-                        state.success =
-                            action.payload?.message ||
-                            "Request created successfully";
-
-                        if (
-                            action.payload?.data
-                        ) {
-                            state.requests = [
-                                action.payload
-                                    .data,
-                                ...state.requests,
-                            ];
-                        } else {
-                            state.requests = [
-                                action.payload,
-                                ...state.requests,
-                            ];
-                        }
-                    }
-                )
-
-                .addCase(
-                    createTeacherTimetableRequestAsync.rejected,
-                    (state, action) => {
-                        state.loading = false;
-
-                        state.error =
-                            action.payload?.message ||
-                            "Failed to create request";
-
-                        state.success =
-                            false;
-                    }
-                )
-
-                // =========================
-                // TIME SLOTS
-                // =========================
-                .addCase(
-                    fetchTimeSlotsAsync.pending,
-                    (state) => {
-                        state.loading = true;
-                        state.error = null;
-                    }
-                )
-
-                .addCase(
-                    fetchTimeSlotsAsync.fulfilled,
-                    (state, action) => {
-                        state.loading = false;
-
-                        state.timeSlots =
-                            action.payload ||
-                            [];
-                    }
-                )
-
-                .addCase(
-                    fetchTimeSlotsAsync.rejected,
-                    (state, action) => {
-                        state.loading = false;
-
-                        state.error =
-                            action.payload?.message ||
-                            action.payload ||
-                            "Failed to fetch time slots";
-                    }
-                );
-        },
-    });
-
-export const {
-    clearError,
-    clearSuccess,
-} = teacherTimetableSlice.actions;
+const teacherTimetableSlice = createSlice({
+  name: "teacherTimetable",
+  initialState: {
+    timetable: [],
+    requests: [],
+    subjects: [],
+    classes: [],
+    timeSlots: [],
+    loading: false,
+    error: null,
+  },
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchTeacherTimetableAsync.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchTeacherTimetableAsync.fulfilled, (state, action) => {
+        state.loading = false;
+        state.timetable = getPayload(action.payload);
+      })
+      .addCase(fetchTeacherTimetableAsync.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.message ?? "Unable to load timetable";
+      })
+      .addCase(fetchTeacherTimetableRequestsAsync.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchTeacherTimetableRequestsAsync.fulfilled, (state, action) => {
+        state.loading = false;
+        state.requests = getList(action.payload);
+      })
+      .addCase(fetchTeacherTimetableRequestsAsync.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.message ?? "Unable to load requests";
+      })
+      .addCase(createTeacherTimetableRequestAsync.fulfilled, (state, action) => {
+        const request = getPayload(action.payload);
+        if (request?.id) state.requests.unshift(request);
+      })
+      .addCase(fetchSubjectsAsync.fulfilled, (state, action) => {
+        state.subjects = getList(action.payload);
+      })
+      .addCase(fetchClassesAsync.fulfilled, (state, action) => {
+        state.classes = getList(action.payload);
+      })
+      .addCase(fetchTimeSlotsAsync.fulfilled, (state, action) => {
+        state.timeSlots = getList(action.payload);
+      });
+  },
+});
 
 export default teacherTimetableSlice.reducer;

@@ -90,5 +90,5 @@ export const getApiBaseUrl = () => {
 
 export const getApiTimeout = () => {
   const timeout = Number(import.meta.env.VITE_API_TIMEOUT_MS);
-  return Number.isFinite(timeout) && timeout > 0 ? timeout : 30000;
+  return Number.isFinite(timeout) && timeout > 0 ? timeout : 900000;
 };

@@ -53,6 +53,7 @@ const StudentList = () => {
     const formatted = (reduxStudents || []).map((s) => ({
       id: s.id,
       rollNo: s.rollNo,
+      admission: s.admissionNo,
       name: s.fullName,
       class: `${s.className}`,
       age: `${s.age}Y / ${s.gender}`,
@@ -184,6 +185,7 @@ const StudentList = () => {
               <tr>
                 <th className="px-3 py-2 text-left">S.No.</th>
                 <th className="px-3 py-2 text-left">Roll No.</th>
+                <th className="px-3 py-2 text-left">admission No.</th>
                 <th className="px-3 py-2 text-left">Name</th>
                 <th className="px-3 py-2 text-left">Class</th>
                 <th className="px-3 py-2 text-left">Age / Gender</th>
@@ -204,6 +206,7 @@ const StudentList = () => {
                 >
                   <td className="px-3 py-2">{indexOfFirst + i + 1}</td>
                   <td className="px-3 py-2">{s.rollNo}</td>
+                  <td className="px-3 py-2">{s.admission}</td>
                   <td className="px-3 py-2">{s.name}</td>
                   <td className="px-3 py-2">{s.class}</td>
                   <td className="px-3 py-2">{s.age}</td>

@@ -1,64 +1,14 @@
-import API from "../../../services/api";
-const teacherId = localStorage.getItem("profileId") || null;
+import API from "../../../api/axios";
 
-// =========================
-// GET ALL TEACHERS
-// =========================
-export const fetchTeachersAPI = () => {
-  return API.get("/teachers");
-};
+export const fetchTeacherTimetableAPI = () =>
+  API.get("/teacher-schedules/published-schedule");
 
-// =========================
-// GET TEACHER TIMETABLE
-// =========================
-export const fetchTeacherTimetableAPI = (
-  teacherId, date
-) => {
-  return API.get(
-    `/timetable/teacher/${teacherId}/date/${date}`
-  );
-};
+export const fetchTeacherTimetableRequestsAPI = (params = {}) =>
+  API.get("/teacher-schedules/teacher-request-list", { params });
 
-// =========================
-// GET ALL CLASSES
-// =========================
-export const fetchClassesAPI = () => {
-  return API.get("/classes/get-all");
-};
+export const createTeacherTimetableRequestAPI = (payload) =>
+  API.post("/teacher-schedules/raise-requests", payload);
 
-// =========================
-// GET ALL SUBJECTS
-// =========================
-export const fetchSubjectsAPI = () => {
-  return API.get("/subjects");
-};
-
-// =========================
-// GET TEACHER TIMETABLE REQUESTS
-// =========================
-export const fetchTeacherTimetableRequestsAPI = (
-  teacherId
-) => {
-  return API.get(
-    `/teacher/timetable/requests/${teacherId}`
-  );
-};
-
-// =========================
-// RAISE TIMETABLE REQUEST
-// =========================
-export const createTeacherTimetableRequestAPI = (
-  data
-) => {
-  return API.post(
-    "/teacher/timetable/request-change",
-    data
-  );
-};
-
-// =========================
-// GET TIME SLOTS
-// =========================
-export const fetchTimeSlotsAPI = () => {
-  return API.get("/admin/time-slots");
-};
+export const fetchSubjectsAPI = () => API.get("/subjects");
+export const fetchClassesAPI = () => API.get("/classes/get-all");
+export const fetchTimeSlotsAPI = () => API.get("/admin/time-slots");

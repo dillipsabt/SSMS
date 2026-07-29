@@ -1,169 +1,141 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { createAppAsyncThunk } from "../../../utils/createAppAsyncThunk";
 import {
-    createTimetable,
-    getAdminTimetables,
-    publishTimetableAPI,
-    updateTimetable,
-    deleteTimetable,
-    getClasses,
-    getTimeSlots,
-    getSubjectsAPI,
+  createTeacherSchedule,
+  deleteTeacherSchedule,
+  getClasses,
+  getSubjectsAPI,
+  getTeacherSchedule,
+  getTeacherSchedules,
+  getTimeSlots,
+  publishTeacherSchedules,
+  updateTeacherSchedule,
 } from "./teacherTimetableAPI";
 
-const normalize = (data) => ({
-    id: data.timetableId,
-    teacherId: data.teacherId,
-    date: data.createdDate,
-    teacher: data.teacherName,
-    scheduleDate: data.scheduledDate,
-    status: data.status,
-    slots: data.slots || [],
+const getPayload = (payload) => payload?.data ?? payload;
+
+const getList = (payload) => {
+  const data = getPayload(payload);
+  return data?.content ?? data?.items ?? data?.teacherScheduleList ?? (Array.isArray(data) ? data : []);
+};
+
+const normalizeItem = (item) => ({
+  ...item,
+  id: item.id ?? item.teacherScheduleId,
+  teacherId: item.teacherId ?? item.teacher?.id,
+  teacherName: item.teacherName ?? item.teacher?.fullName ?? item.teacher?.name ?? "-",
+  createdDate: item.createdDate ?? item.date,
+  startDate: item.startDate ?? item.scheduledDate,
+  endDate: item.endDate ?? item.startDate ?? item.scheduledDate,
+  status: item.status ?? "DRAFT",
+  scheduleItems: item.scheduleItems ?? item.slots ?? item.teacherScheduleDetails ?? [],
 });
 
 export const fetchTimetable = createAppAsyncThunk(
-    "timetable/fetch",
-    ({ teacherId, date } = {}) => getAdminTimetables(teacherId || null, date || null)
+  "timetable/fetch",
+  (params = {}) => getTeacherSchedules(params),
+);
+
+export const fetchTimetableDetail = createAppAsyncThunk(
+  "timetable/fetchDetail",
+  (id) => getTeacherSchedule(id),
 );
 
 export const publishTimetable = createAppAsyncThunk(
-    "timetable/publish",
-    (timetableIds) => publishTimetableAPI(timetableIds)
+  "timetable/publish",
+  (payload) => publishTeacherSchedules(payload),
 );
 
 export const addTimetable = createAppAsyncThunk(
-    "timetable/add",
-    (payload) => createTimetable(payload)
+  "timetable/add",
+  (payload) => createTeacherSchedule(payload),
 );
 
 export const editTimetable = createAppAsyncThunk(
-    "timetable/update",
-    ({ id, payload }) => updateTimetable(id, payload)
+  "timetable/update",
+  ({ id, payload }) => updateTeacherSchedule(id, payload),
 );
 
 export const removeTimetable = createAppAsyncThunk(
-    "timetable/delete",
-    async (id) => {
-        await deleteTimetable(id);
-        return id;
-    }
+  "timetable/delete",
+  async (id) => {
+    await deleteTeacherSchedule(id);
+    return id;
+  },
 );
 
 export const fetchClasses = createAppAsyncThunk(
-    "timetable/fetchClasses",
-    () => getClasses()
+  "timetable/fetchClasses",
+  () => getClasses(),
 );
 
 export const fetchTimeSlots = createAppAsyncThunk(
-    "timetable/fetchTimeSlots",
-    () => getTimeSlots()
+  "timetable/fetchTimeSlots",
+  () => getTimeSlots(),
 );
 
 export const getSubjectsAsync = createAppAsyncThunk(
-    "teacher/getSubjects",
-    async () => {
-        const res = await getSubjectsAPI();
-        return res.data?.data || res.data;
-    }
+  "timetable/fetchSubjects",
+  () => getSubjectsAPI(),
 );
 
 const slice = createSlice({
-    name: "timetable",
-    initialState: {
-        data: [],
-        loading: false,
-        classes: [],
-        timeSlots: [],
-        subjects: [],
-    },
-    reducers: {},
-
-    extraReducers: (builder) => {
-        builder
-
-            .addCase(fetchTimetable.pending, (state) => {
-                state.loading = true;
-            })
-            .addCase(fetchTimetable.fulfilled, (state, action) => {
-                state.loading = false;
-
-                if (!action.payload) {
-                    state.data = [];
-                    return;
-                }
-
-                state.data =
-                    action.payload?.teacherTimetableList?.map(
-                        normalize
-                    ) || [];
-            })
-            .addCase(fetchTimetable.rejected, (state) => {
-                state.loading = false;
-                state.data = [];
-            })
-
-            .addCase(
-                publishTimetable.fulfilled,
-                (state) => {
-                    state.data = state.data.map(
-                        (item) => ({
-                            ...item,
-                            status: "PUBLISHED",
-                        })
-                    );
-                }
-            )
-
-            .addCase(addTimetable.fulfilled, (state, action) => {
-                state.data = [normalize(action.payload)];
-            })
-
-            .addCase(editTimetable.fulfilled, (state, action) => {
-                const updated = normalize(action.payload);
-
-                const index = state.data.findIndex((d) => d.id === updated.id);
-                if (index !== -1) state.data[index] = updated;
-            })
-
-            .addCase(removeTimetable.fulfilled, (state, action) => {
-                state.data = state.data.filter((d) => d.id !== action.payload);
-            })
-
-            .addCase(fetchClasses.pending, (state) => {
-                state.loading = true;
-            })
-            .addCase(fetchClasses.fulfilled, (state, action) => {
-                state.loading = false;
-                state.classes = action.payload || [];
-            })
-            .addCase(fetchClasses.rejected, (state) => {
-                state.loading = false;
-            })
-
-            // TIME SLOTS
-            .addCase(fetchTimeSlots.pending, (state) => {
-                state.loading = true;
-            })
-            .addCase(fetchTimeSlots.fulfilled, (state, action) => {
-                state.loading = false;
-                state.timeSlots = action.payload || [];
-            })
-            .addCase(fetchTimeSlots.rejected, (state) => {
-                state.loading = false;
-            })
-
-            // SUBJECTS
-            .addCase(getSubjectsAsync.pending, (state) => {
-                state.loading = true;
-            })
-            .addCase(getSubjectsAsync.fulfilled, (state, action) => {
-                state.loading = false;
-                state.subjects = action.payload || [];
-            })
-            .addCase(getSubjectsAsync.rejected, (state) => {
-                state.loading = false;
-            })
-    },
+  name: "timetable",
+  initialState: {
+    data: [],
+    selectedSchedule: null,
+    loading: false,
+    classes: [],
+    timeSlots: [],
+    subjects: [],
+    pagination: { page: 1, size: 10, totalPages: 1, totalElements: 0 },
+  },
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchTimetable.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchTimetable.fulfilled, (state, action) => {
+        const result = getPayload(action.payload);
+        state.loading = false;
+        state.data = getList(action.payload).map(normalizeItem);
+        state.pagination = {
+          page: result?.page ?? result?.pageNumber ?? (result?.number != null ? result.number + 1 : 1),
+          size: result?.size ?? result?.pageSize ?? 10,
+          totalPages: result?.totalPages ?? 1,
+          totalElements: result?.totalElements ?? result?.totalRecords ?? state.data.length,
+        };
+      })
+      .addCase(fetchTimetable.rejected, (state) => {
+        state.loading = false;
+      })
+      .addCase(fetchTimetableDetail.fulfilled, (state, action) => {
+        state.selectedSchedule = normalizeItem(getPayload(action.payload));
+      })
+      .addCase(addTimetable.fulfilled, (state, action) => {
+        const schedule = getPayload(action.payload);
+        if (schedule?.id || schedule?.teacherScheduleId) state.data.unshift(normalizeItem(schedule));
+      })
+      .addCase(editTimetable.fulfilled, (state, action) => {
+        const updated = normalizeItem(getPayload(action.payload));
+        const index = state.data.findIndex((item) => item.id === updated.id);
+        if (index !== -1) state.data[index] = updated;
+        state.selectedSchedule = updated;
+      })
+      .addCase(removeTimetable.fulfilled, (state, action) => {
+        state.data = state.data.filter((item) => item.id !== action.payload);
+      })
+      .addCase(fetchClasses.fulfilled, (state, action) => {
+        state.classes = getList(action.payload);
+      })
+      .addCase(fetchTimeSlots.fulfilled, (state, action) => {
+        state.timeSlots = getList(action.payload);
+      })
+      .addCase(getSubjectsAsync.fulfilled, (state, action) => {
+        state.subjects = getList(action.payload);
+      });
+  },
 });
 
 export default slice.reducer;

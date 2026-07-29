@@ -1,4 +1,5 @@
 import React from "react";
+import { useSelector } from "react-redux";
 import hallticket_image from "../../assets/hallticket_image.jpg";
 
 // ---------------------------------------------------------------------------
@@ -12,6 +13,12 @@ const defaultStudent = {
   classSection: "10-A",
   dob: "14 May 2008",
   photoUrl: hallticket_image,
+};
+
+const formatExamDate = (value) => {
+  if (!value) return "-";
+  const date = new Date(`${value}T00:00:00`);
+  return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString("en-GB");
 };
 
 const defaultSchedule = [
@@ -63,143 +70,93 @@ export default function HallTicket({
   },
   student = defaultStudent,
   schedule = defaultSchedule,
+  printableRef,
 }) {
+  const details = useSelector((state) => state.hallTicket?.hallTicketDetails);
+  const resolvedSchool = details
+    ? {
+        name: details.schoolName || school.name,
+        address: details.schoolAddress || school.address,
+        examTitle:
+          [details.examType, details.academicYear].filter(Boolean).join(" - ") ||
+          school.examTitle,
+      }
+    : school;
+  const resolvedStudent = details
+    ? {
+        name: details.studentName || defaultStudent.name,
+        hallTicketNo: details.hallTicketNo || defaultStudent.hallTicketNo,
+        classSection: details.classSection || defaultStudent.classSection,
+        dob: details.dateOfBirth || defaultStudent.dob,
+        fatherName: details.fatherName || "-",
+        rollNo: details.rollNo || "-",
+        photoUrl: details.studentPhoto || defaultStudent.photoUrl,
+      }
+    : student;
+  const resolvedSchedule = details
+    ? (details.schedules || details.examSchedule || details.examSchedules || details.schedule || []).map((row, index) => ({
+        number: index + 1,
+        date: formatExamDate(row.examDate || row.date),
+        time:
+          [row.startTime, row.endTime].filter(Boolean).join(" - ") ||
+          row.time ||
+          "-",
+        subject: row.subjectName || row.subject || "-",
+      }))
+    : schedule.map((row, index) => ({ ...row, number: index + 1 }));
+
   return (
     <div className="min-h-screen w-full bg-gray-100 py-8 font-sans antialiased">
-      <div className="mx-auto max-w-2xl rounded-xl border border-gray-200 bg-white p-8 shadow-sm  ">
-        {/* School header */}
-        <div className="flex justify-center border-b border-gray-800 pb-5">
-          <div className="flex items-center gap-4">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-md bg-gray-900">
-              <CapIcon />
-            </div>
-
-            <div className="text-left">
-              <p className="text-lg font-bold tracking-tight text-gray-900">
-                {school.name}
-              </p>
-
-              <p className="text-xs text-gray-500">{school.address}</p>
-
-              <p className="mt-1 text-sm font-semibold text-gray-800">
-                {school.examTitle}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Candidate details */}
-        <div className="flex gap-5 border-b border-gray-800 py-5">
-          <div className="h-24 w-20 shrink-0 overflow-hidden rounded-md border border-gray-200 bg-gray-100">
-            {student.photoUrl ? (
-              <img
-                src={student.photoUrl}
-                alt={student.name}
-                className="h-full w-full object-cover"
-              />
+      <div ref={printableRef} data-pdf-capture="true" className="mx-auto max-w-4xl overflow-hidden rounded-2xl border border-slate-200 border-t-8 border-t-indigo-950 bg-white text-slate-900 shadow-xl">
+        <div className="grid grid-cols-[185px_1fr_130px] items-center gap-6 border-b border-slate-200 bg-white px-6 py-5">
+          <div className="flex h-28 items-center justify-center rounded-xl border border-indigo-100 bg-indigo-50 p-2">
+            {details?.schoolLogo ? (
+              <img crossOrigin="anonymous" src={details.schoolLogo} alt={resolvedSchool.name} className="h-full w-full object-contain" />
             ) : (
-              <PhotoPlaceholder />
+              <div className="flex h-20 w-20 items-center justify-center rounded-xl bg-indigo-950"><CapIcon /></div>
             )}
           </div>
-
-          <div className="grid flex-1 grid-cols-2 gap-x-6 gap-y-4">
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-indigo-500">
-                Candidate Name
-              </p>
-              <p className="text-base font-bold text-gray-900">
-                {student.name.toUpperCase()}
-              </p>
-            </div>
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-indigo-500">
-                Class / Section
-              </p>
-              <p className="text-base font-semibold text-gray-800">
-                {student.classSection}
-              </p>
-            </div>
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-indigo-500">
-                Hall Ticket
-              </p>
-              <p className="text-base font-semibold text-gray-800">
-                {student.hallTicketNo}
-              </p>
-            </div>
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-indigo-500">
-                Date of Birth
-              </p>
-              <p className="text-base font-semibold text-gray-800">
-                {student.dob}
-              </p>
-            </div>
+          <div className="text-center">
+            <h1 className="text-xl font-bold tracking-tight text-slate-900">{resolvedSchool.name}</h1>
+            <p className="mt-1 text-sm leading-5 text-slate-500">{resolvedSchool.address}</p>
+            <p className="mt-2 text-xl font-bold text-indigo-950">{resolvedSchool.examTitle}</p>
+          </div>
+          <div className="flex h-28 items-center justify-center overflow-hidden rounded-xl border border-slate-300 bg-slate-100 p-1">
+            {resolvedStudent.photoUrl ? <img crossOrigin="anonymous" src={resolvedStudent.photoUrl} alt={resolvedStudent.name} className="h-full w-full object-cover" /> : <PhotoPlaceholder />}
           </div>
         </div>
 
-        {/* Examination schedule */}
-        <div className="pt-5">
-          <p className="mb-3 text-xs font-bold uppercase tracking-wide text-gray-800">
-            Examination Schedule
-          </p>
-          <table className="w-full border-collapse overflow-hidden rounded-md">
-            <thead>
-              <tr className="bg-gray-200 text-black ">
-                <th className="px-5 py-2.5 text-left text-black text-[11px] font-semibold uppercase tracking-wide ">
-                  Date
-                </th>
-                <th className="px-5 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide ">
-                  Time
-                </th>
-                <th className="px-5 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide ">
-                  Subject Title
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {schedule.map((row, i) => (
-                <tr
-                  key={row.date}
-                  className={i % 2 === 0 ? "bg-white" : "bg-blue-50/60"}
-                >
-                  <td className="px-5 py-3 text-sm text-gray-700">
-                    {row.date}
-                  </td>
-                  <td className="px-5 py-3 text-sm text-gray-700">
-                    {row.time}
-                  </td>
-                  <td className="px-5 py-3 text-sm text-gray-700">
-                    {row.subject}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="border-b border-indigo-900 bg-indigo-950 py-3 text-center text-xl font-bold tracking-wide text-white">Hall Ticket</div>
+
+        <div className="grid grid-cols-2 border-b border-slate-200 bg-slate-50 text-base">
+          <div className="space-y-3 border-r border-slate-200 p-5">
+            <p><span>Name</span><span className="mx-5">:</span>{resolvedStudent.name}</p>
+            <p><span>Father Name</span><span className="mx-5">:</span>{resolvedStudent.fatherName || "-"}</p>
+            <p><span>Roll No.</span><span className="mx-5">:</span>{resolvedStudent.rollNo || "-"}</p>
+          </div>
+          <div className="space-y-3 p-5">
+            <p><span>Class</span><span className="mx-5">:</span>{resolvedStudent.classSection}</p>
+            <p><span>Hall Ticket</span><span className="mx-5">:</span>{resolvedStudent.hallTicketNo}</p>
+          </div>
         </div>
 
-        {/* Signatures */}
-        <div className="mt-8 border-t border-dashed border-gray-300 pt-6">
-          <div className="flex items-end justify-between">
-            <div>
-              <p className="mb-8 text-xs font-bold uppercase tracking-wide text-gray-800">
-                Candidate Declaration
-              </p>
-              <div className="w-48 border-t border-gray-400 pt-1">
-                <p className="text-[11px] italic text-gray-400">
-                  Sign above in the presence of Invigilator
-                </p>
-              </div>
+        <div className="border-b border-slate-200 bg-white px-5 pb-2 pt-5 text-xs font-bold uppercase tracking-widest text-indigo-950">Examination Schedule</div>
+        <div className="grid grid-cols-3">
+          {resolvedSchedule.map((row, index) => (
+            <div key={`${row.number}-${row.date}-${row.subject}`} className={`border-b border-slate-200 bg-white px-4 py-4 text-base ${index % 3 !== 2 ? "border-r border-slate-200" : ""}`}>
+              {row.subject} <span className="mx-1">-</span> {row.date}
             </div>
-            <div className="text-right">
-              <p className="mb-1 text-xs font-bold uppercase tracking-wide text-gray-800">
-                Authorized Controller
-              </p>
-              <SignatureSquiggle />
-              <p className="text-[11px] font-medium text-gray-500">
-                Office of Examinations
-              </p>
-            </div>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-[1fr_240px] gap-8 bg-white p-5">
+          <div>
+            <p className="mb-2 text-xs font-bold uppercase tracking-widest text-indigo-950">Notes:</p>
+            <div className="min-h-20 rounded-lg border border-slate-200 bg-slate-50 p-3 text-base text-slate-700">{details?.notes || "-"}</div>
+          </div>
+          <div className="flex flex-col items-center justify-end pb-1 text-center">
+            {details?.principalSignature ? <img crossOrigin="anonymous" src={details.principalSignature} alt="Principal signature" className="mb-2 h-16 max-w-48 object-contain" /> : <SignatureSquiggle />}
+            <p className="text-xs font-bold uppercase tracking-widest text-indigo-950">Principal Signature</p>
           </div>
         </div>
       </div>

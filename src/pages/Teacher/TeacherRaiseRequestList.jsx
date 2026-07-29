@@ -1,115 +1,16 @@
-import React, { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Search } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import Pagination from "../../components/common/Pagination";
-import { fetchTeacherRaiseRequests } from "../../features/teacher/RaiseRequests/teacherRaiseRequestsSlice";
+import { fetchTeacherTimetableRequestsAsync } from "../../features/teacher/Timetable/teacherTimetableSlice";
 
-const TeacherRaiseRequestList = () => {
+export default function TeacherRaiseRequestList() {
   const dispatch = useDispatch();
-  const { raiseRequests, loading, error } = useSelector(
-    (state) => state.teacherRaiseRequests
-  );
-  const teacherId = localStorage.getItem("profileId");
-
+  const { requests, loading } = useSelector((state) => state.teacherTimetable);
+  const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-
-  useEffect(() => {
-    if (teacherId) {
-      dispatch(fetchTeacherRaiseRequests(teacherId));
-    }
-  }, [dispatch, teacherId]);
-
-  const indexOfLast = currentPage * rowsPerPage;
-  const indexOfFirst = indexOfLast - rowsPerPage;
-  const currentData = (raiseRequests || []).slice(indexOfFirst, indexOfLast);
-  const totalPages = Math.ceil((raiseRequests || []).length / rowsPerPage);
-
-  return (
-    <div className="w-full">
-      {/* PAGE HEADER */}
-      <div className="mb-2">
-        <h1 className="text-2xl sm:text-2xl font-bold text-gray-800">
-          Raise Request List
-        </h1>
-        <p className="text-sm text-gray-800">Teacher / Raise Request List</p>
-      </div>
-
-      {/* CARD */}
-      <div className="bg-white border border-gray-200 rounded-md shadow-sm">
-        {/* CARD HEADER */}
-        <div className="border-b border-gray-300 px-2 py-3 flex justify-between items-center">
-          <h2 className="text-lg font-semibold text-gray-700">Request List</h2>
-        </div>
-
-        {/* TABLE CONTAINER */}
-        <div className="p-2 overflow-x-auto">
-          <div className="border-gray-300 flex justify-end p-2 items-center">
-            <input
-              type="text"
-              placeholder="Search"
-              className="border border-gray-300 px-2 py-1 text-sm rounded"
-            />
-          </div>
-
-          {/* TABLE */}
-          <table className="w-full text-sm text-left border-collapse">
-            <thead className="bg-indigo-50 text-gray-600">
-              <tr>
-                <th className="p-2">S.No.</th>
-                <th className="p-2">Date</th>
-                <th className="p-2">Subject</th>
-                <th className="p-2">Class</th>
-                <th className="p-2">Request Date</th>
-                <th className="p-2">Request Time</th>
-                <th className="p-2">Status</th>
-                <th className="p-2">Comments</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {currentData.map((item, index) => (
-                <tr key={item.id} className="border-b border-gray-200">
-                  <td className="p-2">{indexOfFirst + index + 1}</td>
-                  <td className="p-2">{item.date}</td>
-                  <td className="p-2">{item.requestedSubjectName}</td>
-                  <td className="p-2">{item.requestedClassName}</td>
-                  <td className="p-2">{item.date}</td>
-                  <td className="p-2">{item.requestedSlotTime}</td>
-
-                  {/* STATUS */}
-                  <td className="p-2">
-                    <span
-                      className={`px-2 py-1 rounded text-xs font-medium ${
-                        item.status === "Approved"
-                          ? "bg-green-100 text-green-600"
-                          : item.status === "Pending"
-                            ? "bg-yellow-100 text-yellow-600"
-                            : "bg-red-100 text-red-600"
-                      }`}
-                    >
-                      {item.status}
-                    </span>
-                  </td>
-
-                  <td className="p-2">{item.reason}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          <div className="px-4 p-6">
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              rowsPerPage={rowsPerPage}
-              setCurrentPage={setCurrentPage}
-              setRowsPerPage={setRowsPerPage}
-            />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default TeacherRaiseRequestList;
+  useEffect(() => { dispatch(fetchTeacherTimetableRequestsAsync({ page: currentPage - 1, size: rowsPerPage, search: search || undefined })); }, [currentPage, dispatch, rowsPerPage, search]);
+  const filtered = useMemo(() => requests.filter((item) => `${item.subjectName ?? item.subject?.subjectName ?? ""} ${item.className ?? item.class?.className ?? ""} ${item.status ?? ""}`.toLowerCase().includes(search.toLowerCase())), [requests, search]);
+  return <div><div className="mb-4"><h1 className="text-2xl font-bold text-gray-800">Raise Request List</h1><p className="text-sm text-gray-500">Teacher / Raise Request List</p></div><div className="card"><div className="card-section">Request List</div><div className="p-3 sm:p-4"><div className="flex justify-end mb-3"><div className="relative w-full sm:w-64"><Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" /><input value={search} onChange={(event) => { setSearch(event.target.value); setCurrentPage(1); }} placeholder="Search" className="form-input pl-9" /></div></div><div className="overflow-x-auto border rounded"><table className="w-full min-w-[800px] text-[12px]"><thead className="thead-row"><tr><th className="px-3 py-3 text-left">S.No.</th><th className="px-3 py-3 text-left">Subject</th><th className="px-3 py-3 text-left">Class</th><th className="px-3 py-3 text-left">Section</th><th className="px-3 py-3 text-left">Timing</th><th className="px-3 py-3 text-left">Request Date</th><th className="px-3 py-3 text-left">Comments</th><th className="px-3 py-3 text-left">Status</th></tr></thead><tbody>{loading ? <tr><td colSpan="8" className="py-10 text-center">Loading requests...</td></tr> : !filtered.length ? <tr><td colSpan="8" className="py-10 text-center text-gray-500">No requests found</td></tr> : filtered.map((item, index) => <tr key={item.id ?? index} className="border-t"><td className="px-3 py-3">{(currentPage - 1) * rowsPerPage + index + 1}</td><td className="px-3 py-3">{item.subjectName ?? item.subject?.subjectName ?? "-"}</td><td className="px-3 py-3">{item.className ?? item.class?.className ?? "-"}</td><td className="px-3 py-3">{item.section ?? item.class?.section ?? "-"}</td><td className="px-3 py-3">{item.timing ?? item.requestedSlotTime ?? "-"}</td><td className="px-3 py-3">{item.requestDate ?? "-"}</td><td className="px-3 py-3">{item.comments ?? "-"}</td><td className="px-3 py-3"><span className="rounded bg-gray-100 px-2 py-1">{item.status ?? "PENDING"}</span></td></tr>)}</tbody></table></div><Pagination currentPage={currentPage} totalPages={1} rowsPerPage={rowsPerPage} setCurrentPage={setCurrentPage} setRowsPerPage={setRowsPerPage} /></div></div></div>;
+}

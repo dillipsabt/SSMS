@@ -35,7 +35,7 @@ export default function StudentHallTicket() {
     link.href = url;
     link.download = `hall-ticket-${ticket.hallTicketNo || getId(ticket)}.pdf`;
     link.click();
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
 
   return <div className="w-full">

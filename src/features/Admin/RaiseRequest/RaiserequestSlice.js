@@ -1,146 +1,66 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { createAppAsyncThunk } from "../../../utils/createAppAsyncThunk";
 import {
-  getTeacherRequests,
   approveTeacherRequest,
+  getTeacherRequests,
   rejectTeacherRequest,
 } from "./Raiserequestapi";
-import {
-  handlePending,
-  handleRejected,
-  handleSuccess,
-} from "../../../utils/reducerHelpers";
-import { commonState } from "../../../utils/commonState";
+
+const getPayload = (payload) => payload?.data ?? payload;
+const getRequests = (payload) => {
+  const data = getPayload(payload);
+  return data?.content ?? data?.items ?? (Array.isArray(data) ? data : []);
+};
 
 export const fetchTeacherRequests = createAppAsyncThunk(
   "raiserequest/fetchTeacherRequests",
-  (teacherId) => getTeacherRequests(teacherId)
+  (params = {}) => getTeacherRequests(params),
 );
 
 export const approveTeacherRequestAsync = createAppAsyncThunk(
   "raiserequest/approveTeacherRequest",
-  ({ id, payload }) => approveTeacherRequest(id, payload)
+  ({ id, payload }) => approveTeacherRequest(id, payload),
 );
 
 export const rejectTeacherRequestAsync = createAppAsyncThunk(
   "raiserequest/rejectTeacherRequest",
-  ({ id, payload }) => rejectTeacherRequest(id, payload)
+  ({ id, payload }) => rejectTeacherRequest(id, payload),
 );
 
-const RaiserequestSlice = createSlice({
+const requestSlice = createSlice({
   name: "raiserequest",
-
-  initialState: {
-    requests: [],
-    ...commonState,
-  },
-
+  initialState: { requests: [], loading: false, error: null, pagination: { totalPages: 1 } },
   reducers: {},
-
   extraReducers: (builder) => {
     builder
-
-      // ✅ FETCH
-      .addCase(
-        fetchTeacherRequests.pending,
-        (state) => {
-          handlePending(state);
-        }
-      )
-
-      .addCase(
-        fetchTeacherRequests.fulfilled,
-        (state, action) => {
-          state.loading = false;
-
-          state.requests =
-            action.payload || [];
-        }
-      )
-
-      .addCase(
-        fetchTeacherRequests.rejected,
-        (state, action) => {
-          handleRejected(state, action);
-        }
-      )
-
-      // ✅ APPROVE
-      .addCase(
-        approveTeacherRequestAsync.pending,
-        (state) => {
-          handlePending(state);
-        }
-      )
-
-      .addCase(
-        approveTeacherRequestAsync.fulfilled,
-        (state, action) => {
-          handleSuccess(state);
-
-          const updated =
-            action.payload?.data;
-
-          if (!updated) return;
-
-          const index =
-            state.requests.findIndex(
-              (r) =>
-                r.id === updated.id
-            );
-
-          if (index !== -1) {
-            state.requests[index] =
-              updated;
-          }
-        }
-      )
-
-      .addCase(
-        approveTeacherRequestAsync.rejected,
-        (state, action) => {
-          handleRejected(state, action);
-        }
-      )
-
-      // ✅ REJECT
-      .addCase(
-        rejectTeacherRequestAsync.pending,
-        (state) => {
-          handlePending(state);
-        }
-      )
-
-      .addCase(
-        rejectTeacherRequestAsync.fulfilled,
-        (state, action) => {
-          handleSuccess(state);
-
-          const updated =
-            action.payload?.data;
-
-          if (!updated) return;
-
-          const index =
-            state.requests.findIndex(
-              (r) =>
-                r.id === updated.id
-            );
-
-          if (index !== -1) {
-            state.requests[index] =
-              updated;
-          }
-        }
-      )
-
-      .addCase(
-        rejectTeacherRequestAsync.rejected,
-        (state, action) => {
-          handleRejected(state, action);
-        }
-      );
+      .addCase(fetchTeacherRequests.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchTeacherRequests.fulfilled, (state, action) => {
+        const data = getPayload(action.payload);
+        state.loading = false;
+        state.requests = getRequests(action.payload);
+        state.pagination = {
+          totalPages: data?.totalPages ?? 1,
+          totalElements: data?.totalElements ?? data?.totalRecords ?? state.requests.length,
+        };
+      })
+      .addCase(fetchTeacherRequests.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.message ?? "Unable to load requests";
+      })
+      .addCase(approveTeacherRequestAsync.fulfilled, (state, action) => {
+        const updated = getPayload(action.payload);
+        const index = state.requests.findIndex((request) => request.id === updated?.id);
+        if (index !== -1) state.requests[index] = updated;
+      })
+      .addCase(rejectTeacherRequestAsync.fulfilled, (state, action) => {
+        const updated = getPayload(action.payload);
+        const index = state.requests.findIndex((request) => request.id === updated?.id);
+        if (index !== -1) state.requests[index] = updated;
+      });
   },
 });
 
-export default RaiserequestSlice.reducer;
+export default requestSlice.reducer;
