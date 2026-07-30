@@ -1,342 +1,255 @@
-// AddExamSchedule.jsx
-
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FaRegSave } from "react-icons/fa";
-import { UploadCloud, FileText } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
-
 import {
-  fetchAcademicYears,
-  fetchExaminationTypes,
-  fetchClasses,
+  clearExamDetails,
   createExamSchedule,
+  fetchAcademicYears,
+  fetchClasses,
+  fetchExamSchedule,
+  fetchExaminationTypes,
+  fetchSubjects,
+  updateExamScheduleAsync,
 } from "../../features/Admin/ExamSchedule/examScheduleSlice";
 
+const emptyRow = () => ({
+  subjectId: "",
+  examDate: "",
+  startTime: "",
+  endTime: "",
+  maxMarks: "",
+  passMarks: "",
+});
+
+const getId = (item) => item?.id ?? item?.subjectId ?? "";
+
+const getName = (item) => item?.subjectName || item?.name || item?.title || "-";
+
+const toTimeString = (value) => {
+  const [hour = 0, minute = 0, second = 0] = String(value || "00:00")
+    .split(":")
+    .map(Number);
+  return `${String(hour).padStart(2, "0")}:${String(minute).padStart(
+    2,
+    "0",
+  )}:${String(second).padStart(2, "0")}`;
+};
+
+const fromTimeObject = (value) => {
+  if (!value) return "";
+  if (typeof value === "string") return value.slice(0, 5);
+  return `${String(value.hour ?? 0).padStart(2, "0")}:${String(
+    value.minute ?? 0,
+  ).padStart(2, "0")}`;
+};
+
 export default function AddExamSchedule() {
-
   const dispatch = useDispatch();
-
-  const fileInputRef = useRef(null);
-
+  const navigate = useNavigate();
+  const { id } = useParams();
+  const isEditing = Boolean(id);
   const {
     academicYears = [],
     examinationTypes = [],
     classes = [],
+    subjects = [],
+    examDetails,
     loading,
   } = useSelector((state) => state.examSchedule || {});
 
   const [form, setForm] = useState({
     academicYearId: "",
-    classId: "",
     examinationTypeId: "",
+    classRoomId: "",
   });
-
-  const [file, setFile] = useState(null);
+  const [rows, setRows] = useState([emptyRow()]);
 
   useEffect(() => {
     dispatch(fetchAcademicYears());
     dispatch(fetchExaminationTypes());
     dispatch(fetchClasses());
-  }, [dispatch]);
+    dispatch(fetchSubjects());
+    if (id) dispatch(fetchExamSchedule(id));
+    return () => dispatch(clearExamDetails());
+  }, [dispatch, id]);
 
-  // FORM CHANGE
-  const handleFormChange = (e) => {
+  useEffect(() => {
+    if (!examDetails || String(examDetails.id) !== String(id)) return;
+    // Hydrate the controlled form after the detail request resolves.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setForm({
+      academicYearId: String(examDetails.academicYearId ?? ""),
+      examinationTypeId: String(examDetails.examinationTypeId ?? ""),
+      classRoomId: String(examDetails.classId ?? examDetails.classRoomId ?? ""),
+    });
+    setRows(
+      (examDetails.schedules || []).map((schedule) => ({
+        subjectId: String(schedule.subjectId ?? ""),
+        examDate: schedule.examDate || "",
+        startTime: fromTimeObject(schedule.startTime),
+        endTime: fromTimeObject(schedule.endTime),
+        maxMarks: String(schedule.maxMarks ?? ""),
+        passMarks: String(schedule.passMarks ?? ""),
+      })),
+    );
+  }, [examDetails, id]);
 
-    const { name, value } = e.target;
+  const subjectOptions = useMemo(() => subjects || [], [subjects]);
 
-    setForm((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  const updateForm = (event) => {
+    const { name, value } = event.target;
+    setForm((current) => ({ ...current, [name]: value }));
   };
 
-  // FILE CHANGE
-  const handleFileChange = (e) => {
-
-    const selectedFile = e.target.files[0];
-
-    if (!selectedFile) return;
-
-    setFile(selectedFile);
+  const updateRow = (index, field, value) => {
+    setRows((current) =>
+      current.map((row, rowIndex) =>
+        rowIndex === index ? { ...row, [field]: value } : row,
+      ),
+    );
   };
 
-  // SAVE
+  const validate = () => {
+    if (!form.academicYearId || !form.examinationTypeId || !form.classRoomId) {
+      return "Please complete the exam information";
+    }
+    if (!rows.length) return "Add at least one subject schedule";
+
+    const subjectIds = rows.map((row) => row.subjectId);
+    if (subjectIds.some((subjectId) => !subjectId)) return "Subject is required";
+    if (new Set(subjectIds).size !== subjectIds.length) {
+      return "Duplicate subjects are not allowed";
+    }
+
+    for (const row of rows) {
+      if (!row.examDate || !row.startTime || !row.endTime) {
+        return "Date, start time, and end time are required";
+      }
+      if (row.startTime >= row.endTime) return "Start time must be before end time";
+      if (row.maxMarks === "" || row.passMarks === "") {
+        return "Max marks and pass marks are required";
+      }
+      if (Number(row.passMarks) > Number(row.maxMarks)) {
+        return "Pass marks cannot exceed max marks";
+      }
+    }
+    return null;
+  };
+
   const handleSave = async () => {
+    const validationError = validate();
+    if (validationError) {
+      toast.error(validationError);
+      return;
+    }
+
+    const payload = {
+      academicYearId: Number(form.academicYearId),
+      examinationTypeId: Number(form.examinationTypeId),
+      classRoomId: Number(form.classRoomId),
+      schedules: rows.map((row) => ({
+        subjectId: Number(row.subjectId),
+        examDate: row.examDate,
+        startTime: toTimeString(row.startTime),
+        endTime: toTimeString(row.endTime),
+        maxMarks: Number(row.maxMarks),
+        passMarks: Number(row.passMarks),
+      })),
+    };
 
     try {
-
-      // VALIDATION
-      if (
-        !form.academicYearId ||
-        !form.classId ||
-        !form.examinationTypeId
-      ) {
-        toast.error("Please fill all required fields");
-        return;
+      if (isEditing) {
+        await dispatch(updateExamScheduleAsync({ id, data: payload })).unwrap();
+      } else {
+        await dispatch(createExamSchedule(payload)).unwrap();
       }
-
-      if (!file) {
-        toast.error("Please upload exam timetable");
-        return;
-      }
-
-      const formData = new FormData();
-
-      formData.append("timetableFile", file);
-
-      const params = {
-        academicYearId: Number(form.academicYearId),
-        examinationTypeId: Number(form.examinationTypeId),
-        classId: Number(form.classId),
-      };
-
-      const response = await dispatch(
-        createExamSchedule({
-          params,
-          formData,
-        })
-      );
-
-      // ERROR HANDLE
-      if (response?.error) {
-
-        const errorMessage =
-          response.payload?.message ||
-          response.payload ||
-          "Failed to add exam schedule";
-
-        toast.error(errorMessage);
-
-        return;
-      }
-
-      toast.success("Exam Schedule Added Successfully");
-
-      // RESET
-      setForm({
-        academicYearId: "",
-        classId: "",
-        examinationTypeId: "",
-      });
-
-      setFile(null);
-
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-
+      toast.success(isEditing ? "Exam schedule updated successfully" : "Exam schedule created successfully");
+      navigate("/exam-schedule-list");
     } catch (error) {
-
-      toast.error(
-        error?.message || "Something went wrong"
-      );
+      toast.error(error?.message || "Unable to save exam schedule");
     }
   };
 
   return (
     <div className="page-wrap p-4 sm:p-6">
-
-      {/* HEADER */}
       <div className="mb-5">
-
         <h2 className="text-lg sm:text-[24px] font-bold text-gray-800">
-          Add Exam Schedule
+          {isEditing ? "Edit Exam Schedule" : "Add Exam Schedule"}
         </h2>
-
         <p className="text-xs sm:text-sm text-gray-500 mt-1">
-          Exam & Results / Add Exam Schedule
+          Exam &amp; Results / {isEditing ? "Edit" : "Add"} Exam Schedule
         </p>
-
       </div>
 
-      {/* MAIN CARD */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-
-        {/* TOP BAR */}
-        <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 bg-gradient-to-r from-indigo-600 to-violet-600">
-
-          <h3 className="text-white text-sm sm:text-[16px] font-semibold">
-            Create Exam Schedule
-          </h3>
-
-        </div>
-
-        <div className="p-4 sm:p-6">
-
-          {/* FORM GRID */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-5">
-
-            {/* ACADEMIC YEAR */}
-            <div>
-
-              <label className="block text-xs sm:text-[13px] font-semibold text-gray-700 mb-2">
-                Academic Year
-                <span className="text-red-500 ml-1">*</span>
-              </label>
-
-              <select
-                name="academicYearId"
-                value={form.academicYearId}
-                onChange={handleFormChange}
-                className="w-full h-[44px] border border-gray-300 rounded-xl px-3 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
-              >
-                <option value="">
-                  Select Academic Year
-                </option>
-
-                {academicYears.map((item) => (
-                  <option
-                    key={item.id || item.academicYearId}
-                    value={item.id || item.academicYearId}
-                  >
-                    {item.year || item.academicYear}
-                  </option>
-                ))}
-              </select>
-
-            </div>
-
-            {/* CLASS */}
-            <div>
-
-              <label className="block text-xs sm:text-[13px] font-semibold text-gray-700 mb-2">
-                Class / Section
-                <span className="text-red-500 ml-1">*</span>
-              </label>
-
-              <select
-                name="classId"
-                value={form.classId}
-                onChange={handleFormChange}
-                className="w-full h-[44px] border border-gray-300 rounded-xl px-3 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
-              >
-                <option value="">
-                  Select Class
-                </option>
-
-                {classes.map((item) => (
-                  <option
-                    key={item.id || item.classId}
-                    value={item.id || item.classId}
-                  >
-                    {item.classCode ||
-                      item.name ||
-                      "N/A"}
-                  </option>
-                ))}
-              </select>
-
-            </div>
-
-            {/* EXAM TYPE */}
-            <div>
-
-              <label className="block text-xs sm:text-[13px] font-semibold text-gray-700 mb-2">
-                Exam Type
-                <span className="text-red-500 ml-1">*</span>
-              </label>
-
-              <select
-                name="examinationTypeId"
-                value={form.examinationTypeId}
-                onChange={handleFormChange}
-                className="w-full h-[44px] border border-gray-300 rounded-xl px-3 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
-              >
-                <option value="">
-                  Select Exam Type
-                </option>
-
-                {examinationTypes.map((item) => (
-                  <option
-                    key={item.id || item.examTypeId}
-                    value={item.id || item.examTypeId}
-                  >
-                    {item.examType ||
-                      item.examinationType}
-                  </option>
-                ))}
-              </select>
-
-            </div>
-
+      <div className="space-y-5">
+        <section className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 bg-gradient-to-r from-indigo-600 to-violet-600">
+            <h3 className="text-white text-sm sm:text-[16px] font-semibold">Exam Information</h3>
           </div>
-
-          {/* FILE UPLOAD */}
-          <div className="mt-6 sm:mt-8">
-
-            <label className="block text-sm sm:text-[14px] font-semibold text-gray-700 mb-3">
-              Upload Exam Timetable
-            </label>
-
-            <div className="border-2 border-dashed border-indigo-200 rounded-2xl p-4 sm:p-6 bg-indigo-50/40">
-
-              <div className="flex flex-col md:flex-row md:items-center gap-3 sm:gap-4">
-
-                {/* BUTTON */}
-                <label className="inline-flex items-center gap-2 bg-white border border-indigo-300 hover:border-indigo-500 hover:bg-indigo-50 text-indigo-600 px-5 py-3 rounded-xl text-sm font-medium cursor-pointer transition-all w-fit shadow-sm">
-
-                  <UploadCloud size={18} />
-
-                  Choose File
-
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".pdf,.doc,.docx,.jpg,.png"
-                    onChange={handleFileChange}
-                    className="hidden"
-                  />
-                </label>
-
-                {/* FILE NAME */}
-                <div className="flex items-center gap-2 text-sm text-gray-600 break-all">
-
-                  <FileText size={18} className="text-indigo-500" />
-
-                  {file
-                    ? file.name
-                    : "No file selected"}
-
-                </div>
-
-              </div>
-
-              <p className="text-xs text-gray-500 mt-3">
-                Supported formats:
-                PDF, DOC, DOCX, JPG, PNG
-              </p>
-
-            </div>
-
+          <div className="p-4 sm:p-6 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-5">
+            {[
+              ["academicYearId", "Academic Year", academicYears, (item) => item.year || item.academicYear, (item) => item.id || item.academicYearId],
+              ["examinationTypeId", "Examination Type", examinationTypes, (item) => item.examType || item.examinationType, (item) => item.id || item.examTypeId],
+              ["classRoomId", "Class", classes, (item) => item.classCode || item.name || item.className, (item) => item.id || item.classId],
+            ].map(([name, label, options, labelOf, valueOf]) => (
+              <label key={name} className="block text-xs sm:text-[13px] font-semibold text-gray-700">
+                {label}<span className="text-red-500 ml-1">*</span>
+                <select name={name} value={form[name]} onChange={updateForm} className="mt-2 w-full h-[44px] border border-gray-300 rounded-xl px-3 text-sm font-normal outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition">
+                  <option value="">Select {label}</option>
+                  {options.map((item) => <option key={valueOf(item)} value={valueOf(item)}>{labelOf(item)}</option>)}
+                </select>
+              </label>
+            ))}
           </div>
+        </section>
 
-          {/* SAVE BUTTON */}
-          <div className="flex justify-end mt-8">
-
-            <button
-              onClick={handleSave}
-              disabled={loading}
-              className={`
-                flex items-center gap-2 px-6 py-3 rounded-xl
-                text-sm font-semibold text-white transition-all shadow-md
-                ${
-                  loading
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-gradient-to-r from-indigo-600 to-violet-600 hover:scale-[1.02] hover:shadow-lg"
-                }
-              `}
-            >
-
-              <FaRegSave size={15} />
-
-              {loading ? "Saving..." : "Save Schedule"}
-
+        <section className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 flex items-center justify-between gap-3">
+            <h3 className="text-gray-800 text-sm sm:text-[16px] font-semibold">Exam Schedule</h3>
+            <button type="button" onClick={() => setRows((current) => [...current, emptyRow()])} className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-3 py-2 text-xs font-semibold text-white hover:bg-indigo-700">
+              <Plus size={15} /> Add Subject
             </button>
-
           </div>
-
-        </div>
+          <div className="p-4 sm:p-6 space-y-4">
+            {rows.map((row, index) => (
+              <div key={index} className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-7 gap-3 rounded-xl border border-gray-200 p-3">
+                {[
+                  ["subjectId", "Subject", "select"],
+                  ["examDate", "Exam Date", "date"],
+                  ["startTime", "Start Time", "time"],
+                  ["endTime", "End Time", "time"],
+                  ["maxMarks", "Max Marks", "number"],
+                  ["passMarks", "Pass Marks", "number"],
+                ].map(([field, label, type]) => (
+                  <label key={field} className="text-xs font-semibold text-gray-700">
+                    {label}<span className="text-red-500 ml-1">*</span>
+                    {type === "select" ? (
+                      <select value={row[field]} onChange={(event) => updateRow(index, field, event.target.value)} className="mt-1 w-full h-10 rounded-lg border border-gray-300 px-2 text-sm font-normal focus:border-indigo-500 focus:outline-none">
+                        <option value="">Select Subject</option>
+                        {subjectOptions.map((subject) => <option key={getId(subject)} value={getId(subject)}>{getName(subject)}</option>)}
+                      </select>
+                    ) : (
+                      <input type={type} min={type === "number" ? 0 : undefined} value={row[field]} onChange={(event) => updateRow(index, field, event.target.value)} className="mt-1 w-full h-10 rounded-lg border border-gray-300 px-2 text-sm font-normal focus:border-indigo-500 focus:outline-none" />
+                    )}
+                  </label>
+                ))}
+                <div className="flex items-end">
+                  <button type="button" aria-label="Remove subject" disabled={rows.length === 1} onClick={() => setRows((current) => current.filter((_, rowIndex) => rowIndex !== index))} className="h-10 w-full inline-flex items-center justify-center gap-2 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-40">
+                    <Trash2 size={15} /> Remove
+                  </button>
+                </div>
+              </div>
+            ))}
+            <div className="flex justify-end">
+              <button type="button" onClick={handleSave} disabled={loading} className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-6 py-3 text-sm font-semibold text-white shadow-md disabled:opacity-50">
+                <FaRegSave size={15} /> {loading ? "Saving..." : isEditing ? "Update Schedule" : "Save Schedule"}
+              </button>
+            </div>
+          </div>
+        </section>
       </div>
     </div>
   );

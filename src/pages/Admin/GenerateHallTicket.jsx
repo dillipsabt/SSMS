@@ -36,7 +36,6 @@ export default function GenerateHallTicket() {
   useEffect(() => {
     dispatch(fetchAcademicYears());
     dispatch(fetchClasses());
-    dispatch(fetchHallTicketExaminationTypes());
     dispatch(fetchBranchesAsync());
   }, [dispatch]);
 
@@ -44,6 +43,17 @@ export default function GenerateHallTicket() {
     dispatch(clearSuccess());
     dispatch(clearError());
   }, [dispatch]);
+
+  useEffect(() => {
+    if (formData.academicYearId && formData.classId) {
+      dispatch(
+        fetchHallTicketExaminationTypes({
+          academicYearId: formData.academicYearId,
+          classId: formData.classId,
+        }),
+      );
+    }
+  }, [dispatch, formData.academicYearId, formData.classId]);
 
   useToastMessage({
     createSuccess: success,
@@ -60,7 +70,13 @@ export default function GenerateHallTicket() {
 
   const handleChange = (event) => {
     const { name, value } = event.target;
-    setFormData((current) => ({ ...current, [name]: value }));
+    setFormData((current) => ({
+      ...current,
+      [name]: value,
+      ...(name === "academicYearId" || name === "classId"
+        ? { examId: "" }
+        : {}),
+    }));
   };
 
   const handleGenerate = () => {
@@ -109,12 +125,12 @@ export default function GenerateHallTicket() {
             </div>
 
             <div>
-              <label className={labelClass}>School Branch</label>
-              <select name="schoolId" value={formData.schoolId} onChange={handleChange} className={inputClass}>
+              <label className={labelClass}>Class/Section</label>
+              <select name="classId" value={formData.classId} onChange={handleChange} className={inputClass}>
                 <option value="">Select</option>
-                {branches.map((branch) => (
-                  <option key={branch.id || branch.schoolId} value={branch.id || branch.schoolId}>
-                    {branch.name || branch.schoolName}
+                {classes.map((classItem) => (
+                  <option key={classItem.id || classItem.classId} value={classItem.id || classItem.classId}>
+                    {classItem.classCode || classItem.name}
                   </option>
                 ))}
               </select>
@@ -122,23 +138,29 @@ export default function GenerateHallTicket() {
 
             <div>
               <label className={labelClass}>Examination Type</label>
-              <select name="examId" value={formData.examId} onChange={handleChange} className={inputClass}>
+              <select
+                name="examId"
+                value={formData.examId}
+                onChange={handleChange}
+                disabled={!formData.academicYearId || !formData.classId || loading}
+                className={inputClass}
+              >
                 <option value="">Select</option>
                 {examinationTypes.map((exam) => (
-                  <option key={exam.id || exam.examTypeId} value={exam.id || exam.examTypeId}>
-                    {exam.examType || exam.examinationType}
+                  <option key={exam.examId} value={exam.examId}>
+                    {exam.examinationType}
                   </option>
                 ))}
               </select>
             </div>
 
             <div>
-              <label className={labelClass}>Class/Section</label>
-              <select name="classId" value={formData.classId} onChange={handleChange} className={inputClass}>
+              <label className={labelClass}>School Branch</label>
+              <select name="schoolId" value={formData.schoolId} onChange={handleChange} className={inputClass}>
                 <option value="">Select</option>
-                {classes.map((classItem) => (
-                  <option key={classItem.id || classItem.classId} value={classItem.id || classItem.classId}>
-                    {classItem.classCode || classItem.name}
+                {branches.map((branch) => (
+                  <option key={branch.id || branch.schoolId} value={branch.id || branch.schoolId}>
+                    {branch.name || branch.schoolName}
                   </option>
                 ))}
               </select>

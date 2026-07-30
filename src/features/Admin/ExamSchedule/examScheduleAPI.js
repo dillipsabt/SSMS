@@ -2,34 +2,30 @@
 
 import API from "../../../services/api";
 
-// GET ALL EXAMS
-export const getExamSchedules = () => {
-  return API.get("/exams");
-};
+export const getExamSchedules = () => API.get("/exams");
+
+export const getExamSchedule = (id) => API.get(`/exams/${id}`);
 
 // GET ACADEMIC YEARS
 export const getAcademicYears = () => {
   return API.get("/academic-years");
 };
 
-// GET EXAM TYPES
-export const getExaminationTypes = () => {
-  return API.get("/examination-types");
-};
+export const getExaminationTypes = () => API.get("/examination-types");
+
+export const getSubjects = () => API.get("/subjects");
 
 // GET CLASSES
 export const getClasses = () => {
   return API.get("/classes/get-all");
 };
 
-// ADD EXAM SCHEDULE
-export const addExamSchedule = (params, formData) => {
-  return API.post("/exams", formData, {
-    params,
-  });
-};
+export const addExamSchedule = (data) => API.post("/exams", data);
 
-// PUBLISH EXAM SCHEDULE
-export const publishExamSchedule = (data) => {
-  return API.patch("/exams/exam-status", data);
-};
+export const updateExamSchedule = (id, data) => API.put(`/exams/${id}`, data);
+
+export const deleteExamSchedule = (id) => API.delete(`/exams/${id}`);
+
+export const publishExamSchedules = (data) => API.patch("/exams/publish", data);
+
+export const updateExamStatus = (data) => API.patch("/exams/exam-status", data);

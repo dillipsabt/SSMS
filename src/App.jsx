@@ -581,6 +581,17 @@ function App() {
             />
 
             <Route
+              path="/add-exam/:id"
+              element={
+                <ProtectedRoute roles={["admin"]}>
+                  <MainLayout>
+                    <AddExamSchedule />
+                  </MainLayout>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
               path="/exam-schedule-list"
               element={
                 <ProtectedRoute roles={["admin"]}>

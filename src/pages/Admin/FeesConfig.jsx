@@ -159,6 +159,12 @@ const FeesConfig = () => {
         busFees: "",
         booksFees: "",
         labFees: "",
+        specialFees: "",
+        registrationFees: "",
+        sa1Fee: "",
+        sa2Fee: "",
+        sa3Fee: "",
+        sa4Fee: "",
       });
 
     } catch (error) {

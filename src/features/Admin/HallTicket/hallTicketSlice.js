@@ -5,6 +5,7 @@ import {
   downloadHallTicket,
   generateHallTickets,
   getHallTicketExams,
+  getAdminHallTicketDetails,
   getStudentWiseHallTickets,
   publishHallTickets,
 } from "./hallTicketAPI";
@@ -17,7 +18,12 @@ import { commonState } from "../../../utils/commonState";
 
 export const fetchHallTicketExaminationTypes = createAppAsyncThunk(
   "hallTicket/fetchExaminationTypes",
-  () => getHallTicketExams(),
+  ({ academicYearId, classId }) => getHallTicketExams({ academicYearId, classId }),
+);
+
+export const fetchAdminHallTicketDetails = createAppAsyncThunk(
+  "hallTicket/fetchAdminDetails",
+  (hallTicketNo) => getAdminHallTicketDetails(hallTicketNo),
 );
 
 export const fetchStudentWiseHallTickets = createAppAsyncThunk(
@@ -45,7 +51,7 @@ export const deleteHallTicketAsync = createAppAsyncThunk(
 
 export const downloadHallTicketAsync = createAppAsyncThunk(
   "hallTicket/download",
-  (hallTicketId) => downloadHallTicket(hallTicketId),
+  (hallTicketNo) => downloadHallTicket(hallTicketNo),
 );
 
 const initialState = {
@@ -84,6 +90,11 @@ const hallTicketSlice = createSlice({
           : action.payload?.content || action.payload?.data || [];
       })
       .addCase(fetchHallTicketExaminationTypes.rejected, handleRejected)
+      .addCase(fetchAdminHallTicketDetails.pending, handlePending)
+      .addCase(fetchAdminHallTicketDetails.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(fetchAdminHallTicketDetails.rejected, handleRejected)
       .addCase(fetchStudentWiseHallTickets.pending, handlePending)
       .addCase(fetchStudentWiseHallTickets.fulfilled, (state, action) => {
         const payload = action.payload || {};
@@ -102,13 +113,15 @@ const hallTicketSlice = createSlice({
       .addCase(generateHallTicketsAsync.pending, handlePending)
       .addCase(generateHallTicketsAsync.fulfilled, (state, action) => {
         handleSuccess(state);
-        state.successMessage = action.payload?.message || "Hall tickets generated successfully";
+        state.successMessage =
+          action.payload?.message || "Hall tickets generated successfully";
       })
       .addCase(generateHallTicketsAsync.rejected, handleRejected)
       .addCase(publishHallTicketsAsync.pending, handlePending)
       .addCase(publishHallTicketsAsync.fulfilled, (state, action) => {
         handleSuccess(state);
-        state.successMessage = action.payload?.message || "Hall tickets published successfully";
+        state.successMessage =
+          action.payload?.message || "Hall tickets published successfully";
       })
       .addCase(publishHallTicketsAsync.rejected, handleRejected)
       .addCase(deleteHallTicketAsync.pending, handlePending)
