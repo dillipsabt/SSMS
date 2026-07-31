@@ -299,13 +299,18 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
           { to: "/payslip-list", label: "Payslip List" },
         ],
       },
+      // {
+      //   icon: <UserCog size={20} />,
+      //   label: "School Details",
+      //   children: [
+      //     { to: "/add-school-details", label: "Add School Details" },
+      //     { to: "/school-details-view", label: "School Details View" },
+      //   ],
+      // },
       {
-        icon: <UserCog size={20} />,
         label: "School Details",
-        children: [
-          { to: "/add-school-details", label: "Add School Details" },
-          { to: "/school-details-view", label: "School Details View" },
-        ],
+        to: "/school-details-view",
+        icon: <UserCog size={20} />,
       },
       {
         icon: <FileText size={20} />,
@@ -560,13 +565,39 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
 
   // ✅ STAFF PORTAL SIDEBAR
   else if (role === "staff-portal") {
+    const isAdministration = localStorage.getItem("isAdministration") === "true";
+
     navItems = [
       {
         to: "/staff-dashboard",
         icon: <LayoutDashboard size={20} />,
         label: "Dashboard",
       },
+
     ];
+
+    if (isAdministration) {
+      navItems.push(
+        { to: "/students_list", icon: <Users size={20} />, label: "Student Details" },
+        { to: "/staff_list", icon: <UserCog size={20} />, label: "Staff Details" },
+        { to: "/teacher_list", icon: <GraduationCap size={20} />, label: "Teacher Details" },
+        { to: "/leave-list", icon: <CalendarX size={20} />, label: "Leave Management" },
+        { to: "/student-transportation", icon: <Bus size={20} />, label: "Student Transportation" },
+        { to: "/fees", icon: <Wallet size={20} />, label: "Fee Management" },
+        { to: "/exam-schedule-list", icon: <BookOpen size={20} />, label: "Exam & Results" },
+        { to: "/notifications-list", icon: <Bell size={20} />, label: "Notifications & Alerts" },
+        { to: "/announcements-list", icon: <Megaphone size={20} />, label: "Announcements" },
+        { to: "/Fees-Management-Dashboard", icon: <BarChart3 size={20} />, label: "Analytics Dashboard" },
+        { to: "/generate-hall-ticket", icon: <Ticket size={20} />, label: "Hall Tickets" },
+        { to: "/examination-type", icon: <ClipboardList size={20} />, label: "Examination Type" },
+        { to: "/financial-overview", icon: <ChartColumn size={20} />, label: "Financial Overview" },
+        { to: "/add-payslips", icon: <FileText size={20} />, label: "Payslips" },
+        { to: "/transportation", icon: <Bus size={20} />, label: "Transportation" },
+        { to: "/new-expenses", icon: <Wallet size={20} />, label: "New Expenses" },
+        { to: "/upcoming-events", icon: <CheckSquare size={20} />, label: "Upcoming Events" },
+        { to: "/notice-board", icon: <FileText size={20} />, label: "Notice Board" },
+      );
+    }
   }
 
   return (

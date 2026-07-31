@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { loginUser } from "../../services/authService";
+import API from "../../api/axios";
 import { parseJwt } from "../../utils/jwt";
 import { clearAuthStorage } from "../../utils/storage";
 
@@ -31,6 +32,17 @@ const normalizeRole = (rawRole, email) => {
   }
 };
 
+const getDepartmentName = (data, payload) =>
+  data.departmentName ||
+  data.department?.name ||
+  data.staff?.departmentName ||
+  data.staff?.department?.name ||
+  data.profile?.departmentName ||
+  data.profile?.department?.name ||
+  payload?.departmentName ||
+  payload?.department?.name ||
+  "";
+
 // ✅ LOGIN ACTION
 export const login = createAsyncThunk(
   "auth/login",
@@ -47,6 +59,23 @@ export const login = createAsyncThunk(
       const rawRole = payload?.roles?.[0] || data.role || "";
 
       const role = normalizeRole(rawRole, data.email);
+      let departmentName = getDepartmentName(data, payload);
+
+      if (role === "staff-portal" && !departmentName && data.profileId) {
+        try {
+          const response = await API.get(`/staff/${data.profileId}`, {
+            headers: { Authorization: `Bearer ${data.token}` },
+            skipErrorToast: true,
+          });
+          departmentName = getDepartmentName(response.data, null);
+        } catch {
+          departmentName = "";
+        }
+      }
+
+      const isAdministration =
+        role === "staff-portal" &&
+        departmentName.trim().toLowerCase() === "administration";
 
       const loginPayload = {
         token: data.token,
@@ -54,6 +83,7 @@ export const login = createAsyncThunk(
         userId: data.userId || null,
         profileId: data.profileId || null,
         role: role || "admin",
+        isAdministration,
         schoolLogourl: data.schoolLogourl || null,
       };
 
@@ -76,6 +106,7 @@ const authSlice = createSlice({
     schoolLogourl: localStorage.getItem("schoolLogourl") || null,
     token: localStorage.getItem("token") || null,
     role: localStorage.getItem("role") || null,
+    isAdministration: localStorage.getItem("isAdministration") === "true",
     loading: false,
     error: null,
   },
@@ -87,6 +118,7 @@ const authSlice = createSlice({
       state.profileId = null;
       state.token = null;
       state.role = null;
+      state.isAdministration = false;
 
       clearAuthStorage();
     },
@@ -107,9 +139,11 @@ const authSlice = createSlice({
         state.profileId = action.payload.profileId;
         state.token = action.payload.token;
         state.role = action.payload.role;
+        state.isAdministration = action.payload.isAdministration;
 
         localStorage.setItem("token", action.payload.token || "");
         localStorage.setItem("role", action.payload.role || "admin");
+        localStorage.setItem("isAdministration", String(action.payload.isAdministration));
         localStorage.setItem("user", action.payload.user || "");
         if (action.payload.userId) localStorage.setItem("userId", action.payload.userId);
         if (action.payload.profileId) localStorage.setItem("profileId", action.payload.profileId);

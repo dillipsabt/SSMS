@@ -10,6 +10,7 @@ import {
   getStaffDashboardAsync,
   getStaffAttendanceChartAsync,
 } from "../../features/staff/Dashboard/staffDashboardSlice";
+import StaffPunchAttendance from "./StaffPunchAttendance";
 
 const WEEK_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -167,18 +168,18 @@ export default function StaffDashboard() {
       </div>
 
       {/* ───────── PROFILE + TODAY CLASS + CALENDAR ───────── */}
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 mb-4">
+      <div className="relative grid grid-cols-1 xl:grid-cols-12 gap-4 mb-4">
         <div className="xl:col-span-8 flex flex-col gap-4">
           {/* PROFILE */}
-          <div className="bg-[#050B7C] rounded-md px-6 py-5 h-[135px] flex items-center">
-            {/* <img
-              src={profileImage}
+          <div className="bg-[#050B7C] rounded-md px-8 py-7 h-[170px] flex items-center">
+            <img
+              src={profile?.profileImage || profile?.imageUrl || defaultProfileImage}
               alt={profile?.fullName || "Staff"}
-              className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover"
-              onError={(e) => {
-                e.target.src = boy;
+              className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover"
+              onError={(event) => {
+                event.currentTarget.src = defaultProfileImage;
               }}
-            /> */}
+            />
             <div className="mt-4 sm:mt-0 sm:ml-6 text-white">
               <h2 className="font-semibold text-[18px]">
                 Employee Id - {profile?.staffId || "-"}
@@ -191,8 +192,17 @@ export default function StaffDashboard() {
           </div>
         </div>
 
+        <StaffPunchAttendance
+          onAttendanceSaved={() => {
+            if (staffId) {
+              dispatch(getStaffDashboardAsync(staffId));
+              dispatch(getStaffAttendanceChartAsync(staffId));
+            }
+          }}
+        />
+
         {/* CALENDAR */}
-        <div className="xl:col-span-4">
+        <div className="hidden xl:block xl:absolute xl:right-0 xl:top-[440px] xl:w-1/3">
           <div className="bg-white border border-gray-200 rounded overflow-hidden">
             <div className="px-4 py-3 border-b border-gray-200">
               <h3 className="text-[16px] font-semibold text-[#333333]">
@@ -410,7 +420,7 @@ export default function StaffDashboard() {
         </div>
 
         {/* Upcoming Events */}
-        <div className="bg-white border border-gray-200 rounded-md h-auto xl:min-h-[490px] overflow-hidden">
+        <div className="bg-white border border-gray-200 rounded-md h-auto xl:min-h-[360px] overflow-hidden xl:col-start-1 xl:row-start-2">
           <div className="flex items-center justify-between h-[50px] px-4 border-b border-gray-200">
             <h3 className="text-[16px] font-semibold text-[#333333]">
               Upcoming Events
@@ -466,7 +476,7 @@ export default function StaffDashboard() {
           </div>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-md overflow-hidden">
+        <div className="bg-white border border-gray-200 rounded-md overflow-hidden xl:col-start-2 xl:row-start-2">
           <div className="h-[50px] px-4 border-b border-gray-200 flex items-center">
             <h3 className="text-[16px] font-semibold">Notice Board</h3>
           </div>

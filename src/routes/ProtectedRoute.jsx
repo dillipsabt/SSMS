@@ -5,12 +5,18 @@ const ProtectedRoute = ({ children, roles = [] }) => {
   const token = localStorage.getItem("token");
   const role = localStorage.getItem("role");
   const isLoggedIn = !!token;
+  const isAdministration = localStorage.getItem("isAdministration") === "true";
+  const hasRequiredRole =
+    roles.includes(role) ||
+    (roles.includes("staff-administration") &&
+      role === "staff-portal" &&
+      isAdministration);
 
   if (!isLoggedIn) {
     return <Navigate to="/" replace />;
   }
 
-  if (roles.length && !roles.includes(role)) {
+  if (roles.length && !hasRequiredRole) {
     return <Navigate to="/" replace />;
   }
 

@@ -248,6 +248,7 @@ const StudentExamReportCard = lazy(
 // STAFF
 const StaffDashboard = lazy(() => import("./pages/Staff/StaffDashboard"));
 
+
 // General Pages
 const Profile = lazy(() => import("./pages/Profile"));
 const Settings = lazy(() => import("./pages/Settings"));
@@ -299,7 +300,7 @@ function App() {
             <Route
               path="/dashboard"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <Dashboard />
                   </MainLayout>
@@ -310,7 +311,7 @@ function App() {
             <Route
               path="/reimbursement"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <Reimbursement />
                   </MainLayout>
@@ -321,7 +322,7 @@ function App() {
             <Route
               path="/students_list"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <StudentList />
                   </MainLayout>
@@ -332,7 +333,7 @@ function App() {
             <Route
               path="/add-student"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <StudentAdmission />
                   </MainLayout>
@@ -343,7 +344,7 @@ function App() {
             <Route
               path="/add-student/:id"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <StudentAdmission />
                   </MainLayout>
@@ -354,7 +355,7 @@ function App() {
             <Route
               path="/student-view"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <StudentView />
                   </MainLayout>
@@ -365,7 +366,7 @@ function App() {
             <Route
               path="/add-teacher"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <AddTeacher />
                   </MainLayout>
@@ -376,7 +377,7 @@ function App() {
             <Route
               path="/add-teacher/:id"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <AddTeacher />
                   </MainLayout>
@@ -387,7 +388,7 @@ function App() {
             <Route
               path="/teacher_list"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <TeachersList />
                   </MainLayout>
@@ -398,7 +399,7 @@ function App() {
             <Route
               path="/teacher-details/:id"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <TeacherDetails />
                   </MainLayout>
@@ -409,7 +410,7 @@ function App() {
             <Route
               path="/teacher-timetable"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <TeachersTimetable />
                   </MainLayout>
@@ -420,7 +421,7 @@ function App() {
             <Route
               path="/add-staff"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <AddStaff />
                   </MainLayout>
@@ -431,7 +432,7 @@ function App() {
             <Route
               path="/add-staff/:id"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <AddStaff />
                   </MainLayout>
@@ -442,7 +443,7 @@ function App() {
             <Route
               path="/staff_list"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <StaffList />
                   </MainLayout>
@@ -453,7 +454,7 @@ function App() {
             <Route
               path="/staff-details/:id"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <StaffDetails />
                   </MainLayout>
@@ -464,7 +465,7 @@ function App() {
             <Route
               path="/raise-request-list"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <RaiseRequestList />
                   </MainLayout>
@@ -475,7 +476,7 @@ function App() {
             <Route
               path="/Admin-Tickets"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <AdminTickets />
                   </MainLayout>
@@ -486,7 +487,7 @@ function App() {
             <Route
               path="/leave-list"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <Leave />
                   </MainLayout>
@@ -497,7 +498,7 @@ function App() {
             <Route
               path="/fees-config"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <FeesConfigure />
                   </MainLayout>
@@ -508,7 +509,7 @@ function App() {
             <Route
               path="/student-wise-fees-config"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <StudentWiseFeesConfig />
                   </MainLayout>
@@ -519,7 +520,7 @@ function App() {
             <Route
               path="/fees"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <Fees />
                   </MainLayout>
@@ -530,7 +531,7 @@ function App() {
             <Route
               path="/fees-list"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <FeesList />
                   </MainLayout>
@@ -540,7 +541,7 @@ function App() {
             <Route
               path="/admin-fees-status"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <AdminFeesStatus />
                   </MainLayout>
@@ -550,7 +551,7 @@ function App() {
             <Route
               path="/add-schedule"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <AdminAddSchedule />
                   </MainLayout>
@@ -561,7 +562,7 @@ function App() {
             <Route
               path="/add-schedule/:id"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <AdminAddSchedule />
                   </MainLayout>
@@ -572,7 +573,7 @@ function App() {
             <Route
               path="/add-exam"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <AddExamSchedule />
                   </MainLayout>
@@ -583,7 +584,7 @@ function App() {
             <Route
               path="/add-exam/:id"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <AddExamSchedule />
                   </MainLayout>
@@ -594,7 +595,7 @@ function App() {
             <Route
               path="/exam-schedule-list"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <ExamScheduleList />
                   </MainLayout>
@@ -605,7 +606,7 @@ function App() {
             <Route
               path="/results-list"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <ResultsList />
                   </MainLayout>
@@ -616,7 +617,7 @@ function App() {
             <Route
               path="/Student-wise-Overall-Results"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <StudentOverallResults />
                   </MainLayout>
@@ -627,7 +628,7 @@ function App() {
             <Route
               path="/predictive-analysis-dashboard"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <PredictiveAnalysisDashboard />
                   </MainLayout>
@@ -638,7 +639,7 @@ function App() {
             <Route
               path="/answer-sheets"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <AnswerSheets />
                   </MainLayout>
@@ -648,7 +649,7 @@ function App() {
             <Route
               path="/student-analytics"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <StudentAnalytics />
                   </MainLayout>
@@ -658,7 +659,7 @@ function App() {
             <Route
               path="/Assignment-List"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <AssignmentHomework />
                   </MainLayout>
@@ -669,7 +670,7 @@ function App() {
             <Route
               path="/student-assignment-submission"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <StudentAssignmentSubmission />
                   </MainLayout>
@@ -680,7 +681,7 @@ function App() {
             <Route
               path="/Add-Feedback"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <AddFeedback />
                   </MainLayout>
@@ -691,7 +692,7 @@ function App() {
             <Route
               path="/Add-Feedback/:id"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <AddFeedback />
                   </MainLayout>
@@ -702,7 +703,7 @@ function App() {
             <Route
               path="/Feedback-Lists"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <FeedbackLists />
                   </MainLayout>
@@ -713,7 +714,7 @@ function App() {
             <Route
               path="/Student-Feedback-Submission"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <StudentFeedbackSubmission />
                   </MainLayout>
@@ -724,7 +725,7 @@ function App() {
             <Route
               path="/Fees-Management-Dashboard"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <FeesManagementDashboard />
                   </MainLayout>
@@ -735,7 +736,7 @@ function App() {
             <Route
               path="/announcements-list"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <AnnouncementsList />
                   </MainLayout>
@@ -746,7 +747,7 @@ function App() {
             <Route
               path="/add-announcements"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <AddAnnouncements />
                   </MainLayout>
@@ -757,7 +758,7 @@ function App() {
             <Route
               path="/notifications-list"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <NotificationsList />
                   </MainLayout>
@@ -768,7 +769,7 @@ function App() {
             <Route
               path="/add-notifications"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <AddNotifications />
                   </MainLayout>
@@ -779,7 +780,7 @@ function App() {
             <Route
               path="/bonafide-certificate-list"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <BonafideCertificateList />
                   </MainLayout>
@@ -789,7 +790,7 @@ function App() {
             <Route
               path="/bonafide-certificate-list/:id"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <BonafideCertificateList />
                   </MainLayout>
@@ -800,7 +801,7 @@ function App() {
             <Route
               path="/issue-bonafide-certificate"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <IssueBonafideCertificate />
                   </MainLayout>
@@ -811,7 +812,7 @@ function App() {
             <Route
               path="/issue-bonafide-certificate/:id"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <IssueBonafideCertificate />
                   </MainLayout>
@@ -822,7 +823,7 @@ function App() {
             <Route
               path="/transfer-certificate-list"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <TransferCertificateList />
                   </MainLayout>
@@ -833,7 +834,7 @@ function App() {
             <Route
               path="/issue-transfer-certificate"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <IssueTransferCertificate />
                   </MainLayout>
@@ -843,7 +844,7 @@ function App() {
             <Route
               path="/issue-transfer-certificate/:id"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <IssueTransferCertificate />
                   </MainLayout>
@@ -853,7 +854,7 @@ function App() {
             <Route
               path="/admin-attendance"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <AdminAttendanceList />
                   </MainLayout>
@@ -864,7 +865,7 @@ function App() {
             <Route
               path="/biometric-attendance"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <BiometricAttendance />
                   </MainLayout>
@@ -875,7 +876,7 @@ function App() {
             <Route
               path="/notice-board"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <AdminNoticeBoard />
                   </MainLayout>
@@ -886,7 +887,7 @@ function App() {
             <Route
               path="/upcoming-events"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <AdminUpcomingEvents />
                   </MainLayout>
@@ -897,7 +898,7 @@ function App() {
             <Route
               path="/student-performance"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <StudentPerformance />
                   </MainLayout>
@@ -908,7 +909,7 @@ function App() {
             <Route
               path="/student-transportation"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <StudentTransportation />
                   </MainLayout>
@@ -919,7 +920,7 @@ function App() {
             <Route
               path="/student-transportation-list"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <StudentTransportationList />
                   </MainLayout>
@@ -930,7 +931,7 @@ function App() {
             <Route
               path="/transportation"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <Transportation />
                   </MainLayout>
@@ -941,7 +942,7 @@ function App() {
             <Route
               path="/new-routes"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <NewRoutes />
                   </MainLayout>
@@ -952,7 +953,7 @@ function App() {
             <Route
               path="/add-school-details"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <AddSchoolDetails />
                   </MainLayout>
@@ -963,7 +964,7 @@ function App() {
             <Route
               path="/school-details-view"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <SchoolDetailsView />
                   </MainLayout>
@@ -974,7 +975,7 @@ function App() {
             <Route
               path="/new-expenses"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <NewExpenses />
                   </MainLayout>
@@ -985,7 +986,7 @@ function App() {
             <Route
               path="/financial-overview"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <FinancialOverview />
                   </MainLayout>
@@ -996,7 +997,7 @@ function App() {
             <Route
               path="/add-payslips"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <AddPayslips />
                   </MainLayout>
@@ -1006,7 +1007,7 @@ function App() {
             <Route
               path="/payslip-list"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <PayslipList />
                   </MainLayout>
@@ -1016,7 +1017,7 @@ function App() {
             <Route
               path="/payslip-download"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <PayslipDownload />
                 </ProtectedRoute>
               }
@@ -1025,7 +1026,7 @@ function App() {
             <Route
               path="/bulk-upload"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <BulkUpload />
                   </MainLayout>
@@ -1036,7 +1037,7 @@ function App() {
             <Route
               path="/textbooks"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <Textbooks />
                   </MainLayout>
@@ -1047,7 +1048,7 @@ function App() {
             <Route
               path="/classes"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <Class />
                   </MainLayout>
@@ -1058,7 +1059,7 @@ function App() {
             <Route
               path="/departments"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <Department />
                   </MainLayout>
@@ -1069,7 +1070,7 @@ function App() {
             <Route
               path="/branches"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <Branches />
                   </MainLayout>
@@ -1080,7 +1081,7 @@ function App() {
             <Route
               path="/academic-year"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <AcademicYear />
                   </MainLayout>
@@ -1091,7 +1092,7 @@ function App() {
             <Route
               path="/examination-type"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <ExaminationType />
                   </MainLayout>
@@ -1102,7 +1103,7 @@ function App() {
             <Route
               path="/virtualClasslist"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <VirtualClassList />
                   </MainLayout>
@@ -1112,7 +1113,7 @@ function App() {
             <Route
               path="/recorded-classes"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <RecordedClasses />
                   </MainLayout>
@@ -1122,7 +1123,7 @@ function App() {
             <Route
               path="/add-vertual-class"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <AddVirtualClass />
                   </MainLayout>
@@ -1132,7 +1133,7 @@ function App() {
             <Route
               path="/public-virtual-classes"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <PublicVirtualClasses />
                   </MainLayout>
@@ -1142,7 +1143,7 @@ function App() {
             <Route
               path="/virtual-class-joined-list"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <VirtualClassJoinedList />
                   </MainLayout>
@@ -1153,7 +1154,7 @@ function App() {
             <Route
               path="/fees-refund"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <FeesRefund />
                   </MainLayout>
@@ -1164,7 +1165,7 @@ function App() {
             <Route
               path="/fee-refund-list"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <FeeRefundList />
                   </MainLayout>
@@ -1175,7 +1176,7 @@ function App() {
             <Route
               path="/principal-fee-refund-list"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <PrincipalFeeRefundList />
                   </MainLayout>
@@ -1186,7 +1187,7 @@ function App() {
             <Route
               path="/generate-hall-ticket"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <GenerateHallTicket />
                   </MainLayout>
@@ -1197,7 +1198,7 @@ function App() {
             <Route
               path="/hall-ticket-list"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <HallTicketList />
                   </MainLayout>
@@ -1207,7 +1208,7 @@ function App() {
             <Route
               path="/hall-ticket"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <HallTicket />
                 </ProtectedRoute>
               }
@@ -1216,7 +1217,7 @@ function App() {
              <Route
               path="/class-timing-schedule"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <ClassTimingSchedule />
                   </MainLayout>
@@ -1700,7 +1701,7 @@ function App() {
             <Route
               path="/admin/notice-board-view"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <CommonNoticeBoard />
                   </MainLayout>
@@ -1712,7 +1713,7 @@ function App() {
             <Route
               path="/admin/upcoming-events-view"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <CommonUpcomingEvents />
                   </MainLayout>

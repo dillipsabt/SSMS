@@ -34,7 +34,12 @@ export const getPerformanceById = async (id) => {
 
 export const getStudentByRollNumber = async (rollNo) => {
   const response = await API.get(
-    `/teacher/student-performance/student/${encodeURIComponent(rollNo)}`
+    "/teacher/student-performance/student-by-rollno",
+    {
+      params: {
+        rollNo,
+      },
+    }
   );
   return response.data;
 };

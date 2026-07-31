@@ -1,6 +1,7 @@
 const AUTH_KEYS = [
   "token",
   "role",
+  "isAdministration",
   "user",
   "userId",
   "profileId",
