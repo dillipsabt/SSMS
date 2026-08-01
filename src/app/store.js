@@ -80,6 +80,7 @@ import examinationTypeReducer from "../features/Admin/ExaminationType/examinatio
 import schoolBrandingReducer from "../features/Admin/SchoolBranding/schoolBrandingSlice";
 import passwordChangeReducer from "../features/Settings/passwordChangeSlice";
 import classTimingScheduleReducer from "../features/Admin/ClassTimingSchedule/classTimingScheduleSlice";
+import subjectReducer from "../features/Admin/Subject/subjectSlice";
 export const store = configureStore({
   reducer: {
      auth: authReducer,
@@ -162,6 +163,7 @@ export const store = configureStore({
     schoolBranding: schoolBrandingReducer,
     passwordChange: passwordChangeReducer,
     classTimingSchedule: classTimingScheduleReducer,
+    subject: subjectReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

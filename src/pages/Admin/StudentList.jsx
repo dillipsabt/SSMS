@@ -27,6 +27,7 @@ const StudentList = () => {
   const [statusFilter, setStatusFilter] = useState("All");
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const canManageStudents = localStorage.getItem("role") !== "staff-portal";
   const {
     students: reduxStudents,
     classes,
@@ -261,25 +262,29 @@ const StudentList = () => {
                           View
                         </button>
 
-                        <button
-                          onClick={() => {
-                            navigate(`/add-student/${s.raw.id}`);
-                            setOpenMenu(null);
-                          }}
-                          className="block w-full px-3 py-2 text-left hover:bg-gray-100"
-                        >
-                          Edit
-                        </button>
+                        {canManageStudents && (
+                          <>
+                            <button
+                              onClick={() => {
+                                navigate(`/add-student/${s.raw.id}`);
+                                setOpenMenu(null);
+                              }}
+                              className="block w-full px-3 py-2 text-left hover:bg-gray-100"
+                            >
+                              Edit
+                            </button>
 
-                        <button
-                          onClick={() => {
-                            handleDeleteClick(s.raw.id, "student");
-                            setOpenMenu(null);
-                          }}
-                          className="block w-full px-3 py-2 text-left text-red-500 hover:bg-gray-100"
-                        >
-                          Delete
-                        </button>
+                            <button
+                              onClick={() => {
+                                handleDeleteClick(s.raw.id, "student");
+                                setOpenMenu(null);
+                              }}
+                              className="block w-full px-3 py-2 text-left text-red-500 hover:bg-gray-100"
+                            >
+                              Delete
+                            </button>
+                          </>
+                        )}
                       </div>
                     )}
                   </td>
@@ -320,25 +325,29 @@ const StudentList = () => {
                         View
                       </button>
 
-                      <button
-                        onClick={() => {
-                          navigate(`/add-student/${s.raw.id}`);
-                          setOpenMenu(null);
-                        }}
-                        className="block w-full text-left px-3 py-2 hover:bg-gray-100"
-                      >
-                        Edit
-                      </button>
+                      {canManageStudents && (
+                        <>
+                          <button
+                            onClick={() => {
+                              navigate(`/add-student/${s.raw.id}`);
+                              setOpenMenu(null);
+                            }}
+                            className="block w-full text-left px-3 py-2 hover:bg-gray-100"
+                          >
+                            Edit
+                          </button>
 
-                      <button
-                        onClick={() => {
-                          handleDeleteClick(s.raw.id, "student");
-                          setOpenMenu(null);
-                        }}
-                        className="block w-full text-left px-3 py-2 text-red-500 hover:bg-gray-100"
-                      >
-                        Delete
-                      </button>
+                          <button
+                            onClick={() => {
+                              handleDeleteClick(s.raw.id, "student");
+                              setOpenMenu(null);
+                            }}
+                            className="block w-full text-left px-3 py-2 text-red-500 hover:bg-gray-100"
+                          >
+                            Delete
+                          </button>
+                        </>
+                      )}
                     </div>
                   )}
                 </div>

@@ -70,7 +70,7 @@ export default function TeachersTimetable() {
 
   const confirmPublish = async () => {
     try {
-      await dispatch(publishTimetable({ teacherScheduleIds: selectedRows, publishToTeacherPortal: publishToPortal, notes })).unwrap();
+      await dispatch(publishTimetable({ scheduleIds: selectedRows, publishToTeacherPortal: publishToPortal, notes })).unwrap();
       toast.success("Schedule published successfully");
       setPublishOpen(false);
       setSelectedRows([]);

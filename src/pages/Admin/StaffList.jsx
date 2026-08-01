@@ -17,6 +17,7 @@ import useToastMessage from "../../utils/useToastMessage";
 const StaffList = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const canManageStaff = localStorage.getItem("role") !== "staff-portal";
  
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -255,25 +256,29 @@ const StaffList = () => {
                           View
                         </button>
  
-                        <button
-                          onClick={() => {
-                            navigate(`/add-staff/${item.id}`);
-                            setOpenMenuId(null);
-                          }}
-                          className="block w-full text-left px-3 py-2 text-sm hover:bg-gray-100"
-                        >
-                          Edit
-                        </button>
- 
-                        <button
-                          onClick={() => {
-                            handleDeleteClick(item.id, "staff");
-                            setOpenMenuId(null);
-                          }}
-                          className="block w-full text-left px-3 py-2 text-sm text-red-500 hover:bg-gray-100"
-                        >
-                          Delete
-                        </button>
+                        {canManageStaff && (
+                          <>
+                            <button
+                              onClick={() => {
+                                navigate(`/add-staff/${item.id}`);
+                                setOpenMenuId(null);
+                              }}
+                              className="block w-full text-left px-3 py-2 text-sm hover:bg-gray-100"
+                            >
+                              Edit
+                            </button>
+
+                            <button
+                              onClick={() => {
+                                handleDeleteClick(item.id, "staff");
+                                setOpenMenuId(null);
+                              }}
+                              className="block w-full text-left px-3 py-2 text-sm text-red-500 hover:bg-gray-100"
+                            >
+                              Delete
+                            </button>
+                          </>
+                        )}
                       </div>
                     )}
                   </td>
@@ -323,25 +328,29 @@ const StaffList = () => {
                         View
                       </button>
  
-                      <button
-                        onClick={() => {
-                          navigate(`/add-staff/${item.id}`);
-                          setOpenMenuId(null);
-                        }}
-                        className="block w-full text-left px-3 py-2 hover:bg-gray-100"
-                      >
-                        Edit
-                      </button>
- 
-                      <button
-                        onClick={() => {
-                          handleDeleteClick(item.id, "staff");
-                          setOpenMenuId(null);
-                        }}
-                        className="block w-full text-left px-3 py-2 text-red-500 hover:bg-gray-100"
-                      >
-                        Delete
-                      </button>
+                      {canManageStaff && (
+                        <>
+                          <button
+                            onClick={() => {
+                              navigate(`/add-staff/${item.id}`);
+                              setOpenMenuId(null);
+                            }}
+                            className="block w-full text-left px-3 py-2 hover:bg-gray-100"
+                          >
+                            Edit
+                          </button>
+
+                          <button
+                            onClick={() => {
+                              handleDeleteClick(item.id, "staff");
+                              setOpenMenuId(null);
+                            }}
+                            className="block w-full text-left px-3 py-2 text-red-500 hover:bg-gray-100"
+                          >
+                            Delete
+                          </button>
+                        </>
+                      )}
                     </div>
                   )}
                 </div>

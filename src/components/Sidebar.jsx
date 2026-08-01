@@ -267,6 +267,11 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         icon: <BookOpen size={20} />,
       },
       {
+        label: "Subjects",
+        to: "/subjects",
+        icon: <BookOpen size={20} />,
+      },
+      {
         label: "Departments",
         to: "/departments",
         icon: <Users size={20} />,
@@ -581,21 +586,78 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         { to: "/students_list", icon: <Users size={20} />, label: "Student Details" },
         { to: "/staff_list", icon: <UserCog size={20} />, label: "Staff Details" },
         { to: "/teacher_list", icon: <GraduationCap size={20} />, label: "Teacher Details" },
-        { to: "/leave-list", icon: <CalendarX size={20} />, label: "Leave Management" },
-        { to: "/student-transportation", icon: <Bus size={20} />, label: "Student Transportation" },
-        { to: "/fees", icon: <Wallet size={20} />, label: "Fee Management" },
-        { to: "/exam-schedule-list", icon: <BookOpen size={20} />, label: "Exam & Results" },
-        { to: "/notifications-list", icon: <Bell size={20} />, label: "Notifications & Alerts" },
-        { to: "/announcements-list", icon: <Megaphone size={20} />, label: "Announcements" },
-        { to: "/Fees-Management-Dashboard", icon: <BarChart3 size={20} />, label: "Analytics Dashboard" },
-        { to: "/generate-hall-ticket", icon: <Ticket size={20} />, label: "Hall Tickets" },
-        { to: "/examination-type", icon: <ClipboardList size={20} />, label: "Examination Type" },
-        { to: "/financial-overview", icon: <ChartColumn size={20} />, label: "Financial Overview" },
-        { to: "/add-payslips", icon: <FileText size={20} />, label: "Payslips" },
-        { to: "/transportation", icon: <Bus size={20} />, label: "Transportation" },
-        { to: "/new-expenses", icon: <Wallet size={20} />, label: "New Expenses" },
-        { to: "/upcoming-events", icon: <CheckSquare size={20} />, label: "Upcoming Events" },
-        { to: "/notice-board", icon: <FileText size={20} />, label: "Notice Board" },
+        {
+          icon: <Bus size={20} />,
+          label: "Student Transportation",
+          children: [
+            { to: "/student-transportation", label: "Student Transportation" },
+            { to: "/student-transportation-list", label: "Student Transportation List" },
+          ],
+        },
+        {
+          icon: <Bus size={20} />,
+          label: "Transportation",
+          children: [
+            { to: "/transportation", label: "Transportation" },
+            { to: "/new-routes", label: "New Routes" },
+          ],
+        },
+        {
+          icon: <Wallet size={20} />,
+          label: "Fees Management",
+          children: [
+            { to: "/fees-config", label: "Class Wise Fees Configure" },
+            { to: "/student-wise-fees-config", label: "Student Wise Fees Configure" },
+            { to: "/fees", label: "Fees" },
+            { to: "/fees-list", label: "Fees List" },
+            { to: "/admin-fees-status", label: "Fees Status" },
+            { to: "/fees-refund", label: "Fees Refund" },
+            { to: "/fee-refund-list", label: "Fee Refund List" },
+            { to: "/principal-fee-refund-list", label: "Principal Fee Refund List" },
+          ],
+        },
+        {
+          icon: <BookOpen size={20} />,
+          label: "Exam & Results",
+          children: [
+            { to: "/add-exam", label: "Add Exam Schedule" },
+            { to: "/exam-schedule-list", label: "Exam Schedule List" },
+            { to: "/results-list", label: "Results List" },
+            { to: "/Student-wise-Overall-Results", label: "Student wise Overall Results" },
+          ],
+        },
+        {
+          icon: <Bell size={20} />,
+          label: "Notifications & Alerts",
+          children: [
+            { to: "/add-notifications", label: "Add Notifications" },
+            { to: "/notifications-list", label: "Notification Lists" },
+          ],
+        },
+        {
+          icon: <Megaphone size={20} />,
+          label: "Announcements",
+          children: [
+            { to: "/add-announcements", label: "Add Announcements" },
+            { to: "/announcements-list", label: "Announcement Lists" },
+          ],
+        },
+        {
+          icon: <Ticket size={20} />,
+          label: "Hall Ticket",
+          children: [
+            { to: "/generate-hall-ticket", label: "Generate Hall Ticket" },
+            { to: "/hall-ticket-list", label: "Hall Ticket List" },
+          ],
+        },
+        {
+          icon: <FileText size={20} />,
+          label: "Payslips",
+          children: [
+            { to: "/add-payslips", label: "Add Payslips" },
+            { to: "/payslip-list", label: "Payslip List" },
+          ],
+        },
       );
     }
   }

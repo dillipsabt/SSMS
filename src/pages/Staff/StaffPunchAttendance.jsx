@@ -271,7 +271,7 @@ export default function StaffPunchAttendance({ onAttendanceSaved }) {
       </div>
 
       {showPunchModal && verificationStep === "camera" && (
-        <CameraModal title="Punch-In Enroll" onClose={resetPunchIn} webcamRef={webcamRef} onCapture={capture} />
+        <CameraModal title="Punch-In Enroll" onClose={resetPunchIn} webcamRef={webcamRef} onCapture={capture} onCameraError={handleCameraError} />
       )}
       {showPunchModal && verificationStep === "preview" && (
         <PreviewModal title="Enroll Verify" image={capturedImage} onClose={resetPunchIn} onRetake={() => setVerificationStep("camera")} onVerify={verifyFace} loading={faceLoading} />
@@ -286,7 +286,7 @@ export default function StaffPunchAttendance({ onAttendanceSaved }) {
         <SuccessModal title="Punch-In" message="Punch-In Successful" onClose={saveAttendance} loading={punchLoading} />
       )}
       {showPunchOutModal && punchOutStep === "camera" && (
-        <CameraModal title="Punch-Out Capture" onClose={resetPunchOut} webcamRef={webcamRef} onCapture={capturePunchOut} />
+        <CameraModal title="Punch-Out Capture" onClose={resetPunchOut} webcamRef={webcamRef} onCapture={capturePunchOut} onCameraError={handleCameraError} />
       )}
       {showPunchOutModal && punchOutStep === "preview" && (
         <PreviewModal title="Punch-Out Verify" image={capturedPunchOutImage} onClose={resetPunchOut} onRetake={() => setPunchOutStep("camera")} onVerify={verifyPunchOut} loading={faceLoading} />
@@ -299,7 +299,7 @@ export default function StaffPunchAttendance({ onAttendanceSaved }) {
   );
 }
 
-function CameraModal({ title, onClose, webcamRef, onCapture }) {
+function CameraModal({ title, onClose, webcamRef, onCapture, onCameraError }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="w-full max-w-md rounded-lg overflow-hidden bg-white shadow-2xl">
@@ -311,7 +311,7 @@ function CameraModal({ title, onClose, webcamRef, onCapture }) {
           <h3 className="text-center text-[17px] font-semibold text-gray-800">Face Verification</h3>
           <p className="text-center text-xs text-gray-500 mt-1">Position your face within the frame</p>
           <div className="mt-4 border-[4px] border-[#4F46E5] rounded-md overflow-hidden">
-            <Webcam ref={webcamRef} audio={false} screenshotFormat="image/jpeg" videoConstraints={{ width: 420, height: 420, facingMode: "user" }} onUserMediaError={handleCameraError} className="w-full" />
+            <Webcam ref={webcamRef} audio={false} screenshotFormat="image/jpeg" videoConstraints={{ width: 420, height: 420, facingMode: "user" }} onUserMediaError={onCameraError} className="w-full" />
           </div>
           <div className="mt-5 space-y-3">
             <button onClick={onCapture} className="w-full h-11 rounded bg-[#4F46E5] text-white font-medium flex items-center justify-center gap-2"><Camera size={18} />Capture</button>

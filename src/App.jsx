@@ -110,6 +110,7 @@ const FeeRefundList = lazy(() => import("./pages/Admin/FeeRefundList"));
 const PrincipalFeeRefundList = lazy(() => import("./pages/Admin/PrincipalFeeRefundList"));
 const BulkUpload = lazy(() => import("./pages/Admin/BulkUpload"));
 const Class = lazy(() => import("./pages/Admin/Class"));
+const Subject = lazy(() => import("./pages/Admin/Subject"));
 const Department = lazy(() => import("./pages/Admin/Department"));
 const Branches = lazy(() => import("./pages/Admin/Branches"));
 const AcademicYear = lazy(() => import("./pages/Admin/AcademicYear"));
@@ -333,7 +334,7 @@ function App() {
             <Route
               path="/add-student"
               element={
-                <ProtectedRoute roles={["admin", "staff-administration"]}>
+                <ProtectedRoute roles={["admin"]}>
                   <MainLayout>
                     <StudentAdmission />
                   </MainLayout>
@@ -344,7 +345,7 @@ function App() {
             <Route
               path="/add-student/:id"
               element={
-                <ProtectedRoute roles={["admin", "staff-administration"]}>
+                <ProtectedRoute roles={["admin"]}>
                   <MainLayout>
                     <StudentAdmission />
                   </MainLayout>
@@ -366,7 +367,7 @@ function App() {
             <Route
               path="/add-teacher"
               element={
-                <ProtectedRoute roles={["admin", "staff-administration"]}>
+                <ProtectedRoute roles={["admin"]}>
                   <MainLayout>
                     <AddTeacher />
                   </MainLayout>
@@ -377,7 +378,7 @@ function App() {
             <Route
               path="/add-teacher/:id"
               element={
-                <ProtectedRoute roles={["admin", "staff-administration"]}>
+                <ProtectedRoute roles={["admin"]}>
                   <MainLayout>
                     <AddTeacher />
                   </MainLayout>
@@ -421,7 +422,7 @@ function App() {
             <Route
               path="/add-staff"
               element={
-                <ProtectedRoute roles={["admin", "staff-administration"]}>
+                <ProtectedRoute roles={["admin"]}>
                   <MainLayout>
                     <AddStaff />
                   </MainLayout>
@@ -432,7 +433,7 @@ function App() {
             <Route
               path="/add-staff/:id"
               element={
-                <ProtectedRoute roles={["admin", "staff-administration"]}>
+                <ProtectedRoute roles={["admin"]}>
                   <MainLayout>
                     <AddStaff />
                   </MainLayout>
@@ -1051,6 +1052,17 @@ function App() {
                 <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <Class />
+                  </MainLayout>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/subjects"
+              element={
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
+                  <MainLayout>
+                    <Subject />
                   </MainLayout>
                 </ProtectedRoute>
               }

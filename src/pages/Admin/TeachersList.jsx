@@ -26,6 +26,7 @@ const TeachersList = () => {
   const [menuPos, setMenuPos] = useState({ top: 0, left: 0 });
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
+  const canManageTeachers = localStorage.getItem("role") !== "staff-portal";
   const [statusFilter, setStatusFilter] = useState("All");
 
   const { teachers, message, error, success } = useSelector((state) => state.teacher);
@@ -215,28 +216,32 @@ const TeachersList = () => {
                           View
                         </button>
 
-                        <button
-                          onClick={() => {
-                            if (!item?.id) return;
+                        {canManageTeachers && (
+                          <>
+                            <button
+                              onClick={() => {
+                                if (!item?.id) return;
 
-                            navigate(`/add-teacher/${item.id}`);
+                                navigate(`/add-teacher/${item.id}`);
 
-                            setOpenMenu(null);
-                          }}
-                          className="block w-full text-left px-3 py-2 text-sm hover:bg-gray-100"
-                        >
-                          Edit
-                        </button>
+                                setOpenMenu(null);
+                              }}
+                              className="block w-full text-left px-3 py-2 text-sm hover:bg-gray-100"
+                            >
+                              Edit
+                            </button>
 
-                        <button
-                          onClick={() => {
-                            handleDeleteClick(item.id, "teacher");
-                            setOpenMenu(null);
-                          }}
-                          className="block w-full text-left px-3 py-2 text-sm text-red-500 hover:bg-gray-100"
-                        >
-                          Delete
-                        </button>
+                            <button
+                              onClick={() => {
+                                handleDeleteClick(item.id, "teacher");
+                                setOpenMenu(null);
+                              }}
+                              className="block w-full text-left px-3 py-2 text-sm text-red-500 hover:bg-gray-100"
+                            >
+                              Delete
+                            </button>
+                          </>
+                        )}
                       </div>
                     )}
                   </td>
@@ -279,26 +284,30 @@ const TeachersList = () => {
                         View
                       </button>
 
-                      <button
-                        onClick={() => {
-                          if (!item?.id) return;
-                          navigate(`/add-teacher/${item.id}`);
-                          setOpenMenu(null);
-                        }}
-                        className="block w-full text-left px-3 py-2 hover:bg-gray-100"
-                      >
-                        Edit
-                      </button>
+                      {canManageTeachers && (
+                        <>
+                          <button
+                            onClick={() => {
+                              if (!item?.id) return;
+                              navigate(`/add-teacher/${item.id}`);
+                              setOpenMenu(null);
+                            }}
+                            className="block w-full text-left px-3 py-2 hover:bg-gray-100"
+                          >
+                            Edit
+                          </button>
 
-                      <button
-                        onClick={() => {
-                          handleDeleteClick(item.id, "teacher");
-                          setOpenMenu(null);
-                        }}
-                        className="block w-full text-left px-3 py-2 text-red-500 hover:bg-gray-100"
-                      >
-                        Delete
-                      </button>
+                          <button
+                            onClick={() => {
+                              handleDeleteClick(item.id, "teacher");
+                              setOpenMenu(null);
+                            }}
+                            className="block w-full text-left px-3 py-2 text-red-500 hover:bg-gray-100"
+                          >
+                            Delete
+                          </button>
+                        </>
+                      )}
                     </div>
                   )}
                 </div>
