@@ -56,7 +56,7 @@ const StudentList = () => {
       rollNo: s.rollNo,
       admission: s.admissionNo,
       name: s.fullName,
-      class: `${s.className}`,
+      class: `${s.className} ${s.section}`,
       age: `${s.age}Y / ${s.gender}`,
       dob: s.dob,
       parentPhoneNo: s.parentPhoneNo,

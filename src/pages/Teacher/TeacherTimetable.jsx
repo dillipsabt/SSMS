@@ -276,11 +276,11 @@ export default function TeacherTimetable() {
         </div>
       </div>
 
-      <div className="flex justify-end">
+      {/* <div className="flex justify-end">
         <button type="button" onClick={() => setOpenModal(true)} className="btn-primary">
           Raise Request
         </button>
-      </div>
+      </div> */}
 
       <RaiseRequest
         open={openModal}

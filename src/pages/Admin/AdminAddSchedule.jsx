@@ -15,8 +15,26 @@ import { fetchClassTimingSchedulesAsync } from "../../features/Admin/ClassTiming
 
 const timeValue = (time) => {
   if (!time) return "";
-  if (typeof time === "string") return time.slice(0, 5);
+  if (typeof time === "string") {
+    const value = time.trim();
+    const meridiem = value.match(/\b(AM|PM)\b/i)?.[1]?.toUpperCase();
+    const timePart = value.match(/\d{1,2}:\d{2}/)?.[0];
+    if (!timePart) return value.slice(0, 5);
+    if (!meridiem) return timePart;
+    let [hour, minute] = timePart.split(":").map(Number);
+    if (meridiem === "PM" && hour !== 12) hour += 12;
+    if (meridiem === "AM" && hour === 12) hour = 0;
+    return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+  }
   return `${String(time.hour ?? 0).padStart(2, "0")}:${String(time.minute ?? 0).padStart(2, "0")}`;
+};
+
+const formatTime = (time) => {
+  const value = timeValue(time);
+  if (!value) return "";
+  const [hourText, minute = "00"] = value.split(":");
+  const hour = Number(hourText);
+  return `${hour % 12 || 12}:${minute} ${hour >= 12 ? "PM" : "AM"}`;
 };
 
 export default function AdminAddSchedule() {
@@ -72,13 +90,13 @@ export default function AdminAddSchedule() {
       const scheduleItems = selectedSchedule.scheduleItems ?? [];
       setItems(periodSlots.map((slot) => {
         const existing = scheduleItems.find((item) =>
-          (item.classTimingScheduleId ?? item.timeSlotId ?? item.timeSlot?.id) === slot.id,
+          (item.classTimingScheduleId ?? item.timeSlotId ?? item.timeSlot?.id ?? item.classTimingSchedule?.id) === slot.id,
         );
         return {
-          id: existing?.id,
+          id: existing?.id ?? existing?.teacherScheduleDetailId,
           classTimingScheduleId: slot.id,
-          fromTime: timeValue(existing?.startTime ?? existing?.timeSlot?.startTime ?? slot.startTime),
-          toTime: timeValue(existing?.endTime ?? existing?.timeSlot?.endTime ?? slot.endTime),
+          fromTime: timeValue(existing?.startTime ?? existing?.timeSlot?.startTime ?? existing?.classTimingSchedule?.startTime ?? slot.startTime),
+          toTime: timeValue(existing?.endTime ?? existing?.timeSlot?.endTime ?? existing?.classTimingSchedule?.endTime ?? slot.endTime),
           subjectId: existing?.subjectId ?? existing?.subject?.id ?? "",
           classId: existing?.classId ?? existing?.class?.id ?? "",
         };
@@ -108,6 +126,7 @@ export default function AdminAddSchedule() {
     const scheduleItems = items
       .filter((item) => item.subjectId && item.classId)
       .map((item) => ({
+        ...(item.id ? { id: Number(item.id) } : {}),
         classTimingScheduleId: Number(item.classTimingScheduleId),
         subjectId: Number(item.subjectId),
         classId: Number(item.classId),
@@ -153,7 +172,8 @@ export default function AdminAddSchedule() {
               <label className="form-label">Teacher Name <span className="text-red-500">*</span></label>
               <select value={teacherId} onChange={(event) => setTeacherId(event.target.value)} className="form-select">
                 <option value="">Select</option>
-                {teachers.map((teacher) => <option key={teacher.id} value={teacher.id}>{teacher.fullName ?? teacher.name}</option>)}
+                {teacherId && !teachers.some((teacher) => String(teacher.id ?? teacher.teacherId) === String(teacherId)) && <option value={teacherId}>{selectedSchedule?.teacherName ?? "Selected teacher"}</option>}
+                {teachers.map((teacher) => <option key={teacher.id ?? teacher.teacherId} value={teacher.id ?? teacher.teacherId}>{teacher.fullName ?? teacher.name}</option>)}
               </select>
             </div>
             <div className="grid grid-cols-2 gap-2">
@@ -174,8 +194,8 @@ export default function AdminAddSchedule() {
                 {periodSlots.map((slot, index) => {
                   const item = items[index] ?? {};
                   return <tr key={slot.id} className="border-t border-gray-200">
-                    <td className="px-3 py-2"><select value={item.fromTime ?? timeValue(slot.startTime)} onChange={(event) => updateTime(index, "fromTime", event.target.value)} className="table-input"><option value="">Select time</option>{periodSlots.map((timeSlot) => <option key={`from-${timeSlot.id}`} value={timeValue(timeSlot.startTime)}>{timeValue(timeSlot.startTime)}</option>)}</select></td>
-                    <td className="px-3 py-2"><select value={item.toTime ?? timeValue(slot.endTime)} onChange={(event) => updateTime(index, "toTime", event.target.value)} className="table-input"><option value="">Select time</option>{periodSlots.map((timeSlot) => <option key={`to-${timeSlot.id}`} value={timeValue(timeSlot.endTime)}>{timeValue(timeSlot.endTime)}</option>)}</select></td>
+                    <td className="px-3 py-2"><select value={item.fromTime ?? timeValue(slot.startTime)} onChange={(event) => updateTime(index, "fromTime", event.target.value)} className="table-input"><option value="">Select time</option>{periodSlots.map((timeSlot) => <option key={`from-${timeSlot.id}`} value={timeValue(timeSlot.startTime)}>{formatTime(timeSlot.startTime)}</option>)}</select></td>
+                    <td className="px-3 py-2"><select value={item.toTime ?? timeValue(slot.endTime)} onChange={(event) => updateTime(index, "toTime", event.target.value)} className="table-input"><option value="">Select time</option>{periodSlots.map((timeSlot) => <option key={`to-${timeSlot.id}`} value={timeValue(timeSlot.endTime)}>{formatTime(timeSlot.endTime)}</option>)}</select></td>
                     <td className="px-3 py-2"><select value={item.subjectId ?? ""} onChange={(event) => updateItem(index, "subjectId", event.target.value)} className="table-input"><option value="">Select</option>{subjects.map((subject) => <option key={subject.id} value={subject.id}>{subject.subjectName ?? subject.name}</option>)}</select></td>
                     <td className="px-3 py-2"><select value={item.classId ?? ""} onChange={(event) => updateItem(index, "classId", event.target.value)} className="table-input"><option value="">Select</option>{classes.map((classItem) => <option key={classItem.id} value={classItem.id}>{classItem.className ?? classItem.name}{classItem.section ? ` - ${classItem.section}` : ""}</option>)}</select></td>
                   </tr>;
@@ -184,7 +204,7 @@ export default function AdminAddSchedule() {
               </tbody>
             </table>
           </div>
-          <div className="flex justify-end mt-4"><button onClick={handleSubmit} className="btn-primary"><FaRegSave size={14} />Save Schedule</button></div>
+          <div className="flex justify-end gap-3 mt-4"><button onClick={() => navigate("/teacher-timetable")} className="btn-secondary">Cancel</button><button onClick={handleSubmit} className="btn-primary"><FaRegSave size={14} />{id ? "Update" : "Save Schedule"}</button></div>
         </div>
       </div>
     </div>

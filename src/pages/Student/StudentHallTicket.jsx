@@ -2,6 +2,7 @@ import { Download } from "lucide-react";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import useToastMessage from "../../utils/useToastMessage";
+import { generateHallTicketPdf } from "../../utils/generateHallTicketPdf";
 import {
   clearError,
   downloadStudentHallTicketAsync,
@@ -29,13 +30,14 @@ export default function StudentHallTicket() {
   useToastMessage({ error, clearError });
 
   const handleDownload = async (ticket) => {
-    const blob = await dispatch(downloadStudentHallTicketAsync(getId(ticket))).unwrap();
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `hall-ticket-${ticket.hallTicketNo || getId(ticket)}.pdf`;
-    link.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    const hallTicketNo = ticket.hallTicketNo || ticket.hallTicketNumber;
+    if (!hallTicketNo) return;
+    try {
+      const ticketData = await dispatch(downloadStudentHallTicketAsync(hallTicketNo)).unwrap();
+      generateHallTicketPdf(ticketData);
+    } catch {
+      return;
+    }
   };
 
   return <div className="w-full">
