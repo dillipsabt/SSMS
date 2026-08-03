@@ -116,6 +116,7 @@ const StudentAdmission = () => {
   const editData = state?.editData;
   const [formData, setFormData] = useState({});
   const [sameAddress, setSameAddress] = useState(false);
+  const [studentLoginEnabled, setStudentLoginEnabled] = useState(false);
   const navigate = useNavigate();
 
   const { id } = useParams();
@@ -211,6 +212,8 @@ const StudentAdmission = () => {
       const selectedBlood = bloodGroups.find(
         (b) => b.groupName === student.bloodGroup,
       );
+
+      setStudentLoginEnabled(Boolean(student.studentLoginEnabled));
 
       setFormData({
         fullName: student.fullName || "",
@@ -352,8 +355,9 @@ const StudentAdmission = () => {
       return toast.error("Aadhar must be 12 digits");
     if (!formData.fatherName) return toast.error("Father Name Required");
     if (!formData.motherName) return toast.error("Mother Name Required");
-    if (!formData.email) return toast.error("Email Required");
-    if (!/\S+@\S+\.\S+/.test(formData.email))
+    const userEmail = formData.email || formData.parentEmail;
+    if (!userEmail) return toast.error("Student Email or Parent Email Required");
+    if (!/\S+@\S+\.\S+/.test(userEmail))
       return toast.error("Invalid Email");
     if (!formData.parentPhoneNo) return toast.error("Parent Phone Required");
     if (!/^[0-9]{10}$/.test(formData.parentPhoneNo))
@@ -396,7 +400,8 @@ console.log("Form Data Before Submission:", formData);
       const dto = {
         fullName: formData.fullName,
 
-        email: formData.email,
+        email: formData.email || "",
+        studentLoginEnabled,
 
         parentPhoneNo: formData.parentPhoneNo || "",
         studentPhoneNo: formData.studentPhoneNo || "",
@@ -539,19 +544,33 @@ console.log("Form Data Before Submission:", formData);
 
           <Input label="Age" name="age" value={formData.age} disabled />
 
-          <Input
-            label="Student Email"
-            name="email"
-            onChange={handleChange}
-            value={formData.email}
-          />
+          <label className="col-span-full flex cursor-pointer items-center gap-3 rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm font-semibold text-indigo-700 shadow-sm transition hover:border-indigo-300 hover:bg-indigo-100">
+            <input
+              type="checkbox"
+              checked={studentLoginEnabled}
+              onChange={(event) => setStudentLoginEnabled(event.target.checked)}
+              className="h-5 w-5 rounded border-2 border-indigo-300 accent-indigo-600 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
+            />
+            <span>Enable student login</span>
+          </label>
 
-          <Input
-            label="Phone Number"
-            name="studentPhoneNo"
-            value={formData.studentPhoneNo}
-            onChange={handleChange}
-          />
+          {studentLoginEnabled && (
+            <>
+              <Input
+                label="Student Email"
+                name="email"
+                onChange={handleChange}
+                value={formData.email}
+              />
+
+              <Input
+                label="Phone Number"
+                name="studentPhoneNo"
+                value={formData.studentPhoneNo}
+                onChange={handleChange}
+              />
+            </>
+          )}
 
           <Select
             label="Gender"

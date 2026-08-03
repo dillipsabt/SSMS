@@ -35,6 +35,7 @@ const AdminAddSchedule = lazy(() => import("./pages/Admin/AdminAddSchedule"));
 const Reimbursement = lazy(() => import("./pages/Admin/AdminReimbursement"));
 const AdminTickets = lazy(() => import("./pages/Admin/AdminTickets"));
 const ResultsList = lazy(() => import("./pages/Admin/ResultsList"));
+const StudentWiseResultsList = lazy(() => import("./pages/Admin/StudentWiseResultsList"));
 const AddExamSchedule = lazy(() => import("./pages/Admin/AddExamSchedule"));
 const ExamScheduleList = lazy(() => import("./pages/Admin/ExamScheduleList"));
 const StudentOverallResults = lazy(
@@ -621,6 +622,17 @@ function App() {
                 <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <StudentOverallResults />
+                  </MainLayout>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/student-wise-results-list"
+              element={
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
+                  <MainLayout>
+                    <StudentWiseResultsList />
                   </MainLayout>
                 </ProtectedRoute>
               }

@@ -183,11 +183,11 @@ export default function ResultsList() {
         {/* HEADER */}
 
         <h2 className="text-base sm:text-[18px] font-semibold text-[#333333]">
-          Results List
+          Teacher Wise Results List
         </h2>
 
         <p className="text-xs sm:text-sm text-gray-500 mb-4">
-          Exam & Results / Results List
+          Exam & Results / Teacher Wise Results List
         </p>
 
         <div className="card p-3 sm:p-4">

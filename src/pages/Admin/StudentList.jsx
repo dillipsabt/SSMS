@@ -60,7 +60,7 @@ const StudentList = () => {
       age: `${s.age}Y / ${s.gender}`,
       dob: s.dob,
       parentPhoneNo: s.parentPhoneNo,
-      email: s.email,
+      email: s.parentEmail,
       joining: s.schoolJoiningDate,
       status: s.status || "Active",
       raw: s,

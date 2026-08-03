@@ -160,7 +160,8 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         children: [
           { to: "/add-exam", label: "Add Exam Schedule" },
           { to: "/exam-schedule-list", label: "Exam Schedule List" },
-          { to: "/results-list", label: "Results List" },
+          { to: "/results-list", label: "Teacher Wise Results List" },
+          { to: "/student-wise-results-list", label: "Student Wise Results List" },
           {
             to: "/Student-wise-Overall-Results",
             label: "Student wise Overall Results",
