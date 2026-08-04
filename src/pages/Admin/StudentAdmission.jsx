@@ -355,8 +355,8 @@ const StudentAdmission = () => {
       return toast.error("Aadhar must be 12 digits");
     if (!formData.fatherName) return toast.error("Father Name Required");
     if (!formData.motherName) return toast.error("Mother Name Required");
-    const userEmail = formData.email || formData.parentEmail;
-    if (!userEmail) return toast.error("Student Email or Parent Email Required");
+    const userEmail = formData.parentEmail;
+    if (!userEmail) return toast.error("Parent Email Required");
     if (!/\S+@\S+\.\S+/.test(userEmail))
       return toast.error("Invalid Email");
     if (!formData.parentPhoneNo) return toast.error("Parent Phone Required");

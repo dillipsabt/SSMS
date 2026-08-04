@@ -1,4 +1,4 @@
-import jsPDF from "jspdf";
+import { jsPDF } from "jspdf";
 
 const imageDataUrl = (image) => image?.contentType && image?.data
   ? `data:${image.contentType};base64,${image.data}`
@@ -65,7 +65,14 @@ const drawDetailIcon = (doc, x, y, type, green, white) => {
   }
 };
 
-export const generateHallTicketPdf = (ticketData) => {
+const getTicketPageHeight = (ticketData) => {
+  const scheduleRows = getDynamicSchedule(ticketData);
+  const scheduleColumns = [0, 1, 2].map((column) => scheduleRows.filter((_, index) => index % 3 === column));
+  const numberOfRows = Math.max(...scheduleColumns.map((column) => column.length), 1);
+  return 100 + numberOfRows * 8 + 5 + 20;
+};
+
+const renderHallTicket = (doc, ticketData, pageHeightOverride) => {
   const schoolName = ticketData.schoolName || "School Name";
   const schoolAddress = ticketData.schoolAddress || "Address here";
   const examType = ticketData.examType || ticketData.examinationType || ticketData.exam?.examType || "Examination";
@@ -79,9 +86,8 @@ export const generateHallTicketPdf = (ticketData) => {
   const scheduleRows = dynamicSchedule.length ? dynamicSchedule : [{ subjectName: "-", examDate: null, startTime: "-", endTime: "-" }];
   const scheduleColumns = [0, 1, 2].map((column) => scheduleRows.filter((_, index) => index % 3 === column));
   const numberOfRows = Math.max(...scheduleColumns.map((column) => column.length), 1);
-  const pageHeight = 100 + numberOfRows * 8 + 5 + 20;
-  const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: [210, pageHeight] });
-  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = pageHeightOverride || getTicketPageHeight(ticketData);
+  const pageWidth = 210;
   const GREEN = [0, 91, 73];
   const LIGHT_GREEN = [237, 247, 243];
   const TEXT = [55, 55, 55];
@@ -108,7 +114,7 @@ export const generateHallTicketPdf = (ticketData) => {
       const properties = doc.getImageProperties(schoolLogo);
       const scale = Math.min(logoWidth / properties.width, logoHeight / properties.height);
       doc.addImage(schoolLogo, imageFormat(schoolLogo), logoX + (logoWidth - properties.width * scale) / 2, logoY + (logoHeight - properties.height * scale) / 2, properties.width * scale, properties.height * scale);
-    } catch {}
+    } catch { }
   }
 
   const bannerWidth = 50;
@@ -154,7 +160,7 @@ export const generateHallTicketPdf = (ticketData) => {
     doc.setFillColor(...LIGHT_GREEN);
     doc.setDrawColor(...LIGHT_BORDER);
     roundedRect(doc, photoX, photoY, photoWidth, photoHeight, 3, "FD");
-    try { doc.addImage(studentPhoto, imageFormat(studentPhoto), photoX + 1, photoY + 1, photoWidth - 2, photoHeight - 2); } catch {}
+    try { doc.addImage(studentPhoto, imageFormat(studentPhoto), photoX + 1, photoY + 1, photoWidth - 2, photoHeight - 2); } catch { }
   }
 
   const infoTop = 35;
@@ -253,7 +259,7 @@ export const generateHallTicketPdf = (ticketData) => {
   doc.line(studentSignatureCenter - 20, signatureLineY, studentSignatureCenter + 20, signatureLineY);
   doc.line(principalSignatureCenter - 20, signatureLineY, principalSignatureCenter + 20, signatureLineY);
   if (principalSignature) {
-    try { doc.addImage(principalSignature, imageFormat(principalSignature), principalSignatureCenter - 17, signatureTop + 5, 34, 11); } catch {}
+    try { doc.addImage(principalSignature, imageFormat(principalSignature), principalSignatureCenter - 17, signatureTop + 5, 34, 11); } catch { }
   }
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7.5);
@@ -262,5 +268,78 @@ export const generateHallTicketPdf = (ticketData) => {
   doc.text("Principal Signature", principalSignatureCenter, signatureTop + 24, { align: "center" });
   doc.setTextColor(130, 130, 130);
   doc.text(String(schoolName), pageWidth / 2, pageHeight - 7, { align: "center" });
+};
+
+export const generateHallTicketPdf = (ticketData) => {
+  const pageHeight = getTicketPageHeight(ticketData);
+  const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: [210, pageHeight] });
+  renderHallTicket(doc, ticketData, pageHeight);
   doc.save(`hall-ticket-${ticketData.hallTicketNo || "download"}.pdf`);
+};
+
+export const generateHallTicketsPdf = (tickets) => {
+  if (!tickets.length) return;
+  const baseHeight = Math.max(...tickets.map(getTicketPageHeight));
+  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+
+  const topMargin = 5;
+  const bottomMargin = 10;
+  const gap = 50;
+
+  const availableHeight = 297 - topMargin - bottomMargin - gap;
+  const yScale = Math.min(0.60, availableHeight / (baseHeight * 2));
+  const xScale = 0.95;
+  const cardWidth = 210 * xScale;
+  const startX = ((210 - cardWidth) / 2) / xScale;
+
+  tickets.forEach((ticket, index) => {
+    if (index > 0 && index % 2 === 0) {
+      doc.addPage();
+    }
+
+    const position = index % 2;
+
+    const startY =
+      (topMargin + position * (baseHeight * yScale + gap)) / yScale;
+
+    doc.saveGraphicsState();
+    doc.setCurrentTransformationMatrix(
+      `${xScale} 0 0 ${yScale} ${startX} ${startY}`
+    );
+
+    renderHallTicket(doc, ticket, baseHeight);
+
+    doc.restoreGraphicsState();
+  });
+
+  const pdfUrl = URL.createObjectURL(doc.output("blob"));
+  const printFrame = document.createElement("iframe");
+  printFrame.style.position = "fixed";
+  printFrame.style.left = "-10000px";
+  printFrame.style.top = "0";
+  printFrame.style.width = "100%";
+  printFrame.style.height = "100%";
+  printFrame.style.border = "0";
+  printFrame.src = pdfUrl;
+  let cleanedUp = false;
+  const cleanup = () => {
+    if (cleanedUp) return;
+    cleanedUp = true;
+    URL.revokeObjectURL(pdfUrl);
+    printFrame.remove();
+  };
+  printFrame.onload = () => {
+    window.setTimeout(() => {
+      const printWindow = printFrame.contentWindow;
+      if (!printWindow) {
+        cleanup();
+        return;
+      }
+      printWindow.addEventListener("afterprint", cleanup, { once: true });
+      printWindow.focus();
+      printWindow.print();
+      window.setTimeout(cleanup, 60000);
+    }, 1000);
+  };
+  document.body.appendChild(printFrame);
 };

@@ -15,7 +15,10 @@ import {
 } from "../../features/Admin/ExamSchedule/examScheduleSlice";
 
 import useToastMessage from "../../utils/useToastMessage";
-import { generateHallTicketPdf } from "../../utils/generateHallTicketPdf";
+import {
+    generateHallTicketPdf,
+    generateHallTicketsPdf,
+} from "../../utils/generateHallTicketPdf";
 
 import {
     clearError,
@@ -330,6 +333,34 @@ export default function HallTicketList() {
             generateHallTicketPdf(ticketData);
         } catch (error) {
             console.error("Error generating hall ticket:", error);
+        } finally {
+            setDownloadingId(null);
+        }
+    };
+
+    const handlePrintAll = async () => {
+        if (!students.length) {
+            toast.error("No hall tickets available to print");
+            return;
+        }
+
+        try {
+            setDownloadingId("all");
+            const tickets = await Promise.all(
+                students.map(async (student) => {
+                    const hallTicketNo = student.hallTicketNo || student.hallTicketNumber || student.ticketNo;
+                    if (!hallTicketNo) return null;
+                    return dispatch(fetchAdminHallTicketDetails(hallTicketNo)).unwrap();
+                }),
+            );
+            const validTickets = tickets.filter(Boolean);
+            if (!validTickets.length) {
+                toast.error("Hall ticket numbers are missing");
+                return;
+            }
+            generateHallTicketsPdf(validTickets);
+        } catch (error) {
+            toast.error(error?.message || "Unable to generate hall tickets");
         } finally {
             setDownloadingId(null);
         }
@@ -718,13 +749,22 @@ export default function HallTicketList() {
             ================================================== */}
 
                         <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-                            <button
-                                onClick={() => setPublishOpen(true)}
-                                disabled={!examId || !classId || loading}
-                                className="rounded-lg bg-indigo-600 px-5 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
-                            >
-                                Publish
-                            </button>
+                            <div className="flex flex-wrap gap-2">
+                                <button
+                                    onClick={handlePrintAll}
+                                    disabled={!students.length || downloadingId === "all"}
+                                    className="rounded-lg border border-indigo-600 px-5 py-2 text-sm font-medium text-indigo-600 hover:bg-indigo-50 disabled:opacity-50"
+                                >
+                                    {downloadingId === "all" ? "Preparing..." : "Print All"}
+                                </button>
+                                <button
+                                    onClick={() => setPublishOpen(true)}
+                                    disabled={!examId || !classId || loading}
+                                    className="rounded-lg bg-indigo-600 px-5 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                                >
+                                    Publish
+                                </button>
+                            </div>
 
                             <Pagination
                                 currentPage={currentPage}

@@ -107,17 +107,17 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         label: "Student Performance",
         icon: <BarChart3 size={20} />,
       },
-      {
-        icon: <Bus size={20} />,
-        label: "Student Transportation",
-        children: [
-          { to: "/student-transportation", label: "Student Transportation" },
-          {
-            to: "/student-transportation-list",
-            label: "Student Transportation List",
-          },
-        ],
-      },
+      // {
+      //   icon: <Bus size={20} />,
+      //   label: "Student Transportation",
+      //   children: [
+      //     { to: "/student-transportation", label: "Student Transportation" },
+      //     {
+      //       to: "/student-transportation-list",
+      //       label: "Student Transportation List",
+      //     },
+      //   ],
+      // },
       // {
       //   icon: <Clock size={18} />,
       //   label: "Teacher/Staff Attendance",
@@ -318,14 +318,14 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         to: "/school-details-view",
         icon: <UserCog size={20} />,
       },
-      {
-        icon: <FileText size={20} />,
-        label: "Transportation",
-        children: [
-          { to: "/transportation", label: "Transportation" },
-          { to: "/new-routes", label: "New Routes" },
-        ],
-      },
+      // {
+      //   icon: <FileText size={20} />,
+      //   label: "Transportation",
+      //   children: [
+      //     { to: "/transportation", label: "Transportation" },
+      //     { to: "/new-routes", label: "New Routes" },
+      //   ],
+      // },
       {
         to: "/new-expenses",
         label: "New Expenses",
