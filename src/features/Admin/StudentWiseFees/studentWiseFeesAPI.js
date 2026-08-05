@@ -34,7 +34,7 @@ export const getStudentWiseFeesById = (id) => {
 export const createStudentWiseFees = (data) => {
   const formData = new FormData();
 
-  formData.append("rollNo", data.rollNo);
+  formData.append("admissionNo", data.admissionNo);
   formData.append("concessionFees", data.concessionFees);
 
   if (data.document) {
@@ -55,8 +55,8 @@ export const createStudentWiseFees = (data) => {
 export const updateStudentWiseFees = (id, data) => {
   const formData = new FormData();
 
-  if (data.rollNo) {
-    formData.append("rollNo", data.rollNo);
+  if (data.admissionNo) {
+    formData.append("admissionNo", data.admissionNo);
   }
 
   if (data.concessionFees !== undefined) {
@@ -86,7 +86,7 @@ export const deleteStudentWiseFees = (id) => {
 // GET STUDENT BY ROLL NUMBER
 // ==============================================
 
-export const getStudentByRollNumber = async (rollNo) => {
-  const response = await API.get(`/fees/student/${encodeURIComponent(rollNo)}`);
+export const getStudentByAdmissionNumber = async (admissionNo) => {
+  const response = await API.get(`/fees/student/${encodeURIComponent(admissionNo)}`);
   return response.data;
 };

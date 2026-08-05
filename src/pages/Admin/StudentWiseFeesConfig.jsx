@@ -8,7 +8,7 @@ import {
   createStudentWiseFeesAsync,
   updateStudentWiseFeesAsync,
   deleteStudentWiseFeesAsync,
-  fetchStudentByRollNumberAsync,
+  fetchStudentByAdmissionNumberAsync,
   clearError,
   clearSuccess,
 } from "../../features/Admin/StudentWiseFees/studentWiseFeesSlice";
@@ -24,7 +24,7 @@ const StudentWiseFeesConfig = () => {
   } = useSelector((state) => state.studentWiseFees);
 
   const [formData, setFormData] = useState({
-    rollNumber: "",
+    admissionNo: "",
     studentName: "",
     class: "",
     schoolFees: "",
@@ -86,13 +86,13 @@ const StudentWiseFeesConfig = () => {
   }, [success, dispatch]);
 
   useEffect(() => {
-    if (error && formData.rollNumber === "") {
+    if (error && formData.admissionNo === "") {
       const timer = setTimeout(() => {
         dispatch(clearError());
       }, 5000);
       return () => clearTimeout(timer);
     }
-  }, [error, dispatch, formData.rollNumber]);
+  }, [error, dispatch, formData.admissionNo]);
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
@@ -101,9 +101,9 @@ const StudentWiseFeesConfig = () => {
       [name]: value,
     }));
 
-    if (name === "rollNumber" && value.trim()) {
-      dispatch(fetchStudentByRollNumberAsync(value.trim()));
-    } else if (name === "rollNumber" && !value.trim()) {
+    if (name === "admissionNo" && value.trim()) {
+      dispatch(fetchStudentByAdmissionNumberAsync(value.trim()));
+    } else if (name === "admissionNo" && !value.trim()) {
       setFormData((prev) => ({
         ...prev,
         studentName: "",
@@ -133,13 +133,13 @@ const StudentWiseFeesConfig = () => {
   };
 
   const handleSave = async () => {
-    if (!formData.rollNumber || !formData.concessionFees) {
+    if (!formData.admissionNo || !formData.concessionFees) {
       toast.error("Please fill all required fields");
       return;
     }
 
     const saveData = {
-      rollNo: formData.rollNumber,
+      admissionNo: formData.admissionNo,
       concessionFees: parseFloat(formData.concessionFees),
     };
 
@@ -166,7 +166,7 @@ const StudentWiseFeesConfig = () => {
 
       // Reset Form
       setFormData({
-        rollNumber: "",
+        admissionNo: "",
         studentName: "",
         class: "",
         schoolFees: "",
@@ -196,7 +196,7 @@ const StudentWiseFeesConfig = () => {
   const handleEdit = (row) => {
     setEditingId(row.id);
     setFormData({
-      rollNumber: row.rollNo,
+      admissionNo: row.admissionNo,
       studentName: row.studentName,
       class: row.className,
       schoolFees: row.schoolFees.toString(),
@@ -254,8 +254,8 @@ const StudentWiseFeesConfig = () => {
               <label className="form-label">admission Number *</label>
               <input
                 type="text"
-                name="rollNumber"
-                value={formData.rollNumber}
+                name="admissionNo"
+                value={formData.admissionNo}
                 onChange={handleFormChange}
                 placeholder="0/1"
                 className="form-input"
@@ -388,7 +388,7 @@ const StudentWiseFeesConfig = () => {
                   Created Date
                 </th>
                 <th className="px-3 py-2 text-left font-semibold text-gray-700">
-                  Roll No.
+                  Admission No.
                 </th>
                 <th className="px-3 py-2 text-left font-semibold text-gray-700">
                   Student Name
@@ -426,7 +426,7 @@ const StudentWiseFeesConfig = () => {
                         ? new Date(row.createdDate).toLocaleDateString("en-GB")
                         : ""}
                     </td>
-                    <td className="px-3 py-2">{row.rollNo}</td>
+                    <td className="px-3 py-2">{row.admissionNo}</td>
                     <td className="px-3 py-2">{row.studentName}</td>
                     <td className="px-3 py-2">{row.className}</td>
                     <td className="px-3 py-2">{row.schoolFees}</td>

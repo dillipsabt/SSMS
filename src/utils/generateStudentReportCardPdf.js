@@ -115,8 +115,7 @@ const drawLegend = (doc, x, y, color, label, value) => {
   doc.text(text(value), x + 30, y);
 };
 
-export const generateStudentReportCardPdf = (report) => {
-  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+const renderStudentReportCard = (doc, report) => {
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   const margin = 13;
@@ -163,7 +162,7 @@ export const generateStudentReportCardPdf = (report) => {
   y += 32;
 
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(13);
+  doc.setFontSize(10);
   doc.setTextColor(...colors.navy);
   doc.text("REPORT CARD", pageWidth / 2, y, { align: "center" });
   doc.setFont("helvetica", "normal");
@@ -359,6 +358,52 @@ export const generateStudentReportCardPdf = (report) => {
   doc.text("PRINCIPAL", pageWidth - margin - 33.5, signatureY + 19, { align: "center" });
 
 
+};
+
+export const generateStudentReportCardPdf = (report) => {
+  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+  renderStudentReportCard(doc, report);
   const filename = `ReportCard_${text(report.rollNo || report.rollNumber || report.studentName).replaceAll(" ", "_")}_${text(report.examType || report.examinationType).replaceAll(" ", "_")}.pdf`;
   doc.save(filename);
+};
+
+export const generateStudentReportCardsPdf = (reports) => {
+  if (!reports.length) return;
+
+  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+  reports.forEach((report, index) => {
+    if (index > 0) doc.addPage();
+    renderStudentReportCard(doc, report);
+  });
+
+  const pdfUrl = URL.createObjectURL(doc.output("blob"));
+  const printFrame = document.createElement("iframe");
+  printFrame.style.position = "fixed";
+  printFrame.style.left = "-10000px";
+  printFrame.style.top = "0";
+  printFrame.style.width = "100%";
+  printFrame.style.height = "100%";
+  printFrame.style.border = "0";
+  printFrame.src = pdfUrl;
+  let cleanedUp = false;
+  const cleanup = () => {
+    if (cleanedUp) return;
+    cleanedUp = true;
+    URL.revokeObjectURL(pdfUrl);
+    printFrame.remove();
+  };
+  printFrame.onload = () => {
+    window.setTimeout(() => {
+      const printWindow = printFrame.contentWindow;
+      if (!printWindow) {
+        cleanup();
+        return;
+      }
+      printWindow.addEventListener("afterprint", cleanup, { once: true });
+      printWindow.focus();
+      printWindow.print();
+      window.setTimeout(cleanup, 60000);
+    }, 1000);
+  };
+  document.body.appendChild(printFrame);
 };

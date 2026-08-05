@@ -6,7 +6,7 @@ import {
   createStudentWiseFees,
   updateStudentWiseFees,
   deleteStudentWiseFees,
-  getStudentByRollNumber,
+  getStudentByAdmissionNumber,
 } from "./studentWiseFeesAPI";
 
 export const fetchStudentWiseFeesAsync = createAppAsyncThunk(
@@ -34,9 +34,9 @@ export const deleteStudentWiseFeesAsync = createAppAsyncThunk(
   (id) => deleteStudentWiseFees(id)
 );
 
-export const fetchStudentByRollNumberAsync = createAppAsyncThunk(
-  "studentWiseFees/fetchStudentByRollNumber",
-  (rollNo) => getStudentByRollNumber(rollNo)
+export const fetchStudentByAdmissionNumberAsync = createAppAsyncThunk(
+  "studentWiseFees/fetchStudentByAdmissionNumber",
+  (admissionNo) => getStudentByAdmissionNumber(admissionNo)
 );
 
 // ==============================================
@@ -184,21 +184,21 @@ const studentWiseFeesSlice = createSlice({
       })
 
       // ==========================================
-      // FETCH STUDENT BY ROLL NUMBER
+      // FETCH STUDENT BY ADMISSION NUMBER
       // ==========================================
 
-      .addCase(fetchStudentByRollNumberAsync.pending, (state, action) => {
+      .addCase(fetchStudentByAdmissionNumberAsync.pending, (state, action) => {
         state.loading = true;
         state.error = null;
       })
 
-      .addCase(fetchStudentByRollNumberAsync.fulfilled, (state, action) => {
+      .addCase(fetchStudentByAdmissionNumberAsync.fulfilled, (state, action) => {
         state.loading = false;
         state.error = null;
         state.studentData = action.payload || null;
       })
 
-      .addCase(fetchStudentByRollNumberAsync.rejected, (state, action) => {
+      .addCase(fetchStudentByAdmissionNumberAsync.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
         state.studentData = null;

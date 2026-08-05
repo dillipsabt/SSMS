@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Download, Search } from "lucide-react";
+import { Download, Printer, Search, X } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 import {
@@ -10,14 +10,18 @@ import {
   resetExamResultState,
 } from "../../features/Admin/ExamResult/examResultSlice";
 import { fetchTeachers } from "../../features/Admin/Notifications/notificationSlice";
-import { generateStudentReportCardPdf } from "../../utils/generateStudentReportCardPdf";
+import {
+  generateStudentReportCardPdf,
+  generateStudentReportCardsPdf,
+} from "../../utils/generateStudentReportCardPdf";
 
 const getStudentId = (student) => student?.studentId || student?.id || student?.profileId;
 const getStudentName = (student) => student?.studentName || student?.fullName || student?.name || "-";
-const getHallTicket = (student) => student?.hallTicketNo || student?.hallTicketNumber || "-";
 const getRollNumber = (student) => student?.rollNo || student?.rollNumber || "-";
 const getAdmissionNumber = (student) => student?.admissionNo || student?.admissionNumber || "-";
+const getPercentage = (student) => student?.percentage == null ? "-" : Number(student.percentage).toFixed(2);
 const getStatus = (student) => String(student?.status || student?.passFail || "PASS").toUpperCase();
+const getRowKey = (student, index) => String(getStudentId(student) || getAdmissionNumber(student) || index);
 
 const StatusBadge = ({ value, tone = "green" }) => {
   const isPass = String(value).toUpperCase() === "PASS";
@@ -41,6 +45,11 @@ export default function StudentWiseResultsList() {
   const [date, setDate] = useState("");
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
+  const [publishOpen, setPublishOpen] = useState(false);
+  const [publishToPortal, setPublishToPortal] = useState(true);
+  const [publishToWhatsapp, setPublishToWhatsapp] = useState(true);
+  const [publishNotes, setPublishNotes] = useState("Ready to publish.");
+  const [selectedIds, setSelectedIds] = useState(new Set());
 
   useEffect(() => {
     dispatch(fetchClasses());
@@ -51,7 +60,7 @@ export default function StudentWiseResultsList() {
 
   const rows = useMemo(() => examResults.filter((student) => {
     const term = search.trim().toLowerCase();
-    const matchesSearch = !term || getStudentName(student).toLowerCase().includes(term) || getHallTicket(student).toLowerCase().includes(term) || getRollNumber(student).toLowerCase().includes(term);
+    const matchesSearch = !term || getStudentName(student).toLowerCase().includes(term) || getRollNumber(student).toLowerCase().includes(term);
     const matchesStatus = !status || getStatus(student) === status;
     return matchesSearch && matchesStatus;
   }), [examResults, search, status]);
@@ -85,6 +94,61 @@ export default function StudentWiseResultsList() {
     }
   };
 
+  const handlePrintAll = async () => {
+    if (!rows.length) {
+      toast.error("No student results available to print");
+      return;
+    }
+
+    try {
+      const reports = await Promise.all(rows.map((student) =>
+        dispatch(fetchReportCardDownload({
+          studentId: getStudentId(student),
+          examinationTypeId: student.examinationTypeId || examTypeId,
+        })).unwrap()
+      ));
+      generateStudentReportCardsPdf(reports);
+    } catch (requestError) {
+      toast.error(requestError?.message || "Unable to prepare report cards for printing");
+    }
+  };
+
+  const toggleStudentSelection = (student, index) => {
+    const rowKey = getRowKey(student, index);
+    setSelectedIds((current) => {
+      const next = new Set(current);
+      if (next.has(rowKey)) next.delete(rowKey);
+      else next.add(rowKey);
+      return next;
+    });
+  };
+
+  const toggleAllVisibleStudents = () => {
+    setSelectedIds((current) => {
+      const next = new Set(current);
+      const allSelected = rows.length > 0 && rows.every((student, index) => next.has(getRowKey(student, index)));
+      rows.forEach((student, index) => {
+        const rowKey = getRowKey(student, index);
+        if (allSelected) next.delete(rowKey);
+        else next.add(rowKey);
+      });
+      return next;
+    });
+  };
+
+  const handlePublish = () => {
+    if (!selectedIds.size) {
+      toast.error("Select at least one student to publish");
+      return;
+    }
+    if (!publishToPortal && !publishToWhatsapp) {
+      toast.error("Select at least one publish option");
+      return;
+    }
+    toast.success(`${selectedIds.size} student result${selectedIds.size === 1 ? "" : "s"} ready to publish`);
+    setPublishOpen(false);
+  };
+
   return (
     <div className="page-wrap p-4 sm:p-6">
       <h1 className="text-xl font-semibold text-gray-800">Student Wise Exam Results</h1>
@@ -94,7 +158,18 @@ export default function StudentWiseResultsList() {
         <div className="border-b border-gray-200 px-4 py-3 text-sm font-semibold text-gray-700">Exam Result List</div>
         <div className="p-4">
           <div className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_1fr_1fr_1fr_auto] md:items-end">
-            <label className="text-sm font-medium text-gray-700">Exam Type <span className="text-red-500">*</span><select value={examTypeId} onChange={(event) => setExamTypeId(event.target.value)} className="form-select mt-1 w-full"><option value="">Select Exam Type</option>{examinationTypes.map((exam) => <option key={exam.id} value={exam.id}>{exam.examType || exam.name}</option>)}</select></label>
+            <label className="text-sm font-medium text-gray-700">Exam Type <span className="text-red-500">*</span>
+              <select
+                value={examTypeId}
+                onChange={(event) =>
+                  setExamTypeId(event.target.value)}
+                className="form-select mt-1 w-full">
+                <option value="">Select Exam Type</option>
+                {examinationTypes.map((exam) =>
+                  <option key={exam.id} value={exam.id}>{exam.examType || exam.name}</option>
+                )}
+              </select>
+            </label>
             <label className="text-sm font-medium text-gray-700">Class Type <span className="text-red-500">*</span><select value={classId} onChange={(event) => setClassId(event.target.value)} className="form-select mt-1 w-full"><option value="">Select Class</option>{classes.map((item) => <option key={item.id} value={item.id}>{item.classCode || item.className || item.name}</option>)}</select></label>
             <label className="text-sm font-medium text-gray-700">Teacher<select value={teacherId} onChange={(event) => setTeacherId(event.target.value)} className="form-select mt-1 w-full"><option value="">All Teachers</option>{teachers.map((teacher) => <option key={teacher.id} value={teacher.id}>{teacher.fullName || teacher.name || teacher.firstName || "Teacher"}</option>)}</select></label>
             <label className="text-sm font-medium text-gray-700">Date<input type="date" value={date} onChange={(event) => setDate(event.target.value)} className="form-input mt-1 w-full" /></label>
@@ -122,18 +197,103 @@ export default function StudentWiseResultsList() {
           </div>
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:justify-end">
             <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search Student Name / Hall Ticket No." className="form-input sm:w-72" />
-            <select value={status} onChange={(event) => setStatus(event.target.value)} className="form-select sm:w-36"><option value="">Status</option><option value="PASS">Pass</option><option value="FAIL">Fail</option></select>
+            <select value={status} onChange={(event) => setStatus(event.target.value)} className="form-select sm:w-36">
+              <option value="">Status</option>
+              <option value="PASS">Pass</option>
+              <option value="FAIL">Fail</option>
+            </select>
           </div>
 
           {error && <div className="mb-3 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">{error?.message || error}</div>}
           <div className="overflow-x-auto rounded border border-gray-200">
             <table className="w-full min-w-[1600px] text-sm">
-              <thead className="bg-indigo-50 text-gray-700"><tr><th className="px-3 py-3 text-left">S.No.</th><th className="px-3 py-3 text-left">Hall Ticket No.</th><th className="px-3 py-3 text-left">Student Name</th><th className="px-3 py-3 text-left">Roll No.</th><th className="px-3 py-3 text-left">Admission No.</th><th className="px-3 py-3 text-left">Class</th><th className="px-3 py-3 text-left">Exam Type</th><th className="px-3 py-3 text-left">Academic Year</th><th className="px-3 py-3 text-left">Obtained</th><th className="px-3 py-3 text-left">Total Marks</th><th className="px-3 py-3 text-left">Percentage</th><th className="px-3 py-3 text-left">Grade</th><th className="px-3 py-3 text-left">Grade Point</th><th className="px-3 py-3 text-left">Result</th><th className="px-3 py-3 text-left">Fees Status</th><th className="px-3 py-3 text-left">Published</th><th className="px-3 py-3 text-left">Published Notes</th><th className="px-3 py-3 text-center">Download</th></tr></thead>
-              <tbody>{rows.length ? rows.map((student, index) => <tr key={getStudentId(student) || index} className="border-t border-gray-200 hover:bg-gray-50"><td className="px-3 py-3">{index + 1}</td><td className="px-3 py-3">{getHallTicket(student)}</td><td className="px-3 py-3">{getStudentName(student)}</td><td className="px-3 py-3">{getRollNumber(student)}</td><td className="px-3 py-3">{getAdmissionNumber(student)}</td><td className="px-3 py-3">{student.className || "-"}</td><td className="px-3 py-3">{student.examinationType || "-"}</td><td className="px-3 py-3">{student.academicYear || "-"}</td><td className="px-3 py-3">{student.totalObtainedMarks ?? "-"}</td><td className="px-3 py-3">{student.totalMarks ?? "-"}</td><td className="px-3 py-3">{student.percentage ?? "-"}%</td><td className="px-3 py-3">{student.grade || "-"}</td><td className="px-3 py-3">{student.gradePoint ?? "-"}</td><td className="px-3 py-3"><StatusBadge value={getStatus(student)} /></td><td className="px-3 py-3"><StatusBadge value={student.feeStatus || student.feesStatus || "Pending"} tone="fee" /></td><td className="px-3 py-3">{student.published || "-"}</td><td className="px-3 py-3">{student.publishedNotes || student.notes || "-"}</td><td className="px-3 py-3 text-center"><button onClick={() => downloadReportCard(student)} disabled={loading} className="text-indigo-600 hover:text-indigo-800 disabled:opacity-50" title="Download report card"><Download size={20} /></button></td></tr>) : <tr><td colSpan="18" className="py-10 text-center text-gray-500">{loading ? "Loading..." : "No student results found"}</td></tr>}</tbody>
+              <thead className="bg-indigo-50 text-gray-700">
+                <tr>
+                  <th className="px-3 py-3 text-left"><input type="checkbox" checked={rows.length > 0 && rows.every((student, index) => selectedIds.has(getRowKey(student, index)))} onChange={toggleAllVisibleStudents} aria-label="Select all students" /></th>
+                  <th className="px-3 py-3 text-left">S.No.</th>
+                  <th className="px-3 py-3 text-left">Student Name</th>
+                  <th className="px-3 py-3 text-left">Roll No.</th>
+                  <th className="px-3 py-3 text-left">Admission No.</th>
+                  <th className="px-3 py-3 text-left">Class</th>
+                  <th className="px-3 py-3 text-left">Exam Type</th>
+                  <th className="px-3 py-3 text-left">Academic Year</th>
+                  <th className="px-3 py-3 text-left">Obtained</th>
+                  <th className="px-3 py-3 text-left">Total Marks</th>
+                  <th className="px-3 py-3 text-left">Percentage</th>
+                  <th className="px-3 py-3 text-left">Grade</th>
+                  <th className="px-3 py-3 text-left">Grade Point</th>
+                  <th className="px-3 py-3 text-left">Result</th>
+                  <th className="px-3 py-3 text-left">Fees Status</th>
+                  <th className="px-3 py-3 text-left">Published</th>
+                  <th className="px-3 py-3 text-left">Published Notes</th>
+                  <th className="px-3 py-3 text-center">Download</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.length ? rows.map((student, index) =>
+                  <tr key={getRowKey(student, index)} className="border-t border-gray-200 hover:bg-gray-50">
+                    <td className="px-3 py-3"><input type="checkbox" checked={selectedIds.has(getRowKey(student, index))} onChange={() => toggleStudentSelection(student, index)} aria-label={`Select ${getStudentName(student)}`} /></td>
+                    <td className="px-3 py-3">{index + 1}</td>
+                    <td className="px-3 py-3">{getStudentName(student)}</td>
+                    <td className="px-3 py-3">{getRollNumber(student)}</td>
+                    <td className="px-3 py-3">{getAdmissionNumber(student)}</td>
+                    <td className="px-3 py-3">{student.className || "-"}</td>
+                    <td className="px-3 py-3">{student.examinationType || "-"}</td>
+                    <td className="px-3 py-3">{student.academicYear || "-"}</td>
+                    <td className="px-3 py-3">{student.totalObtainedMarks ?? "-"}</td>
+                    <td className="px-3 py-3">{student.totalMarks ?? "-"}</td>
+                    <td className="px-3 py-3">{getPercentage(student)}%</td>
+                    <td className="px-3 py-3">{student.grade || "-"}</td>
+                    <td className="px-3 py-3">{student.gradePoint ?? "-"}</td>
+                    <td className="px-3 py-3"><StatusBadge value={getStatus(student)} /></td>
+                    <td className="px-3 py-3"><StatusBadge value={student.feeStatus || student.feesStatus || "Pending"} tone="fee" /></td>
+                    <td className="px-3 py-3">{student.published || "-"}</td>
+                    <td className="px-3 py-3">{student.publishedNotes || student.notes || "-"}</td>
+                    <td className="px-3 py-3 text-center"><button onClick={() => downloadReportCard(student)} disabled={loading} className="text-indigo-600 hover:text-indigo-800 disabled:opacity-50" title="Download report card"><Download size={20} /></button></td>
+                  </tr>
+                ) :
+                  <tr>
+                    <td colSpan="19" className="py-10 text-center text-gray-500">
+                      {loading ? "Loading..." : "No student results found"}
+                    </td>
+                  </tr>
+                }
+              </tbody>
             </table>
+          </div>
+          <div className="mt-4 flex justify-end gap-2">
+            <button onClick={() => setPublishOpen(true)} disabled={!selectedIds.size} className="btn-primary flex items-center justify-center gap-2 px-4 disabled:opacity-50">Publish{selectedIds.size ? ` (${selectedIds.size})` : ""}</button>
+            <button onClick={handlePrintAll} disabled={!rows.length || loading} className="flex items-center justify-center gap-2 rounded bg-indigo-100 px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-200 disabled:opacity-50"><Printer size={16} />Print All</button>
           </div>
         </div>
       </div>
+
+      {publishOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-lg overflow-hidden rounded-xl bg-white shadow-2xl">
+            <div className="flex items-center justify-between bg-indigo-600 px-6 py-4 text-white">
+              <h2 className="text-xl font-semibold">Publish</h2>
+              <button onClick={() => setPublishOpen(false)} className="rounded p-1 hover:bg-indigo-500" aria-label="Close publish dialog"><X size={22} /></button>
+            </div>
+            <div className="space-y-5 px-6 py-5">
+              <p className="text-lg font-semibold text-gray-800">{examinationTypes.find((item) => String(item.id) === String(examTypeId))?.examType || "Exam Results"}</p>
+              <div>
+                <p className="mb-3 text-sm text-gray-500">{selectedIds.size} student result{selectedIds.size === 1 ? "" : "s"} selected</p>
+                <h3 className="mb-3 text-base font-semibold text-gray-800">Publish Options</h3>
+                <div className="space-y-3">
+                  <label className="flex items-center gap-3 text-sm text-gray-700"><input type="checkbox" checked={publishToPortal} onChange={(event) => setPublishToPortal(event.target.checked)} className="h-4 w-4 accent-indigo-600" />Publish to Parents portal</label>
+                  <label className="flex items-center gap-3 text-sm text-gray-700"><input type="checkbox" checked={publishToWhatsapp} onChange={(event) => setPublishToWhatsapp(event.target.checked)} className="h-4 w-4 accent-indigo-600" />Publish to Whatsapp</label>
+                </div>
+              </div>
+              <div>
+                <label className="mb-2 block text-base font-semibold text-gray-800">Notes (Optional)</label>
+                <textarea value={publishNotes} onChange={(event) => setPublishNotes(event.target.value)} rows={4} className="w-full rounded border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500" />
+              </div>
+            </div>
+            <div className="flex justify-end px-6 pb-6"><button onClick={handlePublish} className="btn-primary px-6">Publish</button></div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
