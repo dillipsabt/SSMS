@@ -24,7 +24,8 @@ import {
   Upload,
   Ticket,
   School,
-  MapPinned
+  MapPinned,
+  Contact
 } from "lucide-react";
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
@@ -481,6 +482,11 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         children: [
           { to: "/student-attendance", label: "Attendance" },
         ],
+      },
+      {
+        to: "/student-id-card",
+        icon: <Contact size={20} />,
+        label: "Student ID Card",
       },
       {
         icon: <ClipboardList size={20} />,

@@ -86,8 +86,7 @@ const AddNotifications = () => {
   const showSubject =
     ["ALL", "ALL_TEACHERS", "SUBJECT_TEACHERS"].includes(audience);
 
-  const showAudienceSection =
-    audience !== "";
+  const showAudienceSection = false;
 
   // MUST be first - clear stale messages immediately on mount
   useEffect(() => {

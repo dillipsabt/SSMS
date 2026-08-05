@@ -25,6 +25,14 @@ export const getStudentResultSummary = (params) => {
   );
 };
 
+export const getReportCards = (params) => {
+  return API.get("/exam-results/report-cards", { params });
+};
+
+export const downloadReportCard = (params) => {
+  return API.get("/exam-results/report-card/download", { params });
+};
+
 // ==============================================
 // SUBJECTS
 // ==============================================

@@ -68,7 +68,7 @@ const AddAnnouncements = () => {
   const showDepartment = ["ALL", "FACULTY"].includes(audience);
   const showSubject = ["ALL", "FACULTY"].includes(audience);
 
-  const showAudienceSection = audience !== "";
+  const showAudienceSection = false;
 
   // MUST be first - clear stale messages immediately on mount
   useEffect(() => {

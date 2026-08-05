@@ -204,6 +204,7 @@ const TeacherVirtualClassJoinedList = lazy(
 
 // STUDENT
 const StudentDetails = lazy(() => import("./pages/Student/StudentDetails"));
+const StudentIdCard = lazy(() => import("./pages/Student/StudentIdCard"));
 const Attendance = lazy(() => import("./pages/Student/Attendance"));
 const StudentDashboard = lazy(() => import("./pages/student/StudentDashboard"));
 const StudentHomework = lazy(() => import("./pages/Student/StudentHomework"));
@@ -1509,6 +1510,17 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/student-id-card"
+              element={
+                <ProtectedRoute roles={["student-portal"]}>
+                  <StudentLayout>
+                    <StudentIdCard />
+                  </StudentLayout>
+                </ProtectedRoute>
+              }
+            />
+
             <Route
               path="/student-attendance"
               element={

@@ -66,12 +66,12 @@ const TeacherAddExamResults = () => {
   const normalizeStudents = (studentsByClass || []).map((student, index) => ({
     id: student.studentId || student.id,
     sNo: index + 1,
-    rollNumber: student.rollNumber || student.roll || student.rollNo,
+    admissionNumber: student.admissionNumber,
     studentName: student.studentName || student.name,
   }));
 
   const filteredStudents = normalizeStudents.filter((student) =>
-    `${student.studentName} ${student.rollNumber}`
+    `${student.studentName} ${student.admissionNumber}`
       .toLowerCase()
       .includes(searchQuery.toLowerCase())
   );
@@ -130,10 +130,29 @@ const TeacherAddExamResults = () => {
       [field]: value,
     };
 
-    if (field === "percentage") {
-      const { grade, status } = calculateGradeAndStatus(value);
-      updatedMarks.grade = grade;
-      updatedMarks.status = status;
+    if (field === "obtainedMarks" || field === "totalMarks") {
+      const obtainedMarks = Number(updatedMarks.obtainedMarks);
+      const totalMarks = Number(updatedMarks.totalMarks);
+
+      if (
+        updatedMarks.obtainedMarks === "" ||
+        updatedMarks.totalMarks === "" ||
+        !Number.isFinite(obtainedMarks) ||
+        !Number.isFinite(totalMarks) ||
+        obtainedMarks < 0 ||
+        totalMarks <= 0 ||
+        obtainedMarks > totalMarks
+      ) {
+        updatedMarks.percentage = "";
+        updatedMarks.grade = "";
+        updatedMarks.status = "";
+      } else {
+        const percentage = (obtainedMarks / totalMarks) * 100;
+        const { grade, status } = calculateGradeAndStatus(percentage);
+        updatedMarks.percentage = Number(percentage.toFixed(2));
+        updatedMarks.grade = grade;
+        updatedMarks.status = status;
+      }
     }
 
     setStudentMarks((prev) => ({
@@ -163,12 +182,26 @@ const TeacherAddExamResults = () => {
     for (const student of filteredStudents) {
       if (studentMarks[student.id]) {
         const marks = studentMarks[student.id];
+        const hasObtainedMarks = marks.obtainedMarks !== "" && marks.obtainedMarks !== undefined;
+        const hasTotalMarks = marks.totalMarks !== "" && marks.totalMarks !== undefined;
 
-        if (
-          marks.obtainedMarks ||
-          marks.percentage ||
-          marks.grade
-        ) {
+        if (hasObtainedMarks || hasTotalMarks) {
+          const obtainedMarks = Number(marks.obtainedMarks);
+          const totalMarks = Number(marks.totalMarks);
+
+          if (
+            !hasObtainedMarks ||
+            !hasTotalMarks ||
+            !Number.isFinite(obtainedMarks) ||
+            !Number.isFinite(totalMarks) ||
+            obtainedMarks < 0 ||
+            totalMarks <= 0 ||
+            obtainedMarks > totalMarks
+          ) {
+            toast.error("Enter valid obtained and total marks for every student.");
+            return;
+          }
+
           examResultRequestDTOS.push({
             academicYearId: parseInt(
               formData.academicYearId
@@ -182,11 +215,9 @@ const TeacherAddExamResults = () => {
 
             studentId: parseInt(student.id),
 
-            obtainedMarks: marks.obtainedMarks
-              ? parseInt(marks.obtainedMarks)
-              : 0,
+            obtainedMarks,
 
-            totalMarks: 100,
+            totalMarks,
 
             examDate: new Date()
               .toISOString()
@@ -405,13 +436,16 @@ const TeacherAddExamResults = () => {
                   S.No.
                 </th>
                 <th className="px-4 py-3 text-left font-medium text-gray-700">
-                  Roll Number
+                  Admission Number
                 </th>
                 <th className="px-4 py-3 text-left font-medium text-gray-700">
                   Student Name
                 </th>
                 <th className="px-4 py-3 text-left font-medium text-gray-700">
-                  Obtained Marks (100)
+                  Total Marks
+                </th>
+                <th className="px-4 py-3 text-left font-medium text-gray-700">
+                  Obtained Marks
                 </th>
                 <th className="px-4 py-3 text-left font-medium text-gray-700">
                   Percentage (%)
@@ -435,7 +469,7 @@ const TeacherAddExamResults = () => {
                 >
                   <td className="px-4 py-3 text-gray-800">{student.sNo}</td>
                   <td className="px-4 py-3 text-gray-800">
-                    {student.rollNumber}
+                    {student.admissionNumber}
                   </td>
                   <td className="px-4 py-3 text-gray-800">
                     {student.studentName}
@@ -443,7 +477,26 @@ const TeacherAddExamResults = () => {
                   <td className="px-4 py-3">
                     <input
                       type="number"
-                      value={studentMarks[student.id]?.obtainedMarks || ""}
+                      min="0"
+                      step="any"
+                      value={studentMarks[student.id]?.totalMarks ?? ""}
+                      onChange={(e) =>
+                        handleMarksChange(
+                          student.id,
+                          "totalMarks",
+                          e.target.value
+                        )
+                      }
+                      className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      placeholder=""
+                    />
+                  </td>
+                  <td className="px-4 py-3">
+                    <input
+                      type="number"
+                      min="0"
+                      step="any"
+                      value={studentMarks[student.id]?.obtainedMarks ?? ""}
                       onChange={(e) =>
                         handleMarksChange(
                           student.id,
@@ -458,10 +511,8 @@ const TeacherAddExamResults = () => {
                   <td className="px-4 py-3">
                     <input
                       type="number"
-                      value={studentMarks[student.id]?.percentage || ""}
-                      onChange={(e) =>
-                        handleMarksChange(student.id, "percentage", e.target.value)
-                      }
+                      value={studentMarks[student.id]?.percentage ?? ""}
+                      readOnly
                       className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                       placeholder=""
                     />

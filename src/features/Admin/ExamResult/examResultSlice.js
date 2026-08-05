@@ -5,6 +5,8 @@ import { handlePending, handleRejected } from "../../../utils/reducerHelpers";
 import {
     getExamResults,
     getStudentResultSummary,
+    getReportCards,
+    downloadReportCard,
     getExaminationTypes,
     getClasses,
     getSubjects,
@@ -18,6 +20,16 @@ export const fetchExamResults = createAppAsyncThunk(
 export const fetchStudentResultSummary = createAppAsyncThunk(
     "examResult/fetchStudentResultSummary",
     (params) => getStudentResultSummary(params)
+);
+
+export const fetchReportCards = createAppAsyncThunk(
+    "examResult/fetchReportCards",
+    (params) => getReportCards(params)
+);
+
+export const fetchReportCardDownload = createAppAsyncThunk(
+    "examResult/fetchReportCardDownload",
+    (params) => downloadReportCard(params)
 );
 
 export const fetchExaminationTypes = createAppAsyncThunk(
@@ -82,6 +94,17 @@ const examResultSlice = createSlice({
                 state.resultSummary = action.payload;
             })
             .addCase(fetchStudentResultSummary.rejected, handleRejected)
+            .addCase(fetchReportCards.pending, handlePending)
+            .addCase(fetchReportCards.fulfilled, (state, action) => {
+                state.loading = false;
+                state.examResults = Array.isArray(action.payload) ? action.payload : [];
+            })
+            .addCase(fetchReportCards.rejected, handleRejected)
+            .addCase(fetchReportCardDownload.pending, handlePending)
+            .addCase(fetchReportCardDownload.fulfilled, (state) => {
+                state.loading = false;
+            })
+            .addCase(fetchReportCardDownload.rejected, handleRejected)
             .addCase(fetchExaminationTypes.pending, handlePending)
             .addCase(fetchExaminationTypes.fulfilled, (state, action) => {
                 state.loading = false;
