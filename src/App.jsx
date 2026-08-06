@@ -18,6 +18,7 @@ import { fetchSchoolInfo } from "./features/Admin/SchoolBranding/schoolBrandingS
 const Dashboard = lazy(() => import("./pages/Admin/Dashboard"));
 const StudentAdmission = lazy(() => import("./pages/Admin/StudentAdmission"));
 const StudentList = lazy(() => import("./pages/Admin/StudentList"));
+const StudentIdCardList = lazy(() => import("./pages/Admin/StudentIdCardList"));
 const StudentView = lazy(() => import("./pages/Admin/StudentView"));
 const AddTeacher = lazy(() => import("./pages/Admin/AddTeacher"));
 const TeachersList = lazy(() => import("./pages/Admin/TeachersList"));
@@ -328,6 +329,17 @@ function App() {
                 <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <StudentList />
+                  </MainLayout>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/student-id-cards"
+              element={
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
+                  <MainLayout>
+                    <StudentIdCardList />
                   </MainLayout>
                 </ProtectedRoute>
               }

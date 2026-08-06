@@ -48,6 +48,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         children: [
           { to: "/add-student", label: "Add Student Admission" },
           { to: "/students_list", label: "Student List" },
+          { to: "/student-id-cards", label: "Student ID Card" },
         ],
       },
       {

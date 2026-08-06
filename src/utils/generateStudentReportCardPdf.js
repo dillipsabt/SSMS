@@ -136,6 +136,7 @@ const renderStudentReportCard = (doc, report) => {
   };
   const subjects = Array.isArray(report.subjects) ? report.subjects : [];
   const logo = imageDataUrl(report.schoolLogo);
+  const schoolAddress = report.schoolAddress || report.address || report.school?.address || report.schoolDetails?.address;
   const studentPhoto = imageDataUrl(report.studentPhoto);
   const principalSignature = imageDataUrl(report.principalSignature);
   const result = String(report.result || "").toUpperCase();
@@ -150,16 +151,22 @@ const renderStudentReportCard = (doc, report) => {
   doc.setFillColor(...colors.navy);
   doc.roundedRect(margin, y, width, 2.5, 1.2, 1.2, "F");
   y += 7;
-  roundedCard(doc, margin, y, width, 24, [255, 255, 255]);
-  addImageContain(doc, logo, pageWidth / 2 - 44, y + 5, 22, 14);
+  roundedCard(doc, margin, y, width, 31, [255, 255, 255]);
+  addImageContain(doc, logo, pageWidth / 2 - 48, y + 4, 27, 21);
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(14);
+  doc.setFontSize(18);
   doc.setTextColor(...colors.navy);
   doc.text(text(report.schoolName || "EDUPORTAL ACADEMY"), pageWidth / 2 - 15, y + 12, { align: "left" });
+  if (schoolAddress) {
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(6.5);
+    doc.setTextColor(...colors.muted);
+    doc.text(doc.splitTextToSize(String(schoolAddress), 90)[0], pageWidth / 2 - 15, y + 17, { align: "left" });
+  }
   doc.setFontSize(6.5);
   doc.setTextColor(...colors.gold);
-  doc.text("EDUPORTAL · ACADEMIC RECORD", pageWidth / 2 - 15, y + 17, { align: "left" });
-  y += 32;
+  doc.text("EDUPORTAL · ACADEMIC RECORD", pageWidth / 2 - 15, y + 23, { align: "left" });
+  y += 39;
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
@@ -179,7 +186,7 @@ const renderStudentReportCard = (doc, report) => {
   doc.line(margin, y + 11, pageWidth - margin, y + 11);
   y += 20;
 
-  roundedCard(doc, margin, y, width, 32, colors.section);
+  roundedCard(doc, margin, y, width, 34, colors.section);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
   doc.setTextColor(...colors.blue);
@@ -193,9 +200,8 @@ const renderStudentReportCard = (doc, report) => {
   field(doc, "Student Name", report.studentName, x1, y + 17, 43);
   field(doc, "Father Name", report.fatherName || report.father, x2, y + 17, 43);
   field(doc, "Class / Section", report.className, x3, y + 17, 35);
-  field(doc, "Roll Number", report.rollNo || report.rollNumber, x1, y + 25, 43);
-  field(doc, "Admission Number", report.admissionNumber || report.admissionNo, x2, y + 25, 43);
-  y += 38;
+  field(doc, "Roll Number", report.rollNo || report.rollNumber, x1, y + 26, 43);
+  y += 40;
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
@@ -206,7 +212,7 @@ const renderStudentReportCard = (doc, report) => {
   doc.setTextColor(...colors.muted);
   doc.text("Subject-wise assessment and outcome", pageWidth - margin, y, { align: "right" });
   y += 4;
-  const columns = [35, 22, 22, 21, 18, 19, 48];
+  const columns = [35, 22, 22, 20, 18, 19, 48];
   const headers = ["Subject", "Obtained", "Maximum", "%", "Grade", "Status", "Remarks"];
   roundedCard(doc, margin, y, width, 8, colors.navy, colors.navy);
   let x = margin;
@@ -227,7 +233,7 @@ const renderStudentReportCard = (doc, report) => {
       doc.setFontSize(7);
       doc.setTextColor(...(valueIndex === 5 ? (String(value).toUpperCase() === "FAIL" ? colors.red : colors.emerald) : colors.ink));
       const content = doc.splitTextToSize(text(value), columns[valueIndex] - 3);
-      doc.text(content[0], x + (valueIndex === 0 ? 3 : columns[valueIndex] / 2), y + 4.2, { align: valueIndex === 0 ? "left" : "center" });
+      doc.text(content[0], x + columns[valueIndex] / 2, y + 4.2, { align: "center" });
       x += columns[valueIndex];
     });
     y += rowHeight;
