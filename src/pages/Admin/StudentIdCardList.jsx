@@ -114,13 +114,16 @@ export default function StudentIdCardList() {
                 {classes.map((item) => <option key={item.id || item.classId || item.className} value={item.id || item.classId || item.className}>{item.classCode || item.className || item.name}</option>)}
               </select>
             </label>
-            <label className="text-sm font-medium text-gray-700">Academic Year <span className="text-red-500">*</span>
+            <div className="mt-4 flex items-center gap-3">
+              <button onClick={handleSearch} className="btn-primary flex h-10 items-center justify-center gap-2 px-7"><Search size={16} />Search</button>
+            </div>
+
+            {/* <label className="text-sm font-medium text-gray-700">Academic Year <span className="text-red-500">*</span>
               <select value={academicYearId} onChange={(event) => { setAcademicYearId(event.target.value); setHasSearched(false); }} className="form-select mt-2 w-full">
                 <option value="">Select</option>
                 {academicYears.map((item) => <option key={item.id || item.academicYearId || item.year} value={item.id || item.academicYearId || item.year}>{item.year || item.academicYear || item.name}</option>)}
               </select>
-            </label>
-            <button onClick={handleSearch} className="btn-primary flex h-10 items-center justify-center gap-2 px-7"><Search size={16} />Search</button>
+            </label> */}
           </div>
         </div>
       </section>
@@ -136,9 +139,19 @@ export default function StudentIdCardList() {
           </div>
           <div className="overflow-x-auto rounded-lg border border-gray-200">
             <table className="w-full min-w-[1100px] text-left text-sm">
-              <thead className="thead-row"><tr>
-                <th className="px-4 py-3">S.No.</th><th className="px-4 py-3">Admission No.</th><th className="px-4 py-3">Student Name</th><th className="px-4 py-3">Roll No.</th><th className="px-4 py-3">Class</th><th className="px-4 py-3">Section</th><th className="px-4 py-3">Academic Year</th><th className="px-4 py-3">Status</th><th className="px-4 py-3 text-center">Action</th>
-              </tr></thead>
+              <thead className="thead-row">
+                <tr>
+                  <th className="px-4 py-3">S.No.</th>
+                  <th className="px-4 py-3">Admission No.</th>
+                  <th className="px-4 py-3">Student Name</th>
+                  <th className="px-4 py-3">Roll No.</th>
+                  <th className="px-4 py-3">Class</th>
+                  <th className="px-4 py-3">Section</th>
+                  {/* <th className="px-4 py-3">Academic Year</th>
+                <th className="px-4 py-3">Status</th> */}
+                  <th className="px-4 py-3 text-center">Action</th>
+                </tr>
+              </thead>
               <tbody>
                 {visibleStudents.map((student, index) => <tr key={studentId(student, index)} className="border-t border-gray-200 hover:bg-gray-50">
                   <td className="px-4 py-3">{(currentPage - 1) * rowsPerPage + index + 1}</td>
@@ -147,10 +160,9 @@ export default function StudentIdCardList() {
                   <td className="px-4 py-3">{field(student, ["rollNo", "rollNumber"])}</td>
                   <td className="px-4 py-3">{field(student, ["className", "class"])}</td>
                   <td className="px-4 py-3">{field(student, ["section"])}</td>
-                  <td className="px-4 py-3">{field(student, ["academicYear", "academicSession"])}</td>
-                  <td className="px-4 py-3"><StatusBadge status={field(student, ["status"])} /></td>
+                  {/* <td className="px-4 py-3">{field(student, ["academicYear", "academicSession"])}</td>
+                  <td className="px-4 py-3"><StatusBadge status={field(student, ["status"])} /></td> */}
                   <td className="px-4 py-3"><div className="flex justify-center gap-2">
-                    <button onClick={() => setPreviewStudent(student)} className="rounded p-1.5 text-indigo-600 hover:bg-indigo-50" title="Preview Student ID Card" aria-label="Preview Student ID Card"><Eye size={18} /></button>
                     <button onClick={() => downloadStudentIdCardPdf(student)} className="rounded p-1.5 text-indigo-600 hover:bg-indigo-50" title="Download Student ID Card" aria-label="Download Student ID Card"><Download size={18} /></button>
                   </div></td>
                 </tr>)}
