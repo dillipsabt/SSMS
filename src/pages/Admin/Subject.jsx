@@ -30,14 +30,6 @@ const Subject = () => {
     dispatch(fetchSubjectsAsync());
   }, [dispatch]);
 
-  useEffect(() => {
-    const params = {};
-    if (filters.search) {
-      params.search = filters.search;
-    }
-    dispatch(fetchSubjectsAsync(params));
-  }, [filters, dispatch]);
-
   const handleFormChange = (event) => {
     const { name, value } = event.target;
     setFormData((previous) => ({ ...previous, [name]: value }));
@@ -47,6 +39,14 @@ const Subject = () => {
     const { name, value } = event.target;
     setFilters((previous) => ({ ...previous, [name]: value }));
   };
+
+  const normalizedSearch = filters.search.trim().toLowerCase();
+  const filteredSubjects = (subjects || []).filter((subject) => {
+    if (!normalizedSearch) return true;
+    return [subject.subjectCode, subject.subjectName]
+      .filter(Boolean)
+      .some((field) => String(field).toLowerCase().includes(normalizedSearch));
+  });
 
   const handleSubmit = async () => {
     if (!formData.subjectCode || !formData.subjectName) {
@@ -145,7 +145,7 @@ const Subject = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
           <div>
             <label className="block text-xs font-medium text-gray-700 mb-1">
-              Subject Code *
+              Subject Code <span className="text-red-500" style={{ color: "#ef4444" }}>*</span>
             </label>
             <input
               type="text"
@@ -159,7 +159,7 @@ const Subject = () => {
 
           <div>
             <label className="block text-xs font-medium text-gray-700 mb-1">
-              Subject Name *
+              Subject Name <span className="text-red-500" style={{ color: "#ef4444" }}>*</span>
             </label>
             <input
               type="text"
@@ -234,8 +234,8 @@ const Subject = () => {
                     Loading...
                   </td>
                 </tr>
-              ) : subjects?.length > 0 ? (
-                subjects.map((subject) => (
+              ) : filteredSubjects.length > 0 ? (
+                filteredSubjects.map((subject) => (
                   <tr
                     key={subject.id}
                     className="border-b border-gray-200 hover:bg-gray-50"

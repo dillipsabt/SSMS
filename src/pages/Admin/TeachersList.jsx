@@ -81,9 +81,18 @@ const TeachersList = () => {
 
 
   const filteredTeachers = formatted.filter((t) => {
-    const matchesSearch = t.name
-      .toLowerCase()
-      .includes(search.toLowerCase());
+    const matchesSearch = search === "" ||
+      [
+        t.name,
+        t.subject,
+        t.phone,
+        t.email,
+        t.date,
+      ]
+        .filter(Boolean)
+        .some((value) =>
+          String(value).toLowerCase().includes(search)
+        );
 
     const matchesStatus =
       statusFilter === "All"
@@ -147,7 +156,6 @@ const TeachersList = () => {
             <thead className="thead-row">
               <tr>
                 <th className="px-4 py-2 text-left">S No.</th>
-                <th className="px-4 py-2 text-left">ID No.</th>
                 <th className="px-4 py-2 text-left">Name</th>
                 <th className="px-4 py-2 text-left">Subject</th>
                 <th className="px-4 py-2 text-left">Phone No.</th>
@@ -162,7 +170,6 @@ const TeachersList = () => {
               {currentTeachers.map((item, index) => (
                 <tr key={index} className="border-t border-gray-200 hover:bg-gray-50">
                   <td className="px-4 py-2">{indexOfFirst + index + 1}</td>
-                  <td className="px-4 py-2">{item.teacherId}</td>
                   <td className="px-4 py-2 font-medium">{item.name}</td>
                   <td className="px-4 py-2">{item.subject}</td>
                   <td className="px-4 py-2">{item.phone}</td>

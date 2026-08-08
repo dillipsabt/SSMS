@@ -261,15 +261,10 @@ export default function HallTicketList() {
 
     useToastMessage({
         success,
-
         successMessage,
-
         error,
-
         clearSuccess,
-
         clearError,
-
         onSuccess: fetchList,
     });
 

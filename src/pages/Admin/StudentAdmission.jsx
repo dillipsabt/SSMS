@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import useToastMessage from "../../utils/useToastMessage";
@@ -112,8 +111,6 @@ const SectionCard = ({ title, children }) => (
 
 /* ================= MAIN ================= */
 const StudentAdmission = () => {
-  const { state } = useLocation();
-  const editData = state?.editData;
   const [formData, setFormData] = useState({});
   const [sameAddress, setSameAddress] = useState(false);
   const [studentLoginEnabled, setStudentLoginEnabled] = useState(false);
@@ -494,7 +491,7 @@ console.log("Form Data Before Submission:", formData);
   return (
     <div>
       <h1 className="text-[18px] font-semibold mb-4 text-[#333333]">
-        {editData ? "Edit Student" : "Student Admission"}
+        {id ? "Edit Student" : "Student Admission"}
       </h1>
 
       {/* BASIC */}
@@ -772,11 +769,22 @@ console.log("Form Data Before Submission:", formData);
         </div>
       </SectionCard>
 
-      <div className="flex justify-end">
-        <button onClick={handleSubmit} className="btn-primary">
-          {editData ? "Update" : "Save"}
-        </button>
-      </div>
+      <div className="flex justify-end gap-3 p-4 border-t border-gray-100">
+          <button
+            type="button"
+            onClick={() => navigate("/students_list")}
+            className="btn-secondary"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handleSubmit}
+            className="btn-primary"
+          >
+            {id ? "✏️ Update" : "💾 Save"}
+          </button>
+        </div>
     </div>
   );
 };

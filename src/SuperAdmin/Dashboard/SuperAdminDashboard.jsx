@@ -1,27 +1,39 @@
-import { Building2, CircleCheck, Clock3, UsersRound } from "lucide-react";
+import { Bell, Building2, CalendarDays, ChevronDown, CircleDollarSign, Clock3, GraduationCap, Ticket, UserRound, Users, WalletCards } from "lucide-react";
+import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
-const stats = [
-  ["Total Schools", "04", Building2],
-  ["Active Tenants", "04", CircleCheck],
-  ["Trial Accounts", "01", Clock3],
-  ["Total Students", "4,000", UsersRound]
-];
+const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const trend = months.map((month, index) => ({ month, schools: [68, 16, 32, 20, 41, 12, 57, 15, 56, 51, 92, 42][index], active: [42, 50, 34, 82, 14, 15, 52, 35, 94, 94, 54, 15][index] }));
+const users = ["Students", "Teachers", "Staff", "Parents", "Admin", "Others"].map((name, index) => ({ name, value: [56, 64, 76, 78, 70, 37][index] * 1000, color: ["#6758ee", "#d62be8", "#36bc3f", "#8358e8", "#ffad34", "#ee655c"][index] }));
+const plans = [{ name: "Free Trial", value: 86, color: "#7180ef" }, { name: "Basic", value: 420, color: "#68ca9a" }, { name: "Standard", value: 466, color: "#ffad3d" }, { name: "Premium", value: 196, color: "#20c5df" }, { name: "Enterprise", value: 80, color: "#9a7bed" }];
+const ticketData = [{ name: "Open", value: 85, color: "#ef153b" }, { name: "Inprogress", value: 165, color: "#ffad3d" }, { name: "Resolved", value: 640, color: "#16bd79" }, { name: "Closed", value: 263, color: "#646464" }];
+
+function Metric({ icon: Icon, label, value, color = "text-indigo-600", bg = "bg-indigo-50", sublabel }) {
+  return <article className="rounded border border-gray-200 bg-white px-3 py-3 shadow-sm"><div className={`mx-auto mb-2 flex h-9 w-9 items-center justify-center rounded ${bg} ${color}`}><Icon size={21} strokeWidth={1.8} /></div><p className="text-center text-xs text-gray-600">{label}</p>{sublabel && <p className="text-center text-xs text-gray-600">{sublabel}</p>}<strong className={`mt-1 block text-center text-xl ${color}`}>{value}</strong></article>;
+}
+function Panel({ title, children, action = "This Year", className = "" }) {
+  return <section className={`overflow-hidden rounded border border-gray-200 bg-white shadow-sm ${className}`}><header className="flex items-center justify-between bg-indigo-600 px-3 py-2.5 text-white"><h2 className="text-sm font-semibold">{title}</h2>{action && <button className="flex items-center gap-2 rounded bg-white px-2.5 py-1 text-xs text-gray-600">{action}<ChevronDown size={13} /></button>}</header>{children}</section>;
+}
+function Donut({ data, total, label }) {
+  return <div className="relative h-48"><ResponsiveContainer><PieChart><Pie data={data} dataKey="value" innerRadius={54} outerRadius={82} startAngle={90} endAngle={-270}>{data.map((item) => <Cell key={item.name} fill={item.color} />)}</Pie></PieChart></ResponsiveContainer><div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center"><strong className="text-2xl text-gray-900">{total}</strong><span className="text-xs">{label}</span></div></div>;
+}
+function Legend({ data, total = 1248 }) {
+  return <div className="space-y-1.5 text-xs">{data.map((item) => <div key={item.name} className="flex items-center justify-between"><span className="flex items-center gap-2 text-gray-600"><i className="h-2 w-2 rounded-full" style={{ backgroundColor: item.color }} />{item.name}</span><span className="text-gray-700">{item.value} ({((item.value / total) * 100).toFixed(1)}%)</span></div>)}</div>;
+}
 
 export default function SuperAdminDashboard() {
-  return (
-    <div className="sa-page">
-    <h1>Dashboard</h1>
-    <p className="sa-breadcrumb">Home / Dashboard</p>
-    <div className="sa-dashboard-grid">{stats.map((stat) => {
-      const StatIcon = stat[2]; return <article className="sa-stat" key={stat[0]}><span><StatIcon size={24} /></span>
-        <div>
-          <p>{stat[0]}</p>
-          <strong>{stat[1]}</strong>
-        </div></article>;
-    })}</div>
-    <section className="sa-card sa-dashboard-welcome">
-      <h2>Super Admin Dashboard</h2><p>Select <strong>School Details</strong> from the sidebar to manage school information.</p>
-    </section>
+  return <div className="sa-page bg-gray-50">
+    <h1>Dashboard</h1><p className="sa-breadcrumb">Home / Dashboard</p>
+    <div className="mb-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-7">
+      <Metric icon={Building2} label="Total Schools" value="542" /><Metric icon={Building2} label="Active Schools" value="488" color="text-emerald-500" bg="bg-emerald-50" /><Metric icon={GraduationCap} label="Trial Schools" value="32" color="text-amber-500" bg="bg-amber-50" /><Metric icon={Bell} label="Expired Schools" value="22" color="text-rose-600" bg="bg-rose-50" /><Metric icon={CalendarDays} label="New Schools" sublabel="This Month" value="24" color="text-blue-500" bg="bg-blue-50" /><Metric icon={Users} label="Active Users Today" value="42,502" color="text-purple-600" bg="bg-purple-50" /><Metric icon={Ticket} label="Support Tickets" value="14" color="text-teal-500" bg="bg-teal-50" />
     </div>
-  );
+    <div className="mb-3 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6"><Metric icon={UserRound} label="Total Students" value="128.4k" /><Metric icon={GraduationCap} label="Total Teachers" value="12.1k" color="text-emerald-500" bg="bg-emerald-50" /><Metric icon={Users} label="Total Parents" value="240k" color="text-purple-600" bg="bg-purple-50" /><Metric icon={UserRound} label="Total Staff" value="5.2k" color="text-amber-500" bg="bg-amber-50" /><Metric icon={WalletCards} label="Monthly Revenue" value="₹842k" color="text-emerald-600" bg="bg-emerald-50" /><Metric icon={CircleDollarSign} label="Pending Payments" value="₹12400" color="text-amber-500" bg="bg-amber-50" /></div>
+    <div className="grid gap-3 lg:grid-cols-4">
+      <Panel title="School Growth" className="lg:col-span-3"><div className="h-[285px] p-3"><ResponsiveContainer><LineChart data={trend} margin={{ top: 10, right: 8, bottom: 0, left: -18 }}><CartesianGrid strokeDasharray="2 2" /><XAxis dataKey="month" fontSize={10} /><YAxis domain={[0, 100]} fontSize={10} /><Tooltip /><Line type="monotone" dataKey="schools" name="Total Schools" stroke="#7180ef" strokeWidth={2} dot={{ r: 3 }} /><Line type="monotone" dataKey="active" name="Active Schools" stroke="#68ca9a" strokeWidth={2} dot={{ r: 3 }} /></LineChart></ResponsiveContainer></div></Panel>
+      <Panel title="Subscription Distribution" action={null}><div className="p-3"><Donut data={plans} total="1,248" label="Total Schools" /><Legend data={plans} /></div></Panel>
+      <Panel title="Revenue Trend" className="lg:col-span-2"><div className="h-[285px] p-3"><ResponsiveContainer><LineChart data={trend} margin={{ top: 10, right: 8, bottom: 0, left: -18 }}><CartesianGrid strokeDasharray="2 2" /><XAxis dataKey="month" fontSize={10} /><YAxis domain={[0, 100]} fontSize={10} /><Tooltip /><Line type="monotone" dataKey="schools" name="Revenue (₹)" stroke="#7180ef" strokeWidth={2} dot={{ r: 3 }} /></LineChart></ResponsiveContainer></div></Panel>
+      <Panel title="Active Users" action="This Month" className="lg:col-span-2"><div className="h-[285px] p-3"><ResponsiveContainer><BarChart data={users} margin={{ top: 10, right: 8, bottom: 0, left: -18 }}><CartesianGrid strokeDasharray="2 2" /><XAxis dataKey="name" fontSize={10} /><YAxis fontSize={10} tickFormatter={(value) => `${value / 1000}k`} /><Tooltip /><Bar dataKey="value">{users.map((item) => <Cell key={item.name} fill={item.color} />)}</Bar></BarChart></ResponsiveContainer></div></Panel>
+      <Panel title="Login Statistics" action="This Month" className="lg:col-span-3"><div className="grid gap-3 p-3 sm:grid-cols-[145px_1fr]"><div className="space-y-2"><div className="rounded border border-indigo-400 bg-indigo-50 p-3"><p className="text-xs">Total Logins</p><strong className="text-2xl">12,845</strong></div><div className="rounded border border-emerald-500 bg-emerald-50 p-3"><p className="text-xs">Successful Logins</p><strong className="text-2xl">12,210</strong></div><div className="rounded border border-rose-500 bg-rose-50 p-3"><p className="text-xs">Failed Logins</p><strong className="text-2xl">635</strong></div></div><div className="h-[300px]"><ResponsiveContainer><BarChart data={users} margin={{ top: 10, right: 8, bottom: 0, left: -18 }}><CartesianGrid strokeDasharray="2 2" /><XAxis dataKey="name" fontSize={10} /><YAxis fontSize={10} tickFormatter={(value) => `${value / 1000}k`} /><Tooltip /><Bar dataKey="value">{users.map((item) => <Cell key={item.name} fill={item.color} />)}</Bar></BarChart></ResponsiveContainer></div></div></Panel>
+      <Panel title="Ticket Status" action="All time"><div className="p-3"><Donut data={ticketData} total="1,248" label="Total Schools" /><Legend data={ticketData} /></div></Panel>
+    </div>
+  </div>;
 }

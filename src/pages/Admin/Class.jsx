@@ -38,15 +38,6 @@ const Class = () => {
     dispatch(fetchClassesAsync());
   }, [dispatch]);
 
-  // SEARCH FILTER
-  useEffect(() => {
-    const params = {};
-    if (filters.search) {
-      params.search = filters.search;
-    }
-    dispatch(fetchClassesAsync(params));
-  }, [filters, dispatch]);
-
   // FORM CHANGE
   const handleFormChange = (e) => {
     const { name, value } = e.target;
@@ -65,10 +56,18 @@ const Class = () => {
     }));
   };
 
+  const normalizedSearch = filters.search.trim().toLowerCase();
+  const filteredClasses = (classes || []).filter((classItem) => {
+    if (!normalizedSearch) return true;
+    return [classItem.className, classItem.section, classItem.board]
+      .filter(Boolean)
+      .some((field) => String(field).toLowerCase().includes(normalizedSearch));
+  });
+
   // SAVE
   const handleSubmit = async () => {
     if (!formData.className) {
-      toast.error("Please fill all required fields");
+      toast.error("Class Name is required!");
       return;
     }
 
@@ -171,7 +170,7 @@ const Class = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
           <div>
             <label className="block text-xs font-medium text-gray-700 mb-1">
-              Class Name *
+              Class Name <span className="text-red-500" style={{ color: "#ef4444" }}>*</span>
             </label>
             <input
               type="text"
@@ -185,7 +184,7 @@ const Class = () => {
 
           <div>
             <label className="block text-xs font-medium text-gray-700 mb-1">
-              Section *
+              Section 
             </label>
             <input
               type="text"
@@ -199,7 +198,7 @@ const Class = () => {
 
           <div>
             <label className="block text-xs font-medium text-gray-700 mb-1">
-              Board *
+              Board 
             </label>
             <select
               name="board"
@@ -266,8 +265,8 @@ const Class = () => {
                     Loading...
                   </td>
                 </tr>
-              ) : classes?.length > 0 ? (
-                classes.map((classItem) => (
+              ) : filteredClasses.length > 0 ? (
+                filteredClasses.map((classItem) => (
                   <tr key={classItem.id} className="border-b border-gray-200 hover:bg-gray-50">
                     <td className="px-4 py-3 text-gray-800">
                       {classItem.classCode}

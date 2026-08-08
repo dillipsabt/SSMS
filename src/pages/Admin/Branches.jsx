@@ -51,15 +51,6 @@ const Branches = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    const params = {};
-    if (filters.search) {
-      params.search = filters.search;
-    }
-    dispatch(fetchBranchesAsync(params));
-  }, [filters, dispatch]);
-
-
-  useEffect(() => {
     if (selectedBranch && editId) {
       setFormData({
         branchName: selectedBranch.name || "",
@@ -123,6 +114,14 @@ const Branches = () => {
       [name]: value,
     }));
   };
+
+  const normalizedSearch = filters.search.trim().toLowerCase();
+  const filteredBranches = (branches || []).filter((branch) => {
+    if (!normalizedSearch) return true;
+    return [branch.name, branch.code]
+      .filter(Boolean)
+      .some((field) => String(field).toLowerCase().includes(normalizedSearch));
+  });
 
   const handleSubmit = async () => {
     if (!formData.branchName || !formData.branchCode || !formData.countryId || !formData.stateId || !formData.cityId) {
@@ -239,7 +238,7 @@ const Branches = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
           <div>
             <label className="block text-xs font-medium text-gray-700 mb-1">
-              Branch Code *
+              Branch Code <span className="text-red-500" style={{ color: "#ef4444" }}>*</span>
             </label>
             <input
               type="text"
@@ -253,7 +252,7 @@ const Branches = () => {
 
           <div>
             <label className="block text-xs font-medium text-gray-700 mb-1">
-              Branch Name *
+              Branch Name <span className="text-red-500" style={{ color: "#ef4444" }}>*</span>
             </label>
             <input
               type="text"
@@ -267,7 +266,7 @@ const Branches = () => {
 
           <div>
             <label className="block text-xs font-medium text-gray-700 mb-1">
-              Country *
+              Country <span className="text-red-500" style={{ color: "#ef4444" }}>*</span>
             </label>
             <select
               name="countryId"
@@ -286,7 +285,7 @@ const Branches = () => {
 
           <div>
             <label className="block text-xs font-medium text-gray-700 mb-1">
-              State *
+              State <span className="text-red-500" style={{ color: "#ef4444" }}>*</span>
             </label>
             <select
               name="stateId"
@@ -306,7 +305,7 @@ const Branches = () => {
 
           <div>
             <label className="block text-xs font-medium text-gray-700 mb-1">
-              City *
+              City <span className="text-red-500" style={{ color: "#ef4444" }}>*</span>
             </label>
             <select
               name="cityId"
@@ -459,8 +458,8 @@ const Branches = () => {
                     Loading...
                   </td>
                 </tr>
-              ) : branches?.length > 0 ? (
-                branches.map((branch) => (
+              ) : filteredBranches.length > 0 ? (
+                filteredBranches.map((branch) => (
                   <tr key={branch.id} className="border-b border-gray-200 hover:bg-gray-50">
                     <td className="px-4 py-3 text-gray-800">{branch.code}</td>
                     <td className="px-4 py-3 text-gray-800">{branch.name}</td>

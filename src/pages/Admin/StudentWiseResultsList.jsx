@@ -171,9 +171,12 @@ export default function StudentWiseResultsList() {
               </select>
             </label>
             <label className="text-sm font-medium text-gray-700">Class Type <span className="text-red-500">*</span><select value={classId} onChange={(event) => setClassId(event.target.value)} className="form-select mt-1 w-full"><option value="">Select Class</option>{classes.map((item) => <option key={item.id} value={item.id}>{item.classCode || item.className || item.name}</option>)}</select></label>
-            <label className="text-sm font-medium text-gray-700">Teacher<select value={teacherId} onChange={(event) => setTeacherId(event.target.value)} className="form-select mt-1 w-full"><option value="">All Teachers</option>{teachers.map((teacher) => <option key={teacher.id} value={teacher.id}>{teacher.fullName || teacher.name || teacher.firstName || "Teacher"}</option>)}</select></label>
-            <label className="text-sm font-medium text-gray-700">Date<input type="date" value={date} onChange={(event) => setDate(event.target.value)} className="form-input mt-1 w-full" /></label>
-            <button onClick={handleSearch} disabled={loading} className="btn-primary flex h-10 items-center justify-center gap-2 px-6"><Search size={16} />{loading ? "Loading..." : "Search"}</button>
+            {/* <label className="text-sm font-medium text-gray-700">Teacher<select value={teacherId} onChange={(event) => setTeacherId(event.target.value)} className="form-select mt-1 w-full"><option value="">All Teachers</option>{teachers.map((teacher) => <option key={teacher.id} value={teacher.id}>{teacher.fullName || teacher.name || teacher.firstName || "Teacher"}</option>)}</select></label> */}
+            {/* <label className="text-sm font-medium text-gray-700">Date<input type="date" value={date} onChange={(event) => setDate(event.target.value)} className="form-input mt-1 w-full" /></label> */}
+            <div>
+              <button onClick={handleSearch} disabled={loading} className="btn-primary flex h-10 items-center justify-center gap-2 px-6"><Search size={16} />{loading ? "Loading..." : "Search"}</button>
+            </div>
+
           </div>
         </div>
       </div>
@@ -183,17 +186,17 @@ export default function StudentWiseResultsList() {
         <div className="p-4">
           <div className="mb-4 grid grid-cols-1 gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3 sm:grid-cols-3">
             <div className="rounded-md bg-white px-3 py-2 shadow-sm">
-              <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500">Exam Type</p>
+              <p className="text-sm font-medium uppercase tracking-wide text-gray-500">Exam Type</p>
               <p className="mt-1 text-sm font-semibold text-gray-800">{examinationTypes.find((item) => String(item.id) === String(examTypeId))?.examType || "-"}</p>
             </div>
             <div className="rounded-md bg-white px-3 py-2 shadow-sm">
-              <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500">Class</p>
+              <p className="text-sm font-medium uppercase tracking-wide text-gray-500">Class</p>
               <p className="mt-1 text-sm font-semibold text-gray-800">{classes.find((item) => String(item.id) === String(classId))?.classCode || "-"}</p>
             </div>
-            <div className="rounded-md bg-white px-3 py-2 shadow-sm">
-              <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500">Date</p>
+            {/* <div className="rounded-md bg-white px-3 py-2 shadow-sm">
+              <p className="text-sm font-medium uppercase tracking-wide text-gray-500">Date</p>
               <p className="mt-1 text-sm font-semibold text-gray-800">{date || "-"}</p>
-            </div>
+            </div> */}
           </div>
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:justify-end">
             <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search Student Name / Hall Ticket No." className="form-input sm:w-72" />
@@ -206,50 +209,50 @@ export default function StudentWiseResultsList() {
 
           {error && <div className="mb-3 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">{error?.message || error}</div>}
           <div className="overflow-x-auto rounded border border-gray-200">
-            <table className="w-full min-w-[1600px] text-sm">
+            <table className="w-full min-w-[1600px] text-xs">
               <thead className="bg-indigo-50 text-gray-700">
                 <tr>
-                  <th className="px-3 py-3 text-left"><input type="checkbox" checked={rows.length > 0 && rows.every((student, index) => selectedIds.has(getRowKey(student, index)))} onChange={toggleAllVisibleStudents} aria-label="Select all students" /></th>
-                  <th className="px-3 py-3 text-left">S.No.</th>
-                  <th className="px-3 py-3 text-left">Student Name</th>
-                  <th className="px-3 py-3 text-left">Roll No.</th>
-                  <th className="px-3 py-3 text-left">Admission No.</th>
-                  <th className="px-3 py-3 text-left">Class</th>
-                  <th className="px-3 py-3 text-left">Exam Type</th>
-                  <th className="px-3 py-3 text-left">Academic Year</th>
-                  <th className="px-3 py-3 text-left">Obtained</th>
-                  <th className="px-3 py-3 text-left">Total Marks</th>
-                  <th className="px-3 py-3 text-left">Percentage</th>
-                  <th className="px-3 py-3 text-left">Grade</th>
-                  <th className="px-3 py-3 text-left">Grade Point</th>
-                  <th className="px-3 py-3 text-left">Result</th>
-                  <th className="px-3 py-3 text-left">Fees Status</th>
-                  <th className="px-3 py-3 text-left">Published</th>
-                  <th className="px-3 py-3 text-left">Published Notes</th>
-                  <th className="px-3 py-3 text-center">Download</th>
+                  <th className="w-10 border-r border-indigo-100 px-3 py-3 text-center align-middle"><input type="checkbox" checked={rows.length > 0 && rows.every((student, index) => selectedIds.has(getRowKey(student, index)))} onChange={toggleAllVisibleStudents} aria-label="Select all students" /></th>
+                  <th className="border-r border-indigo-100 px-3 py-2.5 text-left align-middle text-xs font-semibold leading-4 whitespace-nowrap">S.No.</th>
+                  <th className="min-w-[120px] border-r border-indigo-100 px-3 py-2.5 text-left align-middle text-xs font-semibold leading-4 whitespace-nowrap">Student Name</th>
+                  <th className="min-w-[90px] border-r border-indigo-100 px-3 py-2.5 text-left align-middle text-xs font-semibold leading-4 whitespace-nowrap">Roll No.</th>
+                  <th className="min-w-[105px] border-r border-indigo-100 px-3 py-2.5 text-left align-middle text-xs font-semibold leading-4 whitespace-nowrap">Admission No.</th>
+                  <th className="min-w-[65px] border-r border-indigo-100 px-3 py-2.5 text-left align-middle text-xs font-semibold leading-4 whitespace-nowrap">Class</th>
+                  <th className="min-w-[90px] border-r border-indigo-100 px-3 py-2.5 text-left align-middle text-xs font-semibold leading-4 whitespace-nowrap">Exam Type</th>
+                  <th className="min-w-[105px] border-r border-indigo-100 px-3 py-2.5 text-left align-middle text-xs font-semibold leading-4 whitespace-nowrap">Academic Year</th>
+                  <th className="min-w-[80px] border-r border-indigo-100 px-3 py-2.5 text-left align-middle text-xs font-semibold leading-4 whitespace-nowrap">Obtained</th>
+                  <th className="min-w-[85px] border-r border-indigo-100 px-3 py-2.5 text-left align-middle text-xs font-semibold leading-4 whitespace-nowrap">Total Marks</th>
+                  <th className="min-w-[85px] border-r border-indigo-100 px-3 py-2.5 text-left align-middle text-xs font-semibold leading-4 whitespace-nowrap">Percentage</th>
+                  <th className="min-w-[65px] border-r border-indigo-100 px-3 py-2.5 text-left align-middle text-xs font-semibold leading-4 whitespace-nowrap">Grade</th>
+                  <th className="min-w-[80px] border-r border-indigo-100 px-3 py-2.5 text-left align-middle text-xs font-semibold leading-4 whitespace-nowrap">Grade Point</th>
+                  <th className="min-w-[75px] border-r border-indigo-100 px-3 py-2.5 text-left align-middle text-xs font-semibold leading-4 whitespace-nowrap">Result</th>
+                  <th className="min-w-[90px] border-r border-indigo-100 px-3 py-2.5 text-left align-middle text-xs font-semibold leading-4 whitespace-nowrap">Fees Status</th>
+                  <th className="min-w-[80px] border-r border-indigo-100 px-3 py-2.5 text-left align-middle text-xs font-semibold leading-4 whitespace-nowrap">Published</th>
+                  <th className="min-w-[130px] border-r border-indigo-100 px-3 py-2.5 text-left align-middle text-xs font-semibold leading-4 whitespace-nowrap">Published Notes</th>
+                  <th className="min-w-[80px] px-3 py-2.5 text-center align-middle text-xs font-semibold leading-4 whitespace-nowrap">Download</th>
                 </tr>
               </thead>
               <tbody>
                 {rows.length ? rows.map((student, index) =>
                   <tr key={getRowKey(student, index)} className="border-t border-gray-200 hover:bg-gray-50">
-                    <td className="px-3 py-3"><input type="checkbox" checked={selectedIds.has(getRowKey(student, index))} onChange={() => toggleStudentSelection(student, index)} aria-label={`Select ${getStudentName(student)}`} /></td>
-                    <td className="px-3 py-3">{index + 1}</td>
-                    <td className="px-3 py-3">{getStudentName(student)}</td>
-                    <td className="px-3 py-3">{getRollNumber(student)}</td>
-                    <td className="px-3 py-3">{getAdmissionNumber(student)}</td>
-                    <td className="px-3 py-3">{student.className || "-"}</td>
-                    <td className="px-3 py-3">{student.examinationType || "-"}</td>
-                    <td className="px-3 py-3">{student.academicYear || "-"}</td>
-                    <td className="px-3 py-3">{student.totalObtainedMarks ?? "-"}</td>
-                    <td className="px-3 py-3">{student.totalMarks ?? "-"}</td>
-                    <td className="px-3 py-3">{getPercentage(student)}%</td>
-                    <td className="px-3 py-3">{student.grade || "-"}</td>
-                    <td className="px-3 py-3">{student.gradePoint ?? "-"}</td>
-                    <td className="px-3 py-3"><StatusBadge value={getStatus(student)} /></td>
-                    <td className="px-3 py-3"><StatusBadge value={student.feeStatus || student.feesStatus || "Pending"} tone="fee" /></td>
-                    <td className="px-3 py-3">{student.published || "-"}</td>
-                    <td className="px-3 py-3">{student.publishedNotes || student.notes || "-"}</td>
-                    <td className="px-3 py-3 text-center"><button onClick={() => downloadReportCard(student)} disabled={loading} className="text-indigo-600 hover:text-indigo-800 disabled:opacity-50" title="Download report card"><Download size={20} /></button></td>
+                    <td className="px-3 py-2.5 align-middle"><input type="checkbox" checked={selectedIds.has(getRowKey(student, index))} onChange={() => toggleStudentSelection(student, index)} aria-label={`Select ${getStudentName(student)}`} /></td>
+                    <td className="px-3 py-2.5 align-middle">{index + 1}</td>
+                    <td className="px-3 py-2.5 align-middle">{getStudentName(student)}</td>
+                    <td className="px-3 py-2.5 align-middle">{getRollNumber(student)}</td>
+                    <td className="px-3 py-2.5 align-middle">{getAdmissionNumber(student)}</td>
+                    <td className="px-3 py-2.5 align-middle">{student.className || "-"}</td>
+                    <td className="px-3 py-2.5 align-middle">{student.examinationType || "-"}</td>
+                    <td className="px-3 py-2.5 align-middle">{student.academicYear || "-"}</td>
+                    <td className="px-3 py-2.5 align-middle">{student.totalObtainedMarks ?? "-"}</td>
+                    <td className="px-3 py-2.5 align-middle">{student.totalMarks ?? "-"}</td>
+                    <td className="px-3 py-2.5 align-middle">{getPercentage(student)}%</td>
+                    <td className="px-3 py-2.5 align-middle">{student.grade || "-"}</td>
+                    <td className="px-3 py-2.5 align-middle">{student.gradePoint ?? "-"}</td>
+                    <td className="px-3 py-2.5 align-middle"><StatusBadge value={getStatus(student)} /></td>
+                    <td className="px-3 py-2.5 align-middle"><StatusBadge value={student.feeStatus || student.feesStatus || "Pending"} tone="fee" /></td>
+                    <td className="px-3 py-2.5 align-middle">{student.published || "-"}</td>
+                    <td className="px-3 py-2.5 align-middle">{student.publishedNotes || student.notes || "-"}</td>
+                    <td className="px-3 py-2.5 text-center align-middle"><button onClick={() => downloadReportCard(student)} disabled={loading} className="text-indigo-600 hover:text-indigo-800 disabled:opacity-50" title="Download report card"><Download size={20} /></button></td>
                   </tr>
                 ) :
                   <tr>

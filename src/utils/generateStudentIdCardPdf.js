@@ -79,13 +79,19 @@ const drawFront = (doc, card, x, y, width, height) => {
   doc.roundedRect(x, y, width, height, 1.2, 1.2, "FD");
   doc.setFillColor(...panel);
   doc.roundedRect(x + safe, y + 27, width - safe * 2, height - 30, 3.2, 3.2, "F");
-  if (!drawImageContain(doc, card.schoolLogo, center - 6, y + 3.5, 12, 11)) {
-    doc.setDrawColor(255, 255, 255);
-    doc.setLineWidth(0.8);
-    doc.line(center - 5, y + 12, center, y + 3.5);
-    doc.line(center, y + 3.5, center + 5, y + 12);
-    doc.line(center - 5, y + 12, center + 5, y + 12);
-  }
+  const logoX = x + 4;
+  const logoY = y + 4;
+  doc.setFillColor(255, 255, 255);
+  doc.setDrawColor(255, 255, 255);
+  doc.circle(logoX + 4, logoY + 4, 4.5, "FD");
+  drawImageContain(doc, card.schoolLogo, logoX + 0.8, logoY + 0.8, 6.4, 6.4);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(4.6);
+  doc.setTextColor(255, 255, 255);
+  doc.text(doc.splitTextToSize(value(card.schoolName), 35).slice(0, 2), x + 14, y + 6.2, { lineHeightFactor: 1.05 });
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(2.8);
+  doc.text(doc.splitTextToSize(value(card.schoolAddress), 35).slice(0, 2), x + 14, y + 10.8, { lineHeightFactor: 1.05 });
 
   const photoX = center - 11;
   const photoY = y + 18;

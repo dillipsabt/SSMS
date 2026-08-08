@@ -95,17 +95,29 @@ const StudentList = () => {
   };
 
   const filteredStudents = students.filter((s) => {
-    const matchesSearch = s.name.toLowerCase().includes(search.toLowerCase());
+    const searchText = search.trim().toLowerCase();
+
+    const matchesSearch =
+      searchText === "" ||
+      [
+        s.rollNo,
+        s.admission,
+        s.name,
+        s.age,
+        s.dob,
+        s.parentPhoneNo,
+        s.email,
+        s.joining,
+      ]
+        .filter(Boolean)
+        .some((value) =>
+          String(value).toLowerCase().includes(searchText)
+        );
 
     const matchesStatus =
       statusFilter === "All"
         ? true
-        : s.status?.toLowerCase() === statusFilter.toLowerCase();
-
-    // const matchesClass =
-    //   selectedClass === ""
-    //     ? true
-    //     : `${s.raw.className}-${s.raw.section}` === selectedClass;
+        : (s.status || "").toLowerCase() === statusFilter.toLowerCase();
 
     const matchesClass =
       selectedClass === ""
