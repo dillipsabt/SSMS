@@ -15,31 +15,27 @@ const formattedNumber = (value) => {
   return Number.isInteger(number) ? String(number) : number.toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
 };
 const percent = (value) => `${formattedNumber(value)}%`;
-const getTeacherRemarks = (report) => {
-  const directValues = [
-    report.teacherRemarks,
-    report.teacherRemark,
-    report.teacher_remarks,
-    report.classTeacherRemarks,
-    report.classTeacherRemark,
-    report.classTeacherComment,
-    report.teacherComment,
-    report.remarksText,
-    report.remarkText,
-    report.remarks,
-    report.remark,
-    report.comment,
-    report.comments,
-  ];
-  const nestedValues = [report.teacher, report.classTeacher, report.teacherDetails, report.data]
-    .filter(Boolean)
-    .flatMap((value) => [value.teacherRemarks, value.teacherRemark, value.remarks, value.remark, value.comment, value.comments]);
-  const directRemarks = [...directValues, ...nestedValues].find((value) => typeof value === "string" && value.trim());
-  const subjectRemarks = (Array.isArray(report.subjects) ? report.subjects : [])
-    .filter((subject) => typeof subject.remarks === "string" && subject.remarks.trim())
-    .map((subject) => `${text(subject.subjectName)}: ${subject.remarks.trim()}`)
-    .join("  |  ");
-  return [directRemarks, subjectRemarks].filter(Boolean).join("  |  ") || "No remarks available.";
+const getOverallRemarks = (report) => {
+  const subjects = Array.isArray(report.subjects) ? report.subjects : [];
+  const getSubjectPercentage = (subject) => {
+    const subjectPercentage = numeric(subject.percentage);
+    if (subjectPercentage) return subjectPercentage;
+    const totalMarks = numeric(subject.totalMarks);
+    return totalMarks ? (numeric(subject.obtainedMarks) / totalMarks) * 100 : 0;
+  };
+  const failedSubjects = subjects.filter((subject) => String(subject.status || "").toUpperCase() === "FAIL" || getSubjectPercentage(subject) < 40);
+  const weakSubjects = subjects.filter((subject) => !failedSubjects.includes(subject) && getSubjectPercentage(subject) < 60);
+  const strongSubjects = subjects.filter((subject) => {
+    const subjectPercentage = getSubjectPercentage(subject);
+    return subjectPercentage >= 60 && subjectPercentage <= 80;
+  });
+  const excellentSubjects = subjects.filter((subject) => getSubjectPercentage(subject) > 80);
+  const insights = [];
+  if (failedSubjects.length) insights.push(`Needs improvement in ${failedSubjects.map((subject) => text(subject.subjectName)).join(", ")}`);
+  if (weakSubjects.length) insights.push(`Focus is recommended for ${weakSubjects.map((subject) => text(subject.subjectName)).join(", ")}`);
+  if (strongSubjects.length) insights.push(`Strong performance in ${strongSubjects.map((subject) => text(subject.subjectName)).join(", ")}`);
+  if (excellentSubjects.length) insights.push(`Excellent performance in ${excellentSubjects.map((subject) => text(subject.subjectName)).join(", ")}`);
+  return insights.length ? insights.join(". ") + "." : "Consistent performance across subjects.";
 };
 
 const addImageContain = (doc, source, x, y, width, height) => {
@@ -323,7 +319,7 @@ const renderStudentReportCard = (doc, report) => {
   doc.setFontSize(8);
   doc.setTextColor(...colors.navy);
   doc.text("PERFORMANCE ANALYSIS", margin, y);
-  doc.text("TEACHER REMARKS", margin + 126, y);
+  doc.text("OVERALL REMARKS", margin + 126, y);
   y += 4;
   const analysisWidth = 120;
   roundedCard(doc, margin, y, analysisWidth, 17, colors.paleBlue);
@@ -348,10 +344,11 @@ const renderStudentReportCard = (doc, report) => {
   const remarksX = margin + 125;
   const remarksWidth = width - 125;
   roundedCard(doc, remarksX, y, remarksWidth, 17, colors.paleGold);
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(7);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8.5);
   doc.setTextColor(...colors.ink);
-  doc.text(doc.splitTextToSize(getTeacherRemarks(report), remarksWidth - 8), remarksX + 4, y + 9);
+  const overallRemarks = doc.splitTextToSize(getOverallRemarks(report), remarksWidth - 8).slice(0, 3);
+  doc.text(overallRemarks, remarksX + 4, y + 6, { lineHeightFactor: 1.25 });
   y += 22;
 
   const signatureY = Math.min(pageHeight - 38, y + 3);
