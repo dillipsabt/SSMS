@@ -21,7 +21,6 @@ import {
     Bus,
     NotebookPen,
     Receipt,
-    Calendar,
     CalendarDays,
     HatGlasses,
     BadgePercent,
@@ -76,14 +75,60 @@ const fmt = (n) => {
     return Math.round(Number(n)).toLocaleString("en-IN");
 };
 
-// Build a date range string for the last 30 days
-const last30Days = () => {
+// Build a date range string for the last year
+const lastYear = () => {
     const end = new Date();
     const start = new Date();
-    start.setDate(start.getDate() - 30);
+    start.setFullYear(start.getFullYear() - 1);
     const iso = (d) => d.toISOString().split("T")[0];
     return { startDate: iso(start), endDate: iso(end) };
 };
+
+const getTodayDate = () => new Date().toISOString().split("T")[0];
+
+const getDateOneYearBefore = (dateValue) => {
+    const date = new Date(dateValue);
+    date.setFullYear(date.getFullYear() - 1);
+    return date.toISOString().split("T")[0];
+};
+
+function DateRangeControls({ startDate, endDate, setStartDate, setEndDate }) {
+    const today = getTodayDate();
+    const startDateMin = endDate ? getDateOneYearBefore(endDate) : undefined;
+
+    return (
+        <div className="mb-5 flex flex-col gap-3 rounded-xl border border-[#E7EBF3] bg-white p-4 shadow-sm sm:flex-row sm:items-end sm:justify-between">
+            <div className="flex items-center gap-2 text-sm font-semibold text-[#2D3748]">
+                <CalendarDays size={16} className="text-indigo-600" />
+                Financial Date Range
+            </div>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <label className="text-xs font-medium text-gray-600">
+                    Start Date
+                    <input
+                        type="date"
+                        value={startDate}
+                        min={startDateMin}
+                        max={endDate || today}
+                        onChange={(event) => setStartDate(event.target.value)}
+                        className="form-input mt-1 min-w-[150px] text-xs"
+                    />
+                </label>
+                <label className="text-xs font-medium text-gray-600">
+                    End Date
+                    <input
+                        type="date"
+                        value={endDate}
+                        min={startDate || startDateMin}
+                        max={today}
+                        onChange={(event) => setEndDate(event.target.value)}
+                        className="form-input mt-1 min-w-[150px] text-xs"
+                    />
+                </label>
+            </div>
+        </div>
+    );
+}
 
 // ── Sub-components (layout unchanged) ─────────────────────────────────────────
 function TopCards({ dashboard, loading }) {
@@ -186,6 +231,9 @@ const OtherFeeCard = ({ item }) => {
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function FinancialOverview() {
     const dispatch = useDispatch();
+    const initialDateRange = lastYear();
+    const [startDate, setStartDate] = useState(initialDateRange.startDate);
+    const [endDate, setEndDate] = useState(initialDateRange.endDate);
     const [currentPage, setCurrentPage] = useState(1);
     const rowsPerPage = 8;
 
@@ -206,13 +254,14 @@ export default function FinancialOverview() {
         dispatch(fetchFinancialDashboard());
     }, [dispatch]);
 
-    // Fetch date-scoped data on mount (last 30 days)
     useEffect(() => {
-        const { startDate, endDate } = last30Days();
-        dispatch(fetchRevenueBreakdown({ startDate, endDate }));
-        dispatch(fetchExpenseBreakdown({ startDate, endDate }));
-        dispatch(fetchFinancialTrend({ startDate, endDate }));
-    }, [dispatch]);
+        if (!startDate || !endDate) return;
+
+        const dateRange = { startDate, endDate };
+        dispatch(fetchRevenueBreakdown(dateRange));
+        dispatch(fetchExpenseBreakdown(dateRange));
+        dispatch(fetchFinancialTrend(dateRange));
+    }, [dispatch, startDate, endDate]);
 
     // Clear Redux error after it has been shown (the axios interceptor already
     // shows the toast, so we just clean up the state)
@@ -348,6 +397,13 @@ export default function FinancialOverview() {
 
                 <TopCards dashboard={dashboard} loading={loadingDashboard} />
 
+                <DateRangeControls
+                    startDate={startDate}
+                    endDate={endDate}
+                    setStartDate={setStartDate}
+                    setEndDate={setEndDate}
+                />
+
                 <div>
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-6 mb-4 lg:mb-6 items-stretch">
                         <div className="bg-white border border-[#E7EBF3] rounded-xl shadow-sm overflow-hidden flex flex-col h-full min-h-[360px]">
@@ -420,10 +476,7 @@ export default function FinancialOverview() {
                                     Revenue vs. Expense Trend
                                 </h3>
 
-                                <button className="flex items-center gap-2 border border-gray-200 rounded px-3 py-1 text-xs text-gray-600 hover:bg-gray-50">
-                                    <Calendar size={14} />
-                                    Last 30 Days
-                                </button>
+                                <span className="text-[10px] text-gray-500">Selected date range</span>
                             </div>
 
                             <div className="h-[260px] lg:h-[300px] xl:h-[250px] px-4 pt-4 pb-2">
@@ -488,10 +541,7 @@ export default function FinancialOverview() {
                             Revenue Breakdown
                         </h3>
 
-                        <button className="flex items-center gap-1 text-[10px] text-gray-500 border border-[#E7EBF3] rounded px-2 h-6">
-                            <CalendarDays size={12} />
-                            Last 30 Days
-                        </button>
+                        <span className="text-[10px] text-gray-500">Selected date range</span>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] items-center gap-5 px-4 py-4">
@@ -557,10 +607,7 @@ export default function FinancialOverview() {
                             Expenses Breakdown
                         </h3>
 
-                        <button className="flex items-center gap-1 text-[10px] text-gray-500 border border-[#E7EBF3] rounded px-2 h-6">
-                            <CalendarDays size={12} />
-                            Last 30 Days
-                        </button>
+                        <span className="text-[10px] text-gray-500">Selected date range</span>
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] items-center gap-5 px-4 py-4">
