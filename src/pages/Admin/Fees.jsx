@@ -29,6 +29,73 @@ const PAYMENT_MODES = [
   "UPI",
 ];
 
+const getStudentValue = (student, fields) =>
+  fields.map((field) => student?.[field]).find((value) => value !== null && value !== undefined && value !== "") || "";
+
+const getStudentName = (student) => getStudentValue(student, ["studentName", "fullName", "name"]);
+const getFatherName = (student) => getStudentValue(student, ["fatherName", "fathersName", "father"]);
+const getAdmissionNumber = (student) => getStudentValue(student, ["admissionNo", "admissionNumber"]);
+const getClassName = (student) => getStudentValue(student, ["className", "class", "classAndSection"]);
+const getStudentKey = (student, index) => student?.id || student?.studentId || getAdmissionNumber(student) || index;
+const formatFeeAmount = (value) => Number(value || 0).toLocaleString("en-IN");
+
+const StudentFeeCard = ({ student, index, selectedId, onSelect }) => {
+  const studentKey = String(getStudentKey(student, index));
+  const totalFees = student.totalFees || student.totalFee || 0;
+  const receivedFees = student.receivedFees || student.paidFees || 0;
+  const pendingFees = student.pendingFees || student.dueFees || 0;
+
+  return (
+    <label
+      className={`block cursor-pointer rounded-lg border bg-white p-4 shadow-sm transition ${
+        selectedId === studentKey
+          ? "border-blue-500 ring-2 ring-blue-100"
+          : "border-gray-200 hover:border-blue-300"
+      }`}
+    >
+      <div className="mb-4 flex items-start gap-3">
+        <input
+          type="radio"
+          name="selectedFeeStudent"
+          value={studentKey}
+          checked={selectedId === studentKey}
+          onChange={() => onSelect(student, index)}
+          className="mt-1 h-4 w-4 accent-blue-600"
+        />
+        <div className="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-3">
+          <div>
+            <p className="text-xs text-gray-500">Student Name</p>
+            <p className="mt-1 font-semibold text-gray-900">{getStudentName(student) || "-"}</p>
+          </div>
+          <div>
+            <p className="text-xs text-gray-500">Class</p>
+            <p className="mt-1 font-semibold text-gray-800">{getClassName(student) || "-"}</p>
+          </div>
+          <div>
+            <p className="text-xs text-gray-500">Father Name</p>
+            <p className="mt-1 font-semibold text-gray-800">{getFatherName(student) || "-"}</p>
+          </div>
+        </div>
+      </div>
+      <div className="mb-4 text-xs text-gray-500">Admission No.: <span className="font-semibold text-gray-800">{getAdmissionNumber(student) || "-"}</span></div>
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+        <div className="rounded-md border border-blue-200 bg-blue-50 px-3 py-2.5">
+          <p className="whitespace-nowrap text-[11px] font-medium text-blue-700">Total Fees</p>
+          <p className="mt-1 text-base font-bold leading-none text-blue-600">₹ {formatFeeAmount(totalFees)}</p>
+        </div>
+        <div className="rounded-md border border-green-200 bg-green-50 px-3 py-2.5">
+          <p className="whitespace-nowrap text-[11px] font-medium text-green-700">Received Fees</p>
+          <p className="mt-1 text-base font-bold leading-none text-green-600">₹ {formatFeeAmount(receivedFees)}</p>
+        </div>
+        <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2.5">
+          <p className="whitespace-nowrap text-[11px] font-medium text-amber-700">Pending Fees</p>
+          <p className="mt-1 text-base font-bold leading-none text-amber-600">₹ {formatFeeAmount(pendingFees)}</p>
+        </div>
+      </div>
+    </label>
+  );
+};
+
 const Fees = () => {
   const dispatch = useDispatch();
   const { students } = useSelector((state) => state.student);
@@ -42,6 +109,8 @@ const Fees = () => {
   }, [dispatch]);
 
   const [admissionNo, setAdmissionNo] = useState("");
+  const [fatherNameSearch, setFatherNameSearch] = useState("");
+  const [selectedStudentId, setSelectedStudentId] = useState("");
   const [studentDetails, setStudentDetails] = useState({
     admissionNo: "",
     studentName: "",
@@ -86,6 +155,8 @@ const Fees = () => {
     const value = e.target.value;
 
     setAdmissionNo(value);
+    setFatherNameSearch("");
+    setSelectedStudentId("");
 
     if (!value.trim()) {
       setStudentDetails({
@@ -159,6 +230,27 @@ const Fees = () => {
       toast.error("Failed to fetch student data");
     }
   };
+
+  const handleStudentCardSelect = (student, index) => {
+    const selectedId = String(getStudentKey(student, index));
+    const selectedAdmissionNo = getAdmissionNumber(student);
+
+    setSelectedStudentId(selectedId);
+    setAdmissionNo(selectedAdmissionNo);
+    setStudentDetails({
+      admissionNo: selectedAdmissionNo,
+      studentName: getStudentName(student),
+      class: getClassName(student),
+      fatherName: getFatherName(student),
+      totalFees: student.totalFees || student.totalFee || 0,
+      receivedFees: student.receivedFees || student.paidFees || 0,
+      pendingFees: student.pendingFees || student.dueFees || 0,
+    });
+  };
+
+  const fatherNameMatches = (students || []).filter((student) =>
+    getFatherName(student).toLowerCase().includes(fatherNameSearch.trim().toLowerCase()),
+  );
 
   const totalAmount = paymentRows.reduce(
     (sum, row) => sum + (row.amount || 0),
@@ -400,81 +492,87 @@ const Fees = () => {
         </div>
 
         <div className="p-4 sm:p-6 border-b border-gray-200">
-          {/* Roll Number Input */}
-          <div className="mb-6 max-w-xs">
-            <label className="form-label text-xs sm:text-sm">
-              Admission Number *
-            </label>
-            <input
-              type="text"
-              value={admissionNo}
-              onChange={handleRollNumberChange}
-              placeholder="1029384"
-              className="form-input text-sm"
-            />
+          {/* Student Search Inputs */}
+          <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div>
+              <label className="form-label text-xs sm:text-sm">
+                Admission Number *
+              </label>
+              <input
+                type="text"
+                value={admissionNo}
+                onChange={handleRollNumberChange}
+                placeholder="1029384"
+                className="form-input text-sm"
+              />
+            </div>
+            <div>
+              <label className="form-label text-xs sm:text-sm">
+                Father Name
+              </label>
+              <input
+                type="text"
+                value={fatherNameSearch}
+                onChange={(event) => {
+                  setFatherNameSearch(event.target.value);
+                  setAdmissionNo("");
+                  setSelectedStudentId("");
+                  setStudentDetails({
+                    admissionNo: "",
+                    studentName: "",
+                    class: "",
+                    fatherName: "",
+                    totalFees: 0,
+                    receivedFees: 0,
+                    pendingFees: 0,
+                  });
+                  setTransactionHistory([]);
+                }}
+                placeholder="Search by father name"
+                className="form-input text-sm"
+              />
+            </div>
           </div>
 
-          {/* Display student details */}
-          {studentDetails.studentName && (
-            <>
-              {/* Student Info Row */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-                <div className="flex items-center justify-between border border-gray-200 rounded-lg px-4 py-3 bg-gray-50">
-                  <p className="text-sm font-medium text-gray-600">
-                    Student Name
-                  </p>
-                  <p className="text-sm font-semibold text-gray-900">
-                    {studentDetails.studentName}
-                  </p>
-                </div>
-
-                <div className="flex items-center justify-between border border-gray-200 rounded-lg px-4 py-3 bg-gray-50">
-                  <p className="text-sm font-medium text-gray-600">Class</p>
-                  <p className="text-sm font-semibold text-gray-900">
-                    {studentDetails.class}
-                  </p>
-                </div>
-
-                <div className="flex items-center justify-between border border-gray-200 rounded-lg px-4 py-3 bg-gray-50">
-                  <p className="text-sm font-medium text-gray-600">
-                    Father Name
-                  </p>
-                  <p className="text-sm font-semibold text-gray-900">
-                    {studentDetails.fatherName}
-                  </p>
-                </div>
+          {fatherNameSearch.trim() && (
+            <div className="mb-6 rounded-lg border border-gray-200 bg-gray-50 p-4">
+              <div className="mb-3 flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-gray-800">Students Found</h3>
+                <span className="text-xs text-gray-500">{fatherNameMatches.length} student(s)</span>
               </div>
-
-              {/* Fees Summary Row */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
-                <div className="flex items-center justify-between border border-blue-200 rounded-lg px-4 py-3 bg-blue-50">
-                  <p className="text-sm font-medium text-blue-700">
-                    Total Fees
-                  </p>
-                  <p className="text-lg font-bold text-blue-600">
-                    {studentDetails.totalFees}
-                  </p>
+              {fatherNameMatches.length > 0 ? (
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-3">
+                  {fatherNameMatches.map((student, index) => (
+                    <StudentFeeCard
+                      key={getStudentKey(student, index)}
+                      student={student}
+                      index={index}
+                      selectedId={selectedStudentId}
+                      onSelect={handleStudentCardSelect}
+                    />
+                  ))}
                 </div>
+              ) : (
+                <p className="py-4 text-center text-sm text-gray-500">No students found for this father name.</p>
+              )}
+            </div>
+          )}
 
-                <div className="flex items-center justify-between border border-green-200 rounded-lg px-4 py-3 bg-green-50">
-                  <p className="text-sm font-medium text-green-700">
-                    Received Fees
-                  </p>
-                  <p className="text-lg font-bold text-green-600">
-                    {studentDetails.receivedFees}
-                  </p>
-                </div>
-
-                <div className="flex items-center justify-between border border-amber-200 rounded-lg px-4 py-3 bg-amber-50">
-                  <p className="text-sm font-medium text-amber-700">
-                    Pending Fees
-                  </p>
-                  <p className="text-lg font-bold text-amber-600">
-                    {studentDetails.pendingFees}
-                  </p>
-                </div>
-              </div>
-            </>
+          {!fatherNameSearch.trim() && studentDetails.studentName && (
+            <StudentFeeCard
+              student={{
+                admissionNo: studentDetails.admissionNo,
+                studentName: studentDetails.studentName,
+                className: studentDetails.class,
+                fatherName: studentDetails.fatherName,
+                totalFees: studentDetails.totalFees,
+                receivedFees: studentDetails.receivedFees,
+                pendingFees: studentDetails.pendingFees,
+              }}
+              index={0}
+              selectedId={selectedStudentId || String(studentDetails.admissionNo)}
+              onSelect={handleStudentCardSelect}
+            />
           )}
         </div>
 

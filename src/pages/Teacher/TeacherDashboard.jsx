@@ -1238,7 +1238,7 @@ success
 
             <div className="bg-[#4F46E5] px-4 py-3 flex items-center justify-between">
               <h2 className="text-white font-semibold text-lg">
-                Punch-In Enroll
+                {isFaceEnrolled ? "Punch-In Verify" : "Punch-In Enroll"}
               </h2>
 
               <button
@@ -1253,11 +1253,11 @@ success
 
             <div className="p-4">
               <h3 className="text-center text-[17px] font-semibold text-gray-800">
-                Face Enrollment
+                {isFaceEnrolled ? "Face Verification" : "Face Enrollment"}
               </h3>
 
               <p className="text-center text-xs text-gray-500 mt-1">
-                Position your face within the frame
+                {isFaceEnrolled ? "Position your face to verify your identity" : "Position your face within the frame"}
               </p>
 
               {/* Camera */}
@@ -1297,21 +1297,28 @@ success
       )}
 
       {showPunchModal && verificationStep === "preview" && (
-        <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
-          <div className="bg-white rounded-lg overflow-hidden shadow-xl w-[430px]">
+        <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50 p-4">
+          <div className="bg-white rounded-lg overflow-hidden shadow-xl w-full max-w-[430px]">
             <div className="bg-[#4F46E5] px-4 py-3 text-white font-semibold">
-              Enroll Verify
+              {isFaceEnrolled ? "Face Verification" : "Enroll Verify"}
             </div>
 
             <div className="p-5">
-              <h3 className="text-center font-semibold">Face Enrollment</h3>
+              {isFaceEnrolled ? (
+                <div className="mb-4 rounded-md border border-green-200 bg-green-50 px-3 py-2 text-center text-xs font-medium text-green-700">
+                  Your face is already enrolled. Verify your face to continue with Punch-In.
+                </div>
+              ) : null}
+              <h3 className="text-center font-semibold">
+                {isFaceEnrolled ? "Verify Your Enrolled Face" : "Face Enrollment"}
+              </h3>
 
               <p className="text-center text-xs text-gray-500 mb-4">
-                Position your face within the frame
+                {isFaceEnrolled ? "Review your face and click Verify Face." : "Position your face within the frame"}
               </p>
 
               <div className="border-[4px] border-[#4F46E5] rounded overflow-hidden">
-                <img src={capturedImage} alt="" className="w-full" />
+                <img src={capturedImage} alt="Captured face for verification" className="w-full" />
               </div>
 
               <div className="grid grid-cols-2 gap-3 mt-5">
@@ -1324,7 +1331,7 @@ success
                   disabled={faceLoading}
                   className="h-11 bg-[#4F46E5] text-white rounded"
                 >
-                  Verify
+                  {faceLoading ? "Verifying..." : isFaceEnrolled ? "Verify Face" : "Verify"}
                 </button>
               </div>
             </div>
@@ -1583,12 +1590,16 @@ success
             {/* Body */}
 
             <div className="p-4">
+              <div className="mb-4 rounded-md border border-green-200 bg-green-50 px-3 py-2 text-center text-xs font-medium text-green-700">
+                Your face is already enrolled. Verify your face to continue with Punch-Out.
+              </div>
+
               <h3 className="text-center text-[17px] font-semibold text-gray-800">
-                Face Verification
+                Verify Your Enrolled Face
               </h3>
 
               <p className="text-center text-xs text-gray-500 mt-1">
-                Verify your captured face
+                Review your captured face and click Verify Face.
               </p>
 
               <div className="mt-4 border-[4px] border-[#4F46E5] rounded-md overflow-hidden">
@@ -1612,7 +1623,7 @@ success
                   disabled={faceLoading}
                   className="h-11 rounded bg-[#4F46E5] hover:bg-[#4338CA] text-white font-medium"
                 >
-                  Verify
+                  Verify Face
                 </button>
               </div>
             </div>

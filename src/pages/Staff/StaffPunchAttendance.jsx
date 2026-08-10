@@ -271,10 +271,10 @@ export default function StaffPunchAttendance({ onAttendanceSaved }) {
       </div>
 
       {showPunchModal && verificationStep === "camera" && (
-        <CameraModal title="Punch-In Enroll" onClose={resetPunchIn} webcamRef={webcamRef} onCapture={capture} onCameraError={handleCameraError} />
+        <CameraModal title={isFaceEnrolled ? "Punch-In Verify" : "Punch-In Enroll"} isFaceEnrolled={isFaceEnrolled} onClose={resetPunchIn} webcamRef={webcamRef} onCapture={capture} onCameraError={handleCameraError} />
       )}
       {showPunchModal && verificationStep === "preview" && (
-        <PreviewModal title="Enroll Verify" image={capturedImage} onClose={resetPunchIn} onRetake={() => setVerificationStep("camera")} onVerify={verifyFace} loading={faceLoading} />
+        <PreviewModal title="Enroll Verify" image={capturedImage} isFaceEnrolled={isFaceEnrolled} onClose={resetPunchIn} onRetake={() => setVerificationStep("camera")} onVerify={verifyFace} loading={faceLoading} />
       )}
       {showPunchModal && verificationStep === "verifying" && (
         <LoadingModal title="Punch-In Capture" />
@@ -286,10 +286,10 @@ export default function StaffPunchAttendance({ onAttendanceSaved }) {
         <SuccessModal title="Punch-In" message="Punch-In Successful" onClose={saveAttendance} loading={punchLoading} />
       )}
       {showPunchOutModal && punchOutStep === "camera" && (
-        <CameraModal title="Punch-Out Capture" onClose={resetPunchOut} webcamRef={webcamRef} onCapture={capturePunchOut} onCameraError={handleCameraError} />
+        <CameraModal title="Punch-Out Verify" isFaceEnrolled onClose={resetPunchOut} webcamRef={webcamRef} onCapture={capturePunchOut} onCameraError={handleCameraError} />
       )}
       {showPunchOutModal && punchOutStep === "preview" && (
-        <PreviewModal title="Punch-Out Verify" image={capturedPunchOutImage} onClose={resetPunchOut} onRetake={() => setPunchOutStep("camera")} onVerify={verifyPunchOut} loading={faceLoading} />
+        <PreviewModal title="Punch-Out Verify" image={capturedPunchOutImage} isFaceEnrolled onClose={resetPunchOut} onRetake={() => setPunchOutStep("camera")} onVerify={verifyPunchOut} loading={faceLoading} />
       )}
       {showPunchOutModal && punchOutStep === "verifying" && <LoadingModal title="Punch-Out Verify" />}
       {showPunchOutModal && punchOutStep === "success" && (
@@ -299,7 +299,7 @@ export default function StaffPunchAttendance({ onAttendanceSaved }) {
   );
 }
 
-function CameraModal({ title, onClose, webcamRef, onCapture, onCameraError }) {
+function CameraModal({ title, isFaceEnrolled = false, onClose, webcamRef, onCapture, onCameraError }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="w-full max-w-md rounded-lg overflow-hidden bg-white shadow-2xl">
@@ -308,8 +308,8 @@ function CameraModal({ title, onClose, webcamRef, onCapture, onCameraError }) {
           <button onClick={onClose} className="text-white"><X size={20} /></button>
         </div>
         <div className="p-4">
-          <h3 className="text-center text-[17px] font-semibold text-gray-800">Face Verification</h3>
-          <p className="text-center text-xs text-gray-500 mt-1">Position your face within the frame</p>
+          <h3 className="text-center text-[17px] font-semibold text-gray-800">{isFaceEnrolled ? "Face Verification" : "Face Enrollment"}</h3>
+          <p className="text-center text-xs text-gray-500 mt-1">{isFaceEnrolled ? "Position your face to verify your identity" : "Position your face within the frame"}</p>
           <div className="mt-4 border-[4px] border-[#4F46E5] rounded-md overflow-hidden">
             <Webcam ref={webcamRef} audio={false} screenshotFormat="image/jpeg" videoConstraints={{ width: 420, height: 420, facingMode: "user" }} onUserMediaError={onCameraError} className="w-full" />
           </div>
@@ -323,12 +323,34 @@ function CameraModal({ title, onClose, webcamRef, onCapture, onCameraError }) {
   );
 }
 
-function PreviewModal({ title, image, onClose, onRetake, onVerify, loading }) {
+function PreviewModal({ title, image, isFaceEnrolled = false, onClose, onRetake, onVerify, loading }) {
+  const verificationTitle = isFaceEnrolled ? "Face Verification" : title;
+  const verificationHeading = isFaceEnrolled ? "Verify Your Enrolled Face" : "Face Enrollment";
+  const verificationMessage = isFaceEnrolled
+    ? "Your face is already enrolled. Verify your face to continue."
+    : "Position your face within the frame";
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-md rounded-lg overflow-hidden bg-white shadow-2xl">
-        <div className="bg-[#4F46E5] px-4 py-3 flex items-center justify-between text-white font-semibold"><span>{title}</span><button onClick={onClose}><X size={20} /></button></div>
-        <div className="p-4"><div className="border-[4px] border-[#4F46E5] rounded overflow-hidden"><img src={image} alt="Captured face" className="w-full" /></div><div className="grid grid-cols-2 gap-3 mt-5"><button onClick={onRetake} disabled={loading} className="h-11 border rounded">Retake</button><button onClick={onVerify} disabled={loading} className="h-11 bg-[#4F46E5] text-white rounded">{loading ? "Verifying..." : "Verify"}</button></div></div>
+      <div className="w-full max-w-md overflow-hidden rounded-lg bg-white shadow-2xl">
+        <div className="flex items-center justify-between bg-[#4F46E5] px-4 py-3 font-semibold text-white">
+          <span>{verificationTitle}</span>
+          <button onClick={onClose} aria-label="Close face preview"><X size={20} /></button>
+        </div>
+        <div className="p-4">
+          {isFaceEnrolled && (
+            <div className="mb-4 rounded-md border border-green-200 bg-green-50 px-3 py-2 text-center text-xs font-medium text-green-700">
+              Face enrolled successfully. You can verify your face now.
+            </div>
+          )}
+          <h3 className="text-center text-[17px] font-semibold text-gray-800">{verificationHeading}</h3>
+          <p className="mt-1 text-center text-xs text-gray-500">{verificationMessage}</p>
+          <div className="mt-4 overflow-hidden rounded-md border-[4px] border-[#4F46E5]"><img src={image} alt="Captured face" className="w-full" /></div>
+          <div className="mt-5 grid grid-cols-2 gap-3">
+            <button onClick={onRetake} disabled={loading} className="h-11 rounded border">Retake</button>
+            <button onClick={onVerify} disabled={loading} className="h-11 rounded bg-[#4F46E5] text-white">{loading ? "Verifying..." : isFaceEnrolled ? "Verify Face" : "Verify"}</button>
+          </div>
+        </div>
       </div>
     </div>
   );
