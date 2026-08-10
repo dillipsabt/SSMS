@@ -55,3 +55,9 @@ export const getAdminCasts = () => {
 export const fetchClassesAPI = () => {
   return API.get("/classes/get-all");
 };
+
+export const getStudentIdCardList = (classId) =>
+  API.get("/students/id-card-list", { params: { classId } });
+
+export const getStudentIdCardDetails = (studentId) =>
+  API.get("/students/download-id-card", { params: { studentId } });

@@ -6,6 +6,35 @@ const imageDataUrl = (image) => image?.contentType && image?.data
 
 const imageFormat = (dataUrl) => dataUrl?.startsWith("data:image/jpeg") || dataUrl?.startsWith("data:image/jpg") ? "JPEG" : "PNG";
 
+const addImageContain = (doc, source, x, y, width, height) => {
+  if (!source) return;
+  try {
+    const properties = doc.getImageProperties(source);
+    const scale = Math.min(width / properties.width, height / properties.height);
+    const drawWidth = properties.width * scale;
+    const drawHeight = properties.height * scale;
+    doc.addImage(source, imageFormat(source), x + (width - drawWidth) / 2, y + (height - drawHeight) / 2, drawWidth, drawHeight);
+  } catch {}
+};
+
+export const HALL_TICKET_TEMPLATES = [
+  { id: "classic", label: "Classic Green" },
+  { id: "royal", label: "Royal Purple" },
+  { id: "ocean", label: "Ocean Blue" },
+  { id: "sunset", label: "Sunset Gold" },
+  { id: "rose", label: "Rose Professional" },
+  { id: "slate", label: "Slate Minimal" },
+];
+
+const HALL_TICKET_THEMES = {
+  classic: { layout: "classic", primary: [0, 91, 73], light: [237, 247, 243], border: [100, 100, 100], lightBorder: [180, 180, 180], accent: [212, 175, 55] },
+  royal: { layout: "split", primary: [76, 49, 151], light: [244, 240, 255], border: [91, 72, 140], lightBorder: [205, 194, 232], accent: [215, 171, 67] },
+  ocean: { layout: "full", primary: [19, 91, 139], light: [235, 246, 253], border: [74, 112, 139], lightBorder: [184, 210, 229], accent: [226, 175, 58] },
+  sunset: { layout: "banner", primary: [155, 64, 31], light: [255, 245, 238], border: [137, 92, 72], lightBorder: [230, 198, 183], accent: [222, 161, 54] },
+  rose: { layout: "soft", primary: [133, 43, 76], light: [255, 241, 247], border: [133, 76, 98], lightBorder: [230, 195, 208], accent: [211, 160, 66] },
+  slate: { layout: "minimal", primary: [55, 65, 81], light: [244, 246, 248], border: [81, 89, 102], lightBorder: [192, 198, 207], accent: [176, 132, 54] },
+};
+
 const formatDate = (value) => {
   if (!value) return "-";
   const date = new Date(value);
@@ -72,7 +101,7 @@ const getTicketPageHeight = (ticketData) => {
   return 100 + numberOfRows * 8 + 5 + 20;
 };
 
-const renderHallTicket = (doc, ticketData, pageHeightOverride) => {
+const renderHallTicket = (doc, ticketData, pageHeightOverride, template = "classic") => {
   const schoolName = ticketData.schoolName || "School Name";
   const schoolAddress = ticketData.schoolAddress || "Address here";
   const examType = ticketData.examType || ticketData.examinationType || ticketData.exam?.examType || "Examination";
@@ -88,11 +117,12 @@ const renderHallTicket = (doc, ticketData, pageHeightOverride) => {
   const numberOfRows = Math.max(...scheduleColumns.map((column) => column.length), 1);
   const pageHeight = pageHeightOverride || getTicketPageHeight(ticketData);
   const pageWidth = 210;
-  const GREEN = [0, 91, 73];
-  const LIGHT_GREEN = [237, 247, 243];
+  const theme = HALL_TICKET_THEMES[template] || HALL_TICKET_THEMES.classic;
+  const GREEN = theme.primary;
+  const LIGHT_GREEN = theme.light;
   const TEXT = [55, 55, 55];
-  const BORDER = [100, 100, 100];
-  const LIGHT_BORDER = [180, 180, 180];
+  const BORDER = theme.border;
+  const LIGHT_BORDER = theme.lightBorder;
   const WHITE = [255, 255, 255];
   const marginX = 6;
   const contentWidth = pageWidth - marginX * 2;
@@ -121,29 +151,70 @@ const renderHallTicket = (doc, ticketData, pageHeightOverride) => {
   const bannerHeight = 10;
   const bannerX = pageWidth / 2 - bannerWidth / 2 + 8;
   const bannerY = headerTop;
-  doc.setFillColor(...GREEN);
-  doc.roundedRect(bannerX, bannerY, bannerWidth, bannerHeight, 4, 4, "F");
-  doc.setDrawColor(212, 175, 55);
-  doc.setLineWidth(0.6);
-  doc.line(bannerX + 5, bannerY + 2, bannerX + bannerWidth - 5, bannerY + 2);
-  doc.line(bannerX + 5, bannerY + bannerHeight - 2, bannerX + bannerWidth - 5, bannerY + bannerHeight - 2);
-  doc.setFont("times", "bold");
-  doc.setFontSize(14);
-  doc.setTextColor(...WHITE);
-  doc.text("HALL TICKET", bannerX + bannerWidth / 2, bannerY + 6.2, { align: "center" });
-
+  const layout = theme.layout;
   const schoolNameStartX = logoX + logoWidth + 3;
   const schoolNameWidth = bannerX - schoolNameStartX - 28;
-  doc.setFont("helvetica", "bold");
-  let schoolFont = 15;
-  doc.setFontSize(schoolFont);
-  while (doc.getTextWidth(schoolName) > schoolNameWidth && schoolFont > 10) { schoolFont -= 1; doc.setFontSize(schoolFont); }
-  doc.setTextColor(30, 30, 30);
-  doc.text(schoolName, schoolNameStartX, headerTop + 13.5);
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(7);
-  doc.setTextColor(120, 120, 120);
-  doc.text(doc.splitTextToSize(schoolAddress, schoolNameWidth), schoolNameStartX, headerTop + 18.5);
+  if (layout === "full") {
+    doc.setFillColor(...GREEN);
+    doc.roundedRect(marginX + 4, headerTop, contentWidth - 8, 25, 4, 4, "F");
+    addImageContain(doc, schoolLogo, marginX + 10, headerTop + 2, 24, 20);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(15);
+    doc.setTextColor(...WHITE);
+    doc.text(schoolName, marginX + 40, headerTop + 10);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
+    doc.text(schoolAddress, marginX + 40, headerTop + 15);
+    doc.setFont("times", "bold");
+    doc.setFontSize(13);
+    doc.text("HALL TICKET", pageWidth - marginX - 32, headerTop + 12, { align: "center" });
+  } else if (layout === "split") {
+    doc.setFillColor(...GREEN);
+    doc.roundedRect(marginX + 4, headerTop, 64, 25, 4, 4, "F");
+    addImageContain(doc, schoolLogo, marginX + 21, headerTop + 3, 27, 18);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(15);
+    doc.setTextColor(30, 30, 30);
+    doc.text(schoolName, marginX + 75, headerTop + 10);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
+    doc.setTextColor(120, 120, 120);
+    doc.text(schoolAddress, marginX + 75, headerTop + 16);
+  } else if (layout === "minimal") {
+    doc.setDrawColor(...GREEN);
+    doc.setLineWidth(1.2);
+    doc.line(marginX + 4, headerTop, pageWidth - marginX - 4, headerTop);
+    addImageContain(doc, schoolLogo, marginX + 8, headerTop + 2, 22, 18);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(15);
+    doc.setTextColor(...GREEN);
+    doc.text(schoolName, marginX + 37, headerTop + 9);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
+    doc.setTextColor(...TEXT);
+    doc.text(schoolAddress, marginX + 37, headerTop + 15);
+  } else {
+    doc.setFillColor(...GREEN);
+    doc.roundedRect(bannerX, bannerY, bannerWidth, bannerHeight, 4, 4, "F");
+    doc.setDrawColor(...theme.accent);
+    doc.setLineWidth(0.6);
+    doc.line(bannerX + 5, bannerY + 2, bannerX + bannerWidth - 5, bannerY + 2);
+    doc.line(bannerX + 5, bannerY + bannerHeight - 2, bannerX + bannerWidth - 5, bannerY + bannerHeight - 2);
+    doc.setFont("times", "bold");
+    doc.setFontSize(14);
+    doc.setTextColor(...WHITE);
+    doc.text("HALL TICKET", bannerX + bannerWidth / 2, bannerY + 6.2, { align: "center" });
+    doc.setFont("helvetica", "bold");
+    let schoolFont = 15;
+    doc.setFontSize(schoolFont);
+    while (doc.getTextWidth(schoolName) > schoolNameWidth && schoolFont > 10) { schoolFont -= 1; doc.setFontSize(schoolFont); }
+    doc.setTextColor(30, 30, 30);
+    doc.text(schoolName, schoolNameStartX, headerTop + 13.5);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
+    doc.setTextColor(120, 120, 120);
+    doc.text(doc.splitTextToSize(schoolAddress, schoolNameWidth), schoolNameStartX, headerTop + 18.5);
+  }
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
   doc.setTextColor(...GREEN);
@@ -270,27 +341,29 @@ const renderHallTicket = (doc, ticketData, pageHeightOverride) => {
   doc.text(String(schoolName), pageWidth / 2, pageHeight - 7, { align: "center" });
 };
 
-export const generateHallTicketPdf = (ticketData) => {
+export const generateHallTicketPdf = (ticketData, template = "classic") => {
   const pageHeight = getTicketPageHeight(ticketData);
   const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: [210, pageHeight] });
-  renderHallTicket(doc, ticketData, pageHeight);
+  renderHallTicket(doc, ticketData, pageHeight, template);
   doc.save(`hall-ticket-${ticketData.hallTicketNo || "download"}.pdf`);
 };
 
-export const generateHallTicketsPdf = (tickets) => {
+export const generateHallTicketsPdf = (tickets, template = "classic") => {
   if (!tickets.length) return;
   const baseHeight = Math.max(...tickets.map(getTicketPageHeight));
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
-  const topMargin = 5;
-  const bottomMargin = 10;
-  const gap = 50;
+  const topMargin = -30;
+  const bottomMargin = 15;
+  const gap = 0;
+  const secondTicketOffset = 110;
+  const pageContentOffset = -85;
 
-  const availableHeight = 297 - topMargin - bottomMargin - gap;
-  const yScale = Math.min(0.60, availableHeight / (baseHeight * 2));
+  const availableHeight = 897 - topMargin - bottomMargin - gap;
+  const yScale = Math.min(0.72, availableHeight / (baseHeight * 2));
   const xScale = 0.95;
   const cardWidth = 210 * xScale;
-  const startX = ((210 - cardWidth) / 2) / xScale;
+  const startX = (210 - cardWidth) / 2;
 
   tickets.forEach((ticket, index) => {
     if (index > 0 && index % 2 === 0) {
@@ -299,15 +372,16 @@ export const generateHallTicketsPdf = (tickets) => {
 
     const position = index % 2;
 
-    const startY =
-      (topMargin + position * (baseHeight * yScale + gap)) / yScale;
+    const startY = position === 0
+      ? topMargin + pageContentOffset
+      : 297 - bottomMargin - baseHeight * yScale + secondTicketOffset + pageContentOffset;
 
     doc.saveGraphicsState();
     doc.setCurrentTransformationMatrix(
       `${xScale} 0 0 ${yScale} ${startX} ${startY}`
     );
 
-    renderHallTicket(doc, ticket, baseHeight);
+    renderHallTicket(doc, ticket, baseHeight, template);
 
     doc.restoreGraphicsState();
   });

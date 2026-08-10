@@ -15,9 +15,11 @@ import {
 } from "../../features/Admin/ExamSchedule/examScheduleSlice";
 
 import useToastMessage from "../../utils/useToastMessage";
+import { getTenantId } from "../../api/tenant";
 import {
     generateHallTicketPdf,
     generateHallTicketsPdf,
+    HALL_TICKET_TEMPLATES,
 } from "../../utils/generateHallTicketPdf";
 
 import {
@@ -29,6 +31,8 @@ import {
     fetchStudentWiseHallTickets,
     publishHallTicketsAsync,
 } from "../../features/Admin/HallTicket/hallTicketSlice";
+
+const hallTicketTemplateStorageKey = `hallTicketTemplate:${getTenantId() || "default"}`;
 
 const PublishModal = ({ examLabel, classLabel, onClose, onPublish, loading }) => {
     const [publishToPortal, setPublishToPortal] = useState(true);
@@ -133,6 +137,8 @@ export default function HallTicketList() {
     const [downloadingId, setDownloadingId] = useState(null);
 
     const [hasSearched, setHasSearched] = useState(false);
+
+    const [hallTicketTemplate, setHallTicketTemplate] = useState(() => localStorage.getItem(hallTicketTemplateStorageKey) || "classic");
 
     // ==========================================================
     // REDUX
@@ -325,12 +331,18 @@ export default function HallTicketList() {
                 fetchAdminHallTicketDetails(hallTicketNo),
             ).unwrap();
 
-            generateHallTicketPdf(ticketData);
+            generateHallTicketPdf(ticketData, hallTicketTemplate);
         } catch (error) {
             console.error("Error generating hall ticket:", error);
         } finally {
             setDownloadingId(null);
         }
+    };
+
+    const handleHallTicketTemplateChange = (event) => {
+        const template = event.target.value;
+        setHallTicketTemplate(template);
+        localStorage.setItem(hallTicketTemplateStorageKey, template);
     };
 
     const handlePrintAll = async () => {
@@ -353,7 +365,7 @@ export default function HallTicketList() {
                 toast.error("Hall ticket numbers are missing");
                 return;
             }
-            generateHallTicketsPdf(validTickets);
+            generateHallTicketsPdf(validTickets, hallTicketTemplate);
         } catch (error) {
             toast.error(error?.message || "Unable to generate hall tickets");
         } finally {
@@ -744,7 +756,12 @@ export default function HallTicketList() {
             ================================================== */}
 
                         <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-                            <div className="flex flex-wrap gap-2">
+                            <div className="flex flex-wrap items-center gap-2">
+                                <label className="flex items-center gap-2 text-sm text-gray-600">Template
+                                    <select value={hallTicketTemplate} onChange={handleHallTicketTemplateChange} className="rounded-lg border border-gray-300 px-3 py-2 text-sm">
+                                        {HALL_TICKET_TEMPLATES.map((template) => <option key={template.id} value={template.id}>{template.label}</option>)}
+                                    </select>
+                                </label>
                                 <button
                                     onClick={handlePrintAll}
                                     disabled={!students.length || downloadingId === "all"}

@@ -15,6 +15,15 @@ import {
   resetExpenseDetails,
 } from "../../features/Admin/Expenses/expensesSlice";
 
+const EXPENSE_CATEGORIES = [
+  "TEACHER_SALARY",
+  "STAFF_SALARY",
+  "MAINTENANCE",
+  "UTILITIES",
+  "MARKETING",
+  "OTHER",
+];
+
 const NewExpenses = () => {
   const dispatch = useDispatch();
   const { expenseList, expenseDetails, pagination, loading, error, success, successMessage } = useSelector(
@@ -33,6 +42,7 @@ const NewExpenses = () => {
     expenseName: "",
     expenseDate: "",
     totalAmount: "",
+    expenseCategory: "",
     description: "",
     uploadBill: null,
   });
@@ -61,6 +71,7 @@ const NewExpenses = () => {
         expenseName: expenseDetails.expenseName || "",
         expenseDate: expenseDetails.expenseDate ? expenseDetails.expenseDate.split("T")[0] : "",
         totalAmount: expenseDetails.totalAmount || "",
+        expenseCategory: expenseDetails.expenseCategory || "",
         description: expenseDetails.description || "",
         uploadBill: null,
       });
@@ -95,6 +106,7 @@ const NewExpenses = () => {
         expenseName: "",
         expenseDate: "",
         totalAmount: "",
+        expenseCategory: "",
         description: "",
         uploadBill: null,
       });
@@ -121,7 +133,7 @@ const NewExpenses = () => {
   };
 
   const handleSave = async () => {
-    if (!formData.expenseName || !formData.expenseDate || !formData.totalAmount) {
+    if (!formData.expenseName || !formData.expenseDate || !formData.totalAmount || !formData.expenseCategory) {
       toast.error("Please fill in all required fields");
       return;
     }
@@ -134,6 +146,7 @@ const NewExpenses = () => {
         expenseDate: formData.expenseDate,
         totalAmount: parseFloat(formData.totalAmount),
         description: formData.description,
+        expenseCategory: formData.expenseCategory,
       })
     );
 
@@ -188,6 +201,7 @@ const NewExpenses = () => {
       expenseName: "",
       expenseDate: "",
       totalAmount: "",
+      expenseCategory: "",
       description: "",
       uploadBill: null,
     });
@@ -205,7 +219,7 @@ const NewExpenses = () => {
         <h3 className="card-section">{isEditMode ? "Edit Expense" : "Add New Expenses"}</h3>
 
         <div className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-6">
             <div>
               <label className="form-label">Expense Name</label>
               <input
@@ -238,6 +252,22 @@ const NewExpenses = () => {
                 placeholder="Total Amount"
                 className="form-input mt-1"
               />
+            </div>
+            <div>
+              <label className="form-label">Expense Category</label>
+              <select
+                name="expenseCategory"
+                value={formData.expenseCategory}
+                onChange={handleInputChange}
+                className="form-select mt-1"
+              >
+                <option value="">Select Category</option>
+                {EXPENSE_CATEGORIES.map((category) => (
+                  <option key={category} value={category}>
+                    {category.replaceAll("_", " ")}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="form-label">Upload Bill</label>
@@ -319,6 +349,7 @@ const NewExpenses = () => {
                 <th className="px-4 py-3 text-left min-w-[50px]">S.No.</th>
                 <th className="px-4 py-3 text-left min-w-[100px]">Created Date</th>
                 <th className="px-4 py-3 text-left min-w-[120px]">Expense Name</th>
+                <th className="px-4 py-3 text-left min-w-[140px]">Category</th>
                 <th className="px-4 py-3 text-left min-w-[110px]">Expense Date</th>
                 <th className="px-4 py-3 text-left min-w-[80px]">Attachment</th>
                 <th className="px-4 py-3 text-left min-w-[200px]">Description</th>
@@ -335,6 +366,7 @@ const NewExpenses = () => {
                       {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : "-"}
                     </td>
                     <td className="px-4 py-3">{item.expenseName}</td>
+                    <td className="px-4 py-3">{item.expenseCategory || "-"}</td>
                     <td className="px-4 py-3">
                       {item.expenseDate ? new Date(item.expenseDate).toLocaleDateString() : "-"}
                     </td>
@@ -368,16 +400,13 @@ const NewExpenses = () => {
                       >
                         <Trash2 size={18} />
                       </button>
-                      <button className="text-gray-500 hover:text-gray-700">
-                        <MoreVertical size={18} />
-                      </button>
                     </div>
                   </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="8" className="px-4 py-6 text-center text-gray-500">
+                  <td colSpan="9" className="px-4 py-6 text-center text-gray-500">
                     {loading ? "Loading expenses..." : "No expenses found"}
                   </td>
                 </tr>

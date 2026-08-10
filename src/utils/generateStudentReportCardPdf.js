@@ -15,6 +15,24 @@ const formattedNumber = (value) => {
   return Number.isInteger(number) ? String(number) : number.toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
 };
 const percent = (value) => `${formattedNumber(value)}%`;
+
+export const REPORT_CARD_TEMPLATES = [
+  { id: "classic", label: "Classic Navy" },
+  { id: "emerald", label: "Emerald Modern" },
+  { id: "royal", label: "Royal Purple" },
+  { id: "sunset", label: "Sunset Gold" },
+  { id: "ocean", label: "Ocean Blue" },
+  { id: "rose", label: "Rose Professional" },
+];
+
+const REPORT_CARD_THEMES = {
+  classic: { layout: "classic", navy: [20, 35, 62], blue: [39, 92, 166], emerald: [35, 139, 105], gold: [190, 143, 55], line: [224, 230, 238], section: [247, 249, 252], paleBlue: [238, 244, 252], paleGreen: [237, 248, 243], paleGold: [251, 247, 237] },
+  emerald: { layout: "full", navy: [17, 70, 61], blue: [21, 119, 101], emerald: [27, 153, 116], gold: [211, 161, 64], line: [207, 231, 224], section: [245, 251, 249], paleBlue: [232, 246, 241], paleGreen: [226, 247, 238], paleGold: [252, 248, 233] },
+  royal: { layout: "split", navy: [49, 34, 102], blue: [91, 65, 190], emerald: [52, 163, 145], gold: [218, 171, 76], line: [224, 216, 247], section: [249, 247, 255], paleBlue: [240, 235, 255], paleGreen: [235, 249, 245], paleGold: [255, 249, 235] },
+  sunset: { layout: "banner", navy: [101, 48, 28], blue: [192, 78, 43], emerald: [43, 145, 111], gold: [218, 133, 48], line: [241, 218, 201], section: [255, 249, 245], paleBlue: [255, 240, 230], paleGreen: [237, 249, 243], paleGold: [255, 244, 218] },
+  ocean: { layout: "minimal", navy: [17, 61, 92], blue: [24, 121, 174], emerald: [33, 157, 166], gold: [219, 169, 68], line: [208, 228, 240], section: [244, 250, 253], paleBlue: [230, 244, 252], paleGreen: [231, 249, 247], paleGold: [255, 249, 233] },
+  rose: { layout: "soft", navy: [91, 34, 57], blue: [174, 58, 98], emerald: [44, 147, 119], gold: [206, 145, 62], line: [239, 215, 225], section: [255, 248, 251], paleBlue: [252, 236, 244], paleGreen: [235, 249, 243], paleGold: [255, 247, 231] },
+};
 const getOverallRemarks = (report) => {
   const subjects = Array.isArray(report.subjects) ? report.subjects : [];
   const getSubjectPercentage = (subject) => {
@@ -111,23 +129,15 @@ const drawLegend = (doc, x, y, color, label, value) => {
   doc.text(text(value), x + 30, y);
 };
 
-const renderStudentReportCard = (doc, report) => {
+const renderStudentReportCard = (doc, report, template = "classic") => {
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   const margin = 13;
   const width = pageWidth - margin * 2;
   const colors = {
-    navy: [20, 35, 62],
-    blue: [39, 92, 166],
-    emerald: [35, 139, 105],
-    gold: [190, 143, 55],
+    ...(REPORT_CARD_THEMES[template] || REPORT_CARD_THEMES.classic),
     ink: [42, 52, 68],
     muted: [101, 112, 128],
-    line: [224, 230, 238],
-    section: [247, 249, 252],
-    paleBlue: [238, 244, 252],
-    paleGreen: [237, 248, 243],
-    paleGold: [251, 247, 237],
     red: [185, 67, 67],
   };
   const subjects = Array.isArray(report.subjects) ? report.subjects : [];
@@ -144,24 +154,84 @@ const renderStudentReportCard = (doc, report) => {
   const failSubjects = subjects.filter((item) => String(item.status || "").toUpperCase() === "FAIL").length;
   let y = 10;
 
+  const headerLayout = colors.layout;
   doc.setFillColor(...colors.navy);
   doc.roundedRect(margin, y, width, 2.5, 1.2, 1.2, "F");
   y += 7;
-  roundedCard(doc, margin, y, width, 31, [255, 255, 255]);
-  addImageContain(doc, logo, pageWidth / 2 - 48, y + 4, 27, 21);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(18);
-  doc.setTextColor(...colors.navy);
-  doc.text(text(report.schoolName || "EDUPORTAL ACADEMY"), pageWidth / 2 - 15, y + 12, { align: "left" });
-  if (schoolAddress) {
+  if (headerLayout === "classic") {
+    roundedCard(doc, margin, y, width, 31, [255, 255, 255]);
+    addImageContain(doc, logo, pageWidth / 2 - 48, y + 4, 27, 21);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.setTextColor(...colors.navy);
+    doc.text(text(report.schoolName || "EDUPORTAL ACADEMY"), pageWidth / 2 - 15, y + 12, { align: "left" });
+    if (schoolAddress) {
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(6.5);
+      doc.setTextColor(...colors.muted);
+      doc.text(doc.splitTextToSize(String(schoolAddress), 90)[0], pageWidth / 2 - 15, y + 17, { align: "left" });
+    }
+    doc.setFontSize(6.5);
+    doc.setTextColor(...colors.gold);
+    doc.text("EDUPORTAL · ACADEMIC RECORD", pageWidth / 2 - 15, y + 23, { align: "left" });
+  } else if (headerLayout === "full" || headerLayout === "banner") {
+    doc.setFillColor(...colors.navy);
+    doc.setDrawColor(...colors.navy);
+    doc.roundedRect(margin, y, width, 31, 4, 4, "F");
+    addImageContain(doc, logo, margin + 8, y + 4, 28, 22);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(headerLayout === "banner" ? 20 : 17);
+    doc.setTextColor(255, 255, 255);
+    doc.text(text(report.schoolName || "EDUPORTAL ACADEMY"), margin + 42, y + 12);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(6.5);
+    doc.text(doc.splitTextToSize(String(schoolAddress || ""), 105)[0], margin + 42, y + 18);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7);
+    doc.setTextColor(...colors.gold);
+    doc.text("REPORT CARD  ·  ACADEMIC RECORD", margin + 42, y + 24);
+  } else if (headerLayout === "split") {
+    roundedCard(doc, margin, y, width, 31, colors.paleBlue, colors.line);
+    doc.setFillColor(...colors.navy);
+    doc.roundedRect(margin, y, 62, 31, 4, 4, "F");
+    addImageContain(doc, logo, margin + 17, y + 5, 28, 20);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(17);
+    doc.setTextColor(...colors.navy);
+    doc.text(text(report.schoolName || "EDUPORTAL ACADEMY"), margin + 70, y + 11);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(6.5);
     doc.setTextColor(...colors.muted);
-    doc.text(doc.splitTextToSize(String(schoolAddress), 90)[0], pageWidth / 2 - 15, y + 17, { align: "left" });
+    doc.text(doc.splitTextToSize(String(schoolAddress || ""), 100)[0], margin + 70, y + 17);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7);
+    doc.setTextColor(...colors.blue);
+    doc.text("ACADEMIC RECORD", margin + 70, y + 24);
+  } else if (headerLayout === "minimal") {
+    roundedCard(doc, margin, y, width, 31, [255, 255, 255], colors.line);
+    addImageContain(doc, logo, margin + 8, y + 5, 24, 20);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.setTextColor(...colors.navy);
+    doc.text(text(report.schoolName || "EDUPORTAL ACADEMY"), margin + 38, y + 11);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(6.5);
+    doc.setTextColor(...colors.muted);
+    doc.text(doc.splitTextToSize(String(schoolAddress || ""), 105)[0], margin + 38, y + 17);
+    doc.setDrawColor(...colors.blue);
+    doc.setLineWidth(1.2);
+    doc.line(margin + 38, y + 22, pageWidth - margin - 8, y + 22);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7);
+    doc.text("REPORT CARD", margin + 38, y + 27);
+  } else {
+    roundedCard(doc, margin, y, width, 31, colors.paleGold, colors.line);
+    addImageContain(doc, logo, pageWidth / 2 - 13, y + 3, 26, 18);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.setTextColor(...colors.navy);
+    doc.text(text(report.schoolName || "EDUPORTAL ACADEMY"), pageWidth / 2, y + 25, { align: "center" });
   }
-  doc.setFontSize(6.5);
-  doc.setTextColor(...colors.gold);
-  doc.text("EDUPORTAL · ACADEMIC RECORD", pageWidth / 2 - 15, y + 23, { align: "left" });
   y += 39;
 
   doc.setFont("helvetica", "bold");
@@ -363,20 +433,20 @@ const renderStudentReportCard = (doc, report) => {
 
 };
 
-export const generateStudentReportCardPdf = (report) => {
+export const generateStudentReportCardPdf = (report, template = "classic") => {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-  renderStudentReportCard(doc, report);
+  renderStudentReportCard(doc, report, template);
   const filename = `ReportCard_${text(report.rollNo || report.rollNumber || report.studentName).replaceAll(" ", "_")}_${text(report.examType || report.examinationType).replaceAll(" ", "_")}.pdf`;
   doc.save(filename);
 };
 
-export const generateStudentReportCardsPdf = (reports) => {
+export const generateStudentReportCardsPdf = (reports, template = "classic") => {
   if (!reports.length) return;
 
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   reports.forEach((report, index) => {
     if (index > 0) doc.addPage();
-    renderStudentReportCard(doc, report);
+    renderStudentReportCard(doc, report, template);
   });
 
   const pdfUrl = URL.createObjectURL(doc.output("blob"));

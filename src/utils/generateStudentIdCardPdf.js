@@ -25,16 +25,51 @@ const drawImageContain = (doc, source, x, y, width, height) => {
   }
 };
 
+const createCircularPhoto = (source) => new Promise((resolve, reject) => {
+  const image = new Image();
+  image.onload = () => {
+    const size = 512;
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
+    canvas.width = size;
+    canvas.height = size;
+    const scale = Math.max(size / image.naturalWidth, size / image.naturalHeight);
+    const imageWidth = image.naturalWidth * scale;
+    const imageHeight = image.naturalHeight * scale;
+
+    context.clearRect(0, 0, size, size);
+    context.beginPath();
+    context.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
+    context.clip();
+    context.drawImage(image, (size - imageWidth) / 2, (size - imageHeight) / 2, imageWidth, imageHeight);
+    resolve(canvas.toDataURL("image/png"));
+  };
+  image.onerror = reject;
+  image.src = source;
+});
+
+const drawImageCoverCircle = async (doc, source, centerX, centerY, radius) => {
+  if (!source) return false;
+  try {
+    const circularPhoto = await createCircularPhoto(source);
+    const diameter = radius * 2;
+    doc.addImage(circularPhoto, "PNG", centerX - radius, centerY - radius, diameter, diameter);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 const mapStudent = (student = {}) => ({
   schoolName: student.schoolName,
   schoolAddress: student.schoolAddress,
   schoolLogo: imageDataUrl(student.schoolLogo || student.schoolLogoUrl),
   principalSignature: imageDataUrl(student.principalSignature || student.principalSignatureUrl),
-  studentPhoto: imageDataUrl(student.profilePhoto || student.profilePhotoUrl || student.photo || student.photoUrl),
+  studentPhoto: imageDataUrl(student.studentPhoto || student.profilePhoto || student.profilePhotoUrl || student.photo || student.photoUrl),
   studentName: student.fullName || student.studentName || student.name,
   admissionNo: student.admissionNo || student.admissionNumber,
   rollNo: student.rollNo || student.rollNumber,
-  className: student.className || student.class,
+  className: student.classAndSection || student.className || student.class,
   section: student.section,
   academicYear: student.academicYear || student.academicSession,
   bloodGroup: student.bloodGroup,
@@ -67,7 +102,7 @@ const drawCardField = (doc, label, content, x, y, width) => {
   doc.text(lines, x, y + 2.7, { lineHeightFactor: 1.05 });
 };
 
-const drawFront = (doc, card, x, y, width, height) => {
+const drawFront = async (doc, card, x, y, width, height) => {
   const purple = [82, 55, 230];
   const panel = [151, 111, 241];
   const safe = 3;
@@ -93,11 +128,10 @@ const drawFront = (doc, card, x, y, width, height) => {
   doc.setFontSize(2.8);
   doc.text(doc.splitTextToSize(value(card.schoolAddress), 35).slice(0, 2), x + 14, y + 10.8, { lineHeightFactor: 1.05 });
 
-  const photoX = center - 11;
   const photoY = y + 18;
   doc.setFillColor(191, 246, 244);
   doc.circle(center, photoY + 11, 11.8, "F");
-  if (!drawImageContain(doc, card.studentPhoto, photoX + 1, photoY + 1, 20, 23)) {
+  if (!(await drawImageCoverCircle(doc, card.studentPhoto, center, photoY + 11, 11.8))) {
     doc.setFillColor(222, 229, 239);
     doc.circle(center, photoY + 8.5, 4.3, "F");
     doc.setFillColor(164, 176, 204);
@@ -136,26 +170,26 @@ const drawFront = (doc, card, x, y, width, height) => {
   doc.text("Property of the school", x + 8, y + 87);
 };
 
-export const buildStudentIdCardPdf = (student) => {
+export const buildStudentIdCardPdf = async (student) => {
   const cardWidth = 54;
   const cardHeight = 91;
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: [cardWidth, cardHeight] });
   const card = mapStudent(student);
-  drawFront(doc, card, 0, 0, cardWidth, cardHeight);
+  await drawFront(doc, card, 0, 0, cardWidth, cardHeight);
   return doc;
 };
 
-export const generateStudentIdCardsPrint = (students) => {
+export const generateStudentIdCardsPrint = async (students) => {
   if (!students?.length) return;
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const cardX = (210 - 54) / 2;
   const cardPositions = [52, 153];
 
-  students.forEach((student, index) => {
+  for (const [index, student] of students.entries()) {
     if (index > 0 && index % 2 === 0) doc.addPage();
     const card = mapStudent(student);
-    drawFront(doc, card, cardX, cardPositions[index % 2], 54, 91);
-  });
+    await drawFront(doc, card, cardX, cardPositions[index % 2], 54, 91);
+  }
 
   const pdfUrl = URL.createObjectURL(doc.output("blob"));
   const printFrame = document.createElement("iframe");
@@ -189,7 +223,8 @@ export const generateStudentIdCardsPrint = (students) => {
   document.body.appendChild(printFrame);
 };
 
-export const downloadStudentIdCardPdf = (student) => {
+export const downloadStudentIdCardPdf = async (student) => {
   const card = mapStudent(student);
-  buildStudentIdCardPdf(student).save(`student-id-card-${value(card.admissionNo).replace(/[^a-z0-9-_]/gi, "-")}.pdf`);
+  const pdf = await buildStudentIdCardPdf(student);
+  pdf.save(`student-id-card-${value(card.admissionNo).replace(/[^a-z0-9-_]/gi, "-")}.pdf`);
 };

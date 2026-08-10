@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Download, Printer, Search, X } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
+import { getTenantId } from "../../api/tenant";
 import {
   fetchClasses,
   fetchExaminationTypes,
@@ -13,6 +14,7 @@ import { fetchTeachers } from "../../features/Admin/Notifications/notificationSl
 import {
   generateStudentReportCardPdf,
   generateStudentReportCardsPdf,
+  REPORT_CARD_TEMPLATES,
 } from "../../utils/generateStudentReportCardPdf";
 
 const getStudentId = (student) => student?.studentId || student?.id || student?.profileId;
@@ -22,6 +24,7 @@ const getAdmissionNumber = (student) => student?.admissionNo || student?.admissi
 const getPercentage = (student) => student?.percentage == null ? "-" : Number(student.percentage).toFixed(2);
 const getStatus = (student) => String(student?.status || student?.passFail || "PASS").toUpperCase();
 const getRowKey = (student, index) => String(getStudentId(student) || getAdmissionNumber(student) || index);
+const reportCardTemplateStorageKey = `reportCardTemplate:${getTenantId() || "default"}`;
 
 const StatusBadge = ({ value, tone = "green" }) => {
   const isPass = String(value).toUpperCase() === "PASS";
@@ -50,6 +53,7 @@ export default function StudentWiseResultsList() {
   const [publishToWhatsapp, setPublishToWhatsapp] = useState(true);
   const [publishNotes, setPublishNotes] = useState("Ready to publish.");
   const [selectedIds, setSelectedIds] = useState(new Set());
+  const [reportCardTemplate, setReportCardTemplate] = useState(() => localStorage.getItem(reportCardTemplateStorageKey) || "classic");
 
   useEffect(() => {
     dispatch(fetchClasses());
@@ -88,10 +92,16 @@ export default function StudentWiseResultsList() {
         studentId: getStudentId(student),
         examinationTypeId: student.examinationTypeId || examTypeId,
       })).unwrap();
-      generateStudentReportCardPdf(report);
+      generateStudentReportCardPdf(report, reportCardTemplate);
     } catch (requestError) {
       toast.error(requestError?.message || "Unable to download report card");
     }
+  };
+
+  const handleReportCardTemplateChange = (event) => {
+    const template = event.target.value;
+    setReportCardTemplate(template);
+    localStorage.setItem(reportCardTemplateStorageKey, template);
   };
 
   const handlePrintAll = async () => {
@@ -107,7 +117,7 @@ export default function StudentWiseResultsList() {
           examinationTypeId: student.examinationTypeId || examTypeId,
         })).unwrap()
       ));
-      generateStudentReportCardsPdf(reports);
+      generateStudentReportCardsPdf(reports, reportCardTemplate);
     } catch (requestError) {
       toast.error(requestError?.message || "Unable to prepare report cards for printing");
     }
@@ -264,7 +274,12 @@ export default function StudentWiseResultsList() {
               </tbody>
             </table>
           </div>
-          <div className="mt-4 flex justify-end gap-2">
+          <div className="mt-4 flex flex-wrap items-center justify-end gap-2">
+            <label className="flex items-center gap-2 text-sm text-gray-600">Template
+              <select value={reportCardTemplate} onChange={handleReportCardTemplateChange} className="form-select w-44">
+                {REPORT_CARD_TEMPLATES.map((template) => <option key={template.id} value={template.id}>{template.label}</option>)}
+              </select>
+            </label>
             <button onClick={() => setPublishOpen(true)} disabled={!selectedIds.size} className="btn-primary flex items-center justify-center gap-2 px-4 disabled:opacity-50">Publish{selectedIds.size ? ` (${selectedIds.size})` : ""}</button>
             <button onClick={handlePrintAll} disabled={!rows.length || loading} className="flex items-center justify-center gap-2 rounded bg-indigo-100 px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-200 disabled:opacity-50"><Printer size={16} />Print All</button>
           </div>
