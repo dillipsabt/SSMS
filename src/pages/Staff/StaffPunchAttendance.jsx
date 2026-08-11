@@ -20,6 +20,9 @@ const imageToFile = async (image, name) => {
 const getErrorMessage = (error, fallback) =>
   typeof error === "object" ? error?.message || fallback : String(error || fallback);
 
+const isAlreadyEnrolledError = (error) =>
+  getErrorMessage(error, "").toLowerCase().includes("already enrolled");
+
 export default function StaffPunchAttendance({ onAttendanceSaved }) {
   const dispatch = useDispatch();
   const { profileId, userId } = useSelector((state) => state.auth);
@@ -44,9 +47,20 @@ export default function StaffPunchAttendance({ onAttendanceSaved }) {
   const faceEnrollmentStorageKey = userId
     ? `teacher-face-enrolled-${userId}`
     : null;
+  const [enrolledFaceUsers, setEnrolledFaceUsers] = useState({});
   const isFaceEnrolled = Boolean(
-    faceEnrollmentStorageKey && localStorage.getItem(faceEnrollmentStorageKey),
+    faceEnrollmentStorageKey &&
+      (enrolledFaceUsers[String(userId)] ||
+        localStorage.getItem(faceEnrollmentStorageKey)),
   );
+
+  const markFaceEnrolled = () => {
+    localStorage.setItem(faceEnrollmentStorageKey, "true");
+    setEnrolledFaceUsers((users) => ({
+      ...users,
+      [String(userId)]: true,
+    }));
+  };
 
   useEffect(() => {
     if (profileId) dispatch(fetchTeacherAttendance({ teacherId: profileId }));
@@ -159,11 +173,12 @@ export default function StaffPunchAttendance({ onAttendanceSaved }) {
       const file = await imageToFile(capturedImage, "punch-in.jpg");
       if (!isFaceEnrolled) {
         await dispatch(enrollTeacherFace({ userId, file })).unwrap();
-        localStorage.setItem(faceEnrollmentStorageKey, "true");
+        markFaceEnrolled();
         toast.success("Face enrolled successfully");
         setVerificationStep("enrollSuccess");
         return;
       }
+
       const verified = await dispatch(verifyTeacherFace({ userId, file })).unwrap();
       if (verified !== true) {
         setVerificationStep("preview");
@@ -172,6 +187,13 @@ export default function StaffPunchAttendance({ onAttendanceSaved }) {
       }
       setVerificationStep("identitySuccess");
     } catch (error) {
+      if (!isFaceEnrolled && isAlreadyEnrolledError(error)) {
+        markFaceEnrolled();
+        setVerificationStep("preview");
+        toast.info("Face already enrolled. Please verify your face to continue.");
+        return;
+      }
+
       setVerificationStep("preview");
       toast.error(getErrorMessage(error, isFaceEnrolled ? "Face verification failed. Please try again." : "Face enrolment failed. Please try again."));
     }
@@ -274,7 +296,7 @@ export default function StaffPunchAttendance({ onAttendanceSaved }) {
         <CameraModal title={isFaceEnrolled ? "Punch-In Verify" : "Punch-In Enroll"} isFaceEnrolled={isFaceEnrolled} onClose={resetPunchIn} webcamRef={webcamRef} onCapture={capture} onCameraError={handleCameraError} />
       )}
       {showPunchModal && verificationStep === "preview" && (
-        <PreviewModal title="Enroll Verify" image={capturedImage} isFaceEnrolled={isFaceEnrolled} onClose={resetPunchIn} onRetake={() => setVerificationStep("camera")} onVerify={verifyFace} loading={faceLoading} />
+        <PreviewModal title="Face Enrollment" image={capturedImage} isFaceEnrolled={isFaceEnrolled} onClose={resetPunchIn} onRetake={() => setVerificationStep("camera")} onVerify={verifyFace} loading={faceLoading} />
       )}
       {showPunchModal && verificationStep === "verifying" && (
         <LoadingModal title="Punch-In Capture" />
@@ -348,7 +370,7 @@ function PreviewModal({ title, image, isFaceEnrolled = false, onClose, onRetake,
           <div className="mt-4 overflow-hidden rounded-md border-[4px] border-[#4F46E5]"><img src={image} alt="Captured face" className="w-full" /></div>
           <div className="mt-5 grid grid-cols-2 gap-3">
             <button onClick={onRetake} disabled={loading} className="h-11 rounded border">Retake</button>
-            <button onClick={onVerify} disabled={loading} className="h-11 rounded bg-[#4F46E5] text-white">{loading ? "Verifying..." : isFaceEnrolled ? "Verify Face" : "Verify"}</button>
+            <button onClick={onVerify} disabled={loading} className="h-11 rounded bg-[#4F46E5] text-white">{loading ? "Verifying..." : isFaceEnrolled ? "Verify Face" : "Enroll Face"}</button>
           </div>
         </div>
       </div>

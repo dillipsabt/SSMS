@@ -139,9 +139,20 @@ export default function TeacherDashboard() {
   const faceEnrollmentStorageKey = userId
     ? `teacher-face-enrolled-${userId}`
     : null;
+  const [enrolledFaceUsers, setEnrolledFaceUsers] = useState({});
   const isFaceEnrolled = Boolean(
-    faceEnrollmentStorageKey && localStorage.getItem(faceEnrollmentStorageKey)
+    faceEnrollmentStorageKey &&
+      (enrolledFaceUsers[String(userId)] ||
+        localStorage.getItem(faceEnrollmentStorageKey))
   );
+
+  const markFaceEnrolled = () => {
+    localStorage.setItem(faceEnrollmentStorageKey, "true");
+    setEnrolledFaceUsers((users) => ({
+      ...users,
+      [String(userId)]: true,
+    }));
+  };
 
   /*
 camera
@@ -297,6 +308,9 @@ identitySuccess
   const getErrorMessage = (error, fallback) =>
     typeof error === "object" ? error.message || fallback : String(error || fallback);
 
+  const isAlreadyEnrolledError = (error) =>
+    getErrorMessage(error, "").toLowerCase().includes("already enrolled");
+
   const handleCameraError = () => {
     toast.error("Camera is unavailable or permission was denied. Please allow camera access and try again.");
   };
@@ -323,7 +337,7 @@ identitySuccess
 
       if (!isFaceEnrolled) {
         await dispatch(enrollTeacherFace({ userId, file })).unwrap();
-        localStorage.setItem(faceEnrollmentStorageKey, "true");
+        markFaceEnrolled();
         setVerificationStep("enrollSuccess");
         toast.success("Face enrolled successfully");
         return;
@@ -338,6 +352,13 @@ identitySuccess
 
       setVerificationStep("identitySuccess");
     } catch (error) {
+      if (!isFaceEnrolled && isAlreadyEnrolledError(error)) {
+        markFaceEnrolled();
+        setVerificationStep("preview");
+        toast.info("Face already enrolled. Please verify your face to continue.");
+        return;
+      }
+
       setVerificationStep("preview");
       toast.error(getErrorMessage(error, isFaceEnrolled ? "Face verification failed. Please try again." : "Face enrolment failed. Please try again."));
     }
@@ -1300,7 +1321,7 @@ success
         <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50 p-4">
           <div className="bg-white rounded-lg overflow-hidden shadow-xl w-full max-w-[430px]">
             <div className="bg-[#4F46E5] px-4 py-3 text-white font-semibold">
-              {isFaceEnrolled ? "Face Verification" : "Enroll Verify"}
+              {isFaceEnrolled ? "Face Verification" : "Face Enrollment"}
             </div>
 
             <div className="p-5">
@@ -1331,7 +1352,7 @@ success
                   disabled={faceLoading}
                   className="h-11 bg-[#4F46E5] text-white rounded"
                 >
-                  {faceLoading ? "Verifying..." : isFaceEnrolled ? "Verify Face" : "Verify"}
+                  {faceLoading ? "Verifying..." : isFaceEnrolled ? "Verify Face" : "Enroll Face"}
                 </button>
               </div>
             </div>
