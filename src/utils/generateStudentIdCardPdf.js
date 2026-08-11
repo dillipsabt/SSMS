@@ -114,19 +114,20 @@ const drawFront = async (doc, card, x, y, width, height) => {
   doc.roundedRect(x, y, width, height, 1.2, 1.2, "FD");
   doc.setFillColor(...panel);
   doc.roundedRect(x + safe, y + 27, width - safe * 2, height - 30, 3.2, 3.2, "F");
-  const logoX = x + 4;
-  const logoY = y + 4;
+  const logoX = x + 7;
+  const logoY = y + 3.5;
   doc.setFillColor(255, 255, 255);
   doc.setDrawColor(255, 255, 255);
   doc.circle(logoX + 4, logoY + 4, 4.5, "FD");
   drawImageContain(doc, card.schoolLogo, logoX + 0.8, logoY + 0.8, 6.4, 6.4);
+  const headerLeft = x + 17;
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(4.6);
+  doc.setFontSize(6.4);
   doc.setTextColor(255, 255, 255);
-  doc.text(doc.splitTextToSize(value(card.schoolName), 35).slice(0, 2), x + 14, y + 6.2, { lineHeightFactor: 1.05 });
+  doc.text(doc.splitTextToSize(value(card.schoolName), 32).slice(0, 2), headerLeft, y + 5.8, { lineHeightFactor: 1.05 });
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(2.8);
-  doc.text(doc.splitTextToSize(value(card.schoolAddress), 35).slice(0, 2), x + 14, y + 10.8, { lineHeightFactor: 1.05 });
+  doc.setFontSize(3.8);
+  doc.text(doc.splitTextToSize(value(card.schoolAddress), 32).slice(0, 2), headerLeft, y + 12.4, { lineHeightFactor: 1.05 });
 
   const photoY = y + 18;
   doc.setFillColor(191, 246, 244);
@@ -149,11 +150,11 @@ const drawFront = async (doc, card, x, y, width, height) => {
   const left = x + 8;
   const right = center + 2;
   drawCardField(doc, "Roll Number", card.rollNo, left, y + 59, 17);
-  drawCardField(doc, "Class / Section", [card.className, card.section].filter(Boolean).join(" - "), right, y + 59, 17);
-  drawCardField(doc, "Date of Birth", card.dateOfBirth, left, y + 65, 17);
+  drawCardField(doc, "Father's Name", card.fatherName, right, y + 59, 17);
+  drawCardField(doc, "Class / Section", [card.className, card.section].filter(Boolean).join(" - "), left, y + 65, 17);
   drawCardField(doc, "Gender", card.gender, right, y + 65, 17);
-  drawCardField(doc, "Blood Group", card.bloodGroup, left, y + 71, 17);
-  drawCardField(doc, "Father's Name", card.fatherName, right, y + 71, 17);
+  drawCardField(doc, "Date of Birth", card.dateOfBirth, left, y + 71, 17);
+  drawCardField(doc, "Blood Group", card.bloodGroup, right, y + 71, 17);
 
   doc.setDrawColor(220, 201, 255);
   doc.setLineWidth(0.25);

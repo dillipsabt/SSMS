@@ -2,8 +2,9 @@ import React, { useEffect, useState } from "react";
 import { Search, Download } from "lucide-react";
 import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom"; // <-- Imported navigate hook
 import Select from "react-select";
+import { fetchReportCardDownload } from "../../features/Admin/ExamResult/examResultSlice";
+import { generateStudentReportCardPdf } from "../../utils/generateStudentReportCardPdf";
 import useToastMessage from "../../utils/useToastMessage";
 import {
   getStudentsByParentThunk,
@@ -16,7 +17,6 @@ import {
 
 export default function ParentsExamReports() {
   const dispatch = useDispatch();
-  const navigate = useNavigate(); // <-- Initialized navigate hook
 
   const parentId = localStorage.getItem("profileId");
 
@@ -82,23 +82,60 @@ export default function ParentsExamReports() {
     );
   };
 
-  // --- NAVIGATE TO REPORT CARD PAGE HANDLER ---
-  const handleStaticDownload = () => {
-    // Navigates directly to your internal route page
-    navigate("/student-exam-report-card");
+  const handleDownloadReportCard = async () => {
+    if (!selectedStudentId || !examTypeId) {
+      toast.warning("Please select student and exam type");
+      return;
+    }
+
+    try {
+      const report = await dispatch(
+        fetchReportCardDownload({
+          studentId: Number(selectedStudentId),
+          examinationTypeId: examTypeId,
+        }),
+      ).unwrap();
+      generateStudentReportCardPdf(report);
+    } catch (requestError) {
+      toast.error(requestError?.message || "Unable to download report card");
+    }
   };
 
-  const reportData = Array.isArray(examResults?.subjects)
-    ? examResults.subjects
-    : [];
+  const reportData = Array.isArray(examResults)
+    ? examResults
+    : Array.isArray(examResults?.subjects)
+      ? examResults.subjects
+      : [];
 
   const total = reportData.reduce(
-    (sum, item) => sum + (item.obtainedMarks || 0),
+    (sum, item) => sum + Number(item.obtainedMarks || 0),
+    0,
+  );
+  const totalMarks = reportData.reduce(
+    (sum, item) => sum + Number(item.totalMarks || 0),
     0,
   );
 
-  const totalPercentage =
-    reportData.length > 0 ? Math.round(total / reportData.length) : 0;
+  const totalPercentage = totalMarks > 0
+    ? ((total / totalMarks) * 100).toFixed(2)
+    : "0.00";
+  const totalPercentageValue = Number(totalPercentage);
+  const overallGrade = examResults?.overallGrade || (
+    totalPercentageValue >= 90
+      ? "A+"
+      : totalPercentageValue >= 80
+        ? "A"
+        : totalPercentageValue >= 70
+          ? "B"
+          : totalPercentageValue >= 60
+            ? "C"
+            : "F"
+  );
+  const overallStatus = examResults?.overallStatus || (
+    reportData.length > 0 && reportData.every((item) => String(item.status).toUpperCase() === "PASS")
+      ? "PASS"
+      : "FAIL"
+  );
 
   return (
     <div className="w-full px-4 sm:px-6">
@@ -234,7 +271,7 @@ export default function ParentsExamReports() {
                     <td className="px-4 py-3">
                       <span
                         className={`px-3 py-1 rounded text-xs ${
-                          row.status === "Pass"
+                          String(row.status).toUpperCase() === "PASS"
                             ? "bg-green-100 text-green-700"
                             : "bg-red-100 text-red-700"
                         }`}
@@ -250,10 +287,10 @@ export default function ParentsExamReports() {
                   <td className="px-4 py-3 font-bold">{total}</td>
                   <td className="px-4 py-3 font-bold">{totalPercentage}%</td>
                   <td className="px-4 py-3 font-bold">
-                    {examResults?.overallGrade || "-"}
+                    {overallGrade}
                   </td>
                   <td className="px-4 py-3 font-bold">
-                    {examResults?.overallStatus || "-"}
+                    {overallStatus}
                   </td>
                 </tr>
               </>
@@ -271,7 +308,7 @@ export default function ParentsExamReports() {
       {/* Navigation Button Area */}
       <div className="flex justify-end p-4 mt-2">
         <button
-          onClick={handleStaticDownload}
+          onClick={handleDownloadReportCard}
           className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg flex items-center gap-2 font-medium transition duration-200 shadow-sm"
         >
           <Download size={18} />

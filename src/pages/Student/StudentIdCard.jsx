@@ -1,9 +1,10 @@
-import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { fetchStudentDetailsByProfile } from "../../features/student/studentDetails/studentDetailsSlice";
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { getStudentIdCardDetails } from "../../features/Admin/student/studentAPI";
 import girl from "../../assets/girl.png";
 
 const valueOrDash = (value) => value || "-";
+const responseData = (response) => response?.data?.data ?? response?.data;
 
 const imageSource = (value) => {
   if (!value) return "";
@@ -15,15 +16,38 @@ const imageSource = (value) => {
 };
 
 export default function StudentIdCard() {
-  const dispatch = useDispatch();
   const profileId = useSelector((state) => state.auth.profileId);
-  const { studentDetails, loading, error } = useSelector((state) => state.studentDetails);
+  const [studentDetails, setStudentDetails] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (profileId && !studentDetails && !loading && !error) {
-      dispatch(fetchStudentDetailsByProfile(profileId));
+    let active = true;
+
+    if (!profileId) {
+      setLoading(false);
+      return () => {
+        active = false;
+      };
     }
-  }, [dispatch, error, loading, profileId, studentDetails]);
+
+    setLoading(true);
+    setError(null);
+    getStudentIdCardDetails(profileId)
+      .then((response) => {
+        if (active) setStudentDetails(responseData(response));
+      })
+      .catch((requestError) => {
+        if (active) setError(requestError);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [profileId]);
 
   if (loading && !studentDetails) {
     return <div className="p-5 text-center text-sm text-[var(--theme-text-muted)]">Loading profile...</div>;
@@ -38,15 +62,27 @@ export default function StudentIdCard() {
   }
 
   const logo = imageSource(studentDetails.schoolLogo || studentDetails.schoolLogoUrl || studentDetails.logoUrl);
-  const photo = imageSource(studentDetails.profileUrl || studentDetails.photoUrl) || girl;
+  const photo = imageSource(
+    studentDetails.studentPhoto ||
+      studentDetails.profilePhoto ||
+      studentDetails.profilePhotoUrl ||
+      studentDetails.profileUrl ||
+      studentDetails.photo ||
+      studentDetails.photoUrl,
+  ) || girl;
   const signature = imageSource(
     studentDetails.principalSignature || studentDetails.principalSignatureUrl || studentDetails.signatureUrl,
   );
   const studentName = studentDetails.fullName || studentDetails.studentName || studentDetails.name;
   const academicYear = studentDetails.academicYear || studentDetails.academicSession;
-  const className = [studentDetails.className || studentDetails.class, studentDetails.section]
+  const className = [studentDetails.classAndSection || studentDetails.className || studentDetails.class, studentDetails.section]
     .filter(Boolean)
     .join("-");
+
+  const fatherName = studentDetails.fatherName || studentDetails.father || studentDetails.parentName;
+  const gender = studentDetails.gender;
+  const dateOfBirth = studentDetails.dob || studentDetails.dateOfBirth;
+  const rollNumber = studentDetails.rollNo || studentDetails.rollNumber;
 
   return (
     <div className="mx-auto w-full max-w-7xl">
@@ -56,44 +92,85 @@ export default function StudentIdCard() {
       </div>
 
       <section className="flex min-h-[calc(100vh-180px)] items-center justify-center rounded-sm bg-[#edf4ff] px-4 py-8 sm:px-8">
-        <article className="relative aspect-[0.56] w-full max-w-[290px] overflow-hidden rounded-[3px] bg-gradient-to-b from-[#4b2bf4] via-[#5535ef] to-[#6c45e7] shadow-[0_2px_4px_rgba(36,20,110,0.28)] sm:max-w-[310px]">
-          <div className="absolute inset-x-0 top-0 h-[42%] bg-gradient-to-b from-[#5534f3] to-[#5b3bef]" />
-          <div className="absolute inset-x-[7%] bottom-0 top-[35%] rounded-t-[18px] bg-gradient-to-b from-[#8f68ed] via-[#9a70eb] to-[#a477e8]" />
+        <article className="relative aspect-[54/91] w-full max-w-[360px] overflow-hidden rounded-[5px] bg-[#5237e6] shadow-[0_3px_8px_rgba(36,20,110,0.35)]">
+          <div className="absolute inset-x-0 top-0 h-[29.67%] bg-[#5237e6]" />
+          <div className="absolute inset-x-[5.56%] bottom-[3.3%] top-[29.67%] rounded-[6%] bg-[#976ff1]" />
 
-          <div className="relative flex h-full flex-col items-center px-[10%] pt-[7%] text-white">
+          <div className="absolute left-[13%] top-[3.85%] flex aspect-square w-[16.67%] items-center justify-center rounded-full bg-white p-[1.5%]">
             {logo ? (
-              <img src={logo} alt="School logo" className="h-[15%] w-[30%] object-contain" />
-            ) : (
-              <div className="h-[15%] w-[30%]" />
-            )}
+              <img src={logo} alt="School logo" className="h-full w-full object-contain" />
+            ) : null}
+          </div>
 
-            <div className="mt-[4%] h-[29%] w-[57%] rounded-full border-[3px] border-white bg-[#70e6e5] p-[3px] shadow-[0_2px_5px_rgba(0,0,0,0.14)] sm:border-4">
-              <img
-                src={photo}
-                alt={valueOrDash(studentName)}
-                className="h-full w-full rounded-full object-cover"
-                onError={(event) => { event.currentTarget.src = girl; }}
-              />
+          <div className="absolute left-[31.5%] top-[5.3%] w-[59%] text-white">
+            <h2 className="text-[clamp(9px,3vw,15px)] font-bold leading-[1.05]">
+              {valueOrDash(studentDetails.schoolName)}
+            </h2>
+            <p className="mt-[2.5%] text-[clamp(6px,1.7vw,10px)] leading-[1.05]">
+              {valueOrDash(studentDetails.schoolAddress || studentDetails.address)}
+            </p>
+          </div>
+
+          <div className="absolute left-1/2 top-[19.78%] aspect-square w-[43.7%] -translate-x-1/2 rounded-full bg-[#bff6f4] p-[1.5%]">
+            <img
+              src={photo}
+              alt={valueOrDash(studentName)}
+              className="h-full w-full rounded-full object-cover"
+              onError={(event) => { event.currentTarget.src = girl; }}
+            />
+          </div>
+
+          <div className="absolute inset-x-[7.4%] top-[51.6%] text-center text-white">
+            <h2 className="text-[clamp(10px,3vw,16px)] font-bold leading-[1.05]">
+              {valueOrDash(studentName)}
+            </h2>
+            <p className="mt-[2%] text-[clamp(7px,1.8vw,10px)] leading-none">
+              {valueOrDash(academicYear)}
+            </p>
+          </div>
+
+          <div className="absolute inset-x-[14.8%] top-[64.8%] grid grid-cols-2 gap-x-[5%] gap-y-[4.2%] text-white">
+            <div className="min-w-0">
+              <p className="text-[clamp(5px,1.55vw,9px)] leading-none text-[#f5f1ff]">Roll Number</p>
+              <p className="mt-[9%] truncate text-[clamp(6px,1.8vw,10px)] font-bold leading-none">{valueOrDash(rollNumber)}</p>
             </div>
-
-            <div className="mt-[5%] text-center">
-              <h2 className="text-[clamp(9px,2.2vw,15px)] font-bold tracking-[0.08em]">{valueOrDash(studentName)}</h2>
-              <p className="mt-1 text-[clamp(8px,1.8vw,12px)] font-medium">{valueOrDash(academicYear)}</p>
+            <div className="min-w-0">
+              <p className="text-[clamp(5px,1.55vw,9px)] leading-none text-[#f5f1ff]">Father&apos;s Name</p>
+              <p className="mt-[9%] truncate text-[clamp(6px,1.8vw,10px)] font-bold leading-none">{valueOrDash(fatherName)}</p>
             </div>
-
-            <dl className="mt-[9%] w-[82%] space-y-[4%] text-[clamp(8px,1.8vw,12px)]">
-              <div className="flex"><dt className="w-[48%]">Roll Number</dt><dd>{valueOrDash(studentDetails.rollNo || studentDetails.rollNumber)}</dd></div>
-              <div className="flex"><dt className="w-[48%]">Class</dt><dd>{valueOrDash(className)}</dd></div>
-              <div className="flex"><dt className="w-[48%]">Blood Group</dt><dd>{valueOrDash(studentDetails.bloodGroup)}</dd></div>
-            </dl>
-
-            <div className="absolute bottom-[5%] right-[10%] flex w-[38%] flex-col items-center text-center">
-              <div className="flex h-[35px] w-full items-end justify-center">
-                {signature ? <img src={signature} alt="Principal signature" className="max-h-full max-w-full object-contain" /> : null}
-              </div>
-              <span className="mt-1 text-[clamp(7px,1.5vw,10px)]">Principal Signature</span>
+            <div className="min-w-0">
+              <p className="text-[clamp(5px,1.55vw,9px)] leading-none text-[#f5f1ff]">Class / Section</p>
+              <p className="mt-[9%] truncate text-[clamp(6px,1.8vw,10px)] font-bold leading-none">{valueOrDash(className)}</p>
+            </div>
+            <div className="min-w-0">
+              <p className="text-[clamp(5px,1.55vw,9px)] leading-none text-[#f5f1ff]">Gender</p>
+              <p className="mt-[9%] truncate text-[clamp(6px,1.8vw,10px)] font-bold leading-none">{valueOrDash(gender)}</p>
+            </div>
+            <div className="min-w-0">
+              <p className="text-[clamp(5px,1.55vw,9px)] leading-none text-[#f5f1ff]">Date of Birth</p>
+              <p className="mt-[9%] truncate text-[clamp(6px,1.8vw,10px)] font-bold leading-none">{valueOrDash(dateOfBirth)}</p>
+            </div>
+            <div className="min-w-0">
+              <p className="text-[clamp(5px,1.55vw,9px)] leading-none text-[#f5f1ff]">Blood Group</p>
+              <p className="mt-[9%] truncate text-[clamp(6px,1.8vw,10px)] font-bold leading-none">{valueOrDash(studentDetails.bloodGroup)}</p>
             </div>
           </div>
+
+          <div className="absolute inset-x-[14.8%] top-[84.6%] h-px bg-[#dcc9ff]" />
+          {signature ? (
+            <img
+              src={signature}
+              alt="Principal signature"
+              className="absolute right-[11.1%] top-[85.7%] h-[5.7%] w-[38.9%] object-contain"
+            />
+          ) : null}
+          <div className="absolute bottom-[7.1%] right-[11.1%] w-[40.7%] border-b border-white/90" />
+          <p className="absolute bottom-[3.2%] right-[11.1%] w-[40.7%] text-center text-[clamp(5px,1.3vw,8px)] font-bold leading-none text-white">
+            Principal Signature
+          </p>
+          <p className="absolute bottom-[3.2%] left-[14.8%] text-[clamp(5px,1.3vw,8px)] leading-none text-white">
+            Property of the school
+          </p>
         </article>
       </section>
     </div>

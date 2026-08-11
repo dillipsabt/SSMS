@@ -33,6 +33,7 @@ const SchoolDetailsView = () => {
     principalEmail: "",
     principalPhoneNo: "",
     logo: null,
+    principalSignature: null,
   });
 
   // Clear stale messages on mount
@@ -62,6 +63,7 @@ const SchoolDetailsView = () => {
         principalEmail: schoolDetails.principalEmail || "",
         principalPhoneNo: schoolDetails.principalPhoneNo || "",
         logo: null,
+        principalSignature: null,
       });
     }
   }, [schoolDetails]);
@@ -87,6 +89,10 @@ const SchoolDetailsView = () => {
 
   const handleFileChange = (e) => {
     setFormData({ ...formData, logo: e.target.files[0] });
+  };
+
+  const handleSignatureChange = (e) => {
+    setFormData({ ...formData, principalSignature: e.target.files[0] });
   };
 
   const handleSave = () => {
@@ -115,6 +121,10 @@ const SchoolDetailsView = () => {
 
     if (formData.logo) {
       uploadFormData.append("logo", formData.logo);
+    }
+
+    if (formData.principalSignature) {
+      uploadFormData.append("principalSignature", formData.principalSignature);
     }
 
     // If school details exist, update; otherwise create
@@ -155,6 +165,7 @@ const SchoolDetailsView = () => {
         principalEmail: schoolDetails.principalEmail || "",
         principalPhoneNo: schoolDetails.principalPhoneNo || "",
         logo: null,
+        principalSignature: null,
       });
     }
   };
@@ -342,6 +353,34 @@ const SchoolDetailsView = () => {
             </div>
           </div>
 
+          <div className="card mb-6">
+            <h3 className="card-section">Principal/Director Signature</h3>
+            <div className="p-6">
+              <label className="form-label">Upload Principal/Director Signature</label>
+              <div className="mt-1 flex flex-wrap items-center gap-3">
+                <label className="inline-flex items-center px-3 py-2 rounded bg-blue-100 text-blue-600 cursor-pointer hover:bg-blue-200 text-xs font-medium">
+                  Choose File
+                  <input
+                    type="file"
+                    onChange={handleSignatureChange}
+                    className="hidden"
+                    accept=".jpg,.jpeg,.png,.gif,.webp"
+                  />
+                </label>
+                {schoolDetails?.principalSignatureFileName && !formData.principalSignature && (
+                  <span className="text-xs text-gray-600">
+                    {schoolDetails.principalSignatureFileName}
+                  </span>
+                )}
+                {formData.principalSignature && (
+                  <span className="text-xs text-gray-600">
+                    {formData.principalSignature.name}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
           {/* Action Buttons */}
           <div className="flex justify-end gap-3 mb-6">
             <button onClick={handleCancel} className="btn-secondary" disabled={loading}>
@@ -465,6 +504,36 @@ const SchoolDetailsView = () => {
                   <p className="text-sm text-gray-600">{schoolDetails?.principalPhoneNo || "-"}</p>
                 </div>
               </div>
+            </div>
+          </div>
+
+          <div className="card mb-6">
+            <h3 className="card-section">Principal/Director Signature</h3>
+            <div className="p-6">
+              <label className="text-xs font-semibold text-gray-700 block mb-2">
+                Uploaded Signature
+              </label>
+              {schoolDetails?.principalSignatureUrl ? (
+                <div className="flex flex-wrap items-center gap-4">
+                  <a
+                    href={schoolDetails.principalSignatureUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-block"
+                  >
+                    <img
+                      src={schoolDetails.principalSignatureUrl}
+                      alt="Principal signature"
+                      className="h-12 max-w-[220px] object-contain"
+                    />
+                  </a>
+                  <span className="text-sm text-gray-600">
+                    {schoolDetails.principalSignatureFileName || "Signature image"}
+                  </span>
+                </div>
+              ) : (
+                <p className="text-sm text-gray-600">No signature uploaded</p>
+              )}
             </div>
           </div>
 
