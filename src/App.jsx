@@ -30,6 +30,8 @@ const StaffDetails = lazy(() => import("./pages/Admin/StaffDetails"));
 const RaiseRequestList = lazy(() => import("./pages/Admin/RaiseRequestList"));
 const Leave = lazy(() => import("./pages/Admin/AdminLeaveList"));
 const FeesConfigure = lazy(() => import("./pages/Admin/FeesConfig"));
+const TermFees = lazy(() => import("./pages/Admin/TermFees"));
+const WhatsAppConfiguration = lazy(() => import("./pages/Admin/WhatsAppConfiguration"));
 const Fees = lazy(() => import("./pages/Admin/Fees"));
 const FeesList = lazy(() => import("./pages/Admin/FeesList"));
 const AdminAddSchedule = lazy(() => import("./pages/Admin/AdminAddSchedule"));
@@ -527,6 +529,28 @@ function App() {
                 <ProtectedRoute roles={["admin", "staff-administration"]}>
                   <MainLayout>
                     <StudentWiseFeesConfig />
+                  </MainLayout>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/term-fees"
+              element={
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
+                  <MainLayout>
+                    <TermFees />
+                  </MainLayout>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/whatsapp-configuration"
+              element={
+                <ProtectedRoute roles={["admin", "staff-administration"]}>
+                  <MainLayout>
+                    <WhatsAppConfiguration />
                   </MainLayout>
                 </ProtectedRoute>
               }

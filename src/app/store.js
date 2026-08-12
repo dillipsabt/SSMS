@@ -81,6 +81,7 @@ import schoolBrandingReducer from "../features/Admin/SchoolBranding/schoolBrandi
 import passwordChangeReducer from "../features/Settings/passwordChangeSlice";
 import classTimingScheduleReducer from "../features/Admin/ClassTimingSchedule/classTimingScheduleSlice";
 import subjectReducer from "../features/Admin/Subject/subjectSlice";
+import whatsAppConfigurationReducer from "../features/Admin/WhatsAppConfiguration/whatsAppConfigurationSlice";
 export const store = configureStore({
   reducer: {
      auth: authReducer,
@@ -164,6 +165,7 @@ export const store = configureStore({
     passwordChange: passwordChangeReducer,
     classTimingSchedule: classTimingScheduleReducer,
     subject: subjectReducer,
+    whatsAppConfiguration: whatsAppConfigurationReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

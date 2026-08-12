@@ -90,90 +90,105 @@ const mapStudent = (student = {}) => ({
   barcode: student.barcode,
 });
 
-const drawCardField = (doc, label, content, x, y, width) => {
+const drawDetailRow = (doc, label, content, x, y, width, valueColor = [34, 39, 51]) => {
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(3.7);
-  doc.setTextColor(245, 241, 255);
+  doc.setFontSize(5.2);
+  doc.setTextColor(75, 79, 91);
   doc.text(label, x, y);
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(4.8);
-  doc.setTextColor(255, 255, 255);
-  const lines = doc.splitTextToSize(value(content), width).slice(0, 2);
-  doc.text(lines, x, y + 2.7, { lineHeightFactor: 1.05 });
+  doc.setFontSize(5.8);
+  doc.setTextColor(...valueColor);
+  const lines = doc.splitTextToSize(value(content), width - 19).slice(0, 1);
+  doc.text(lines[0], x + width, y, { align: "right" });
+  doc.setDrawColor(224, 227, 234);
+  doc.setLineWidth(0.2);
+  doc.line(x, y + 3.5, x + width, y + 3.5);
 };
 
 const drawFront = async (doc, card, x, y, width, height) => {
-  const purple = [82, 55, 230];
-  const panel = [151, 111, 241];
-  const safe = 3;
+  const background = [247, 250, 255];
+  const border = [193, 201, 217];
   const center = x + width / 2;
+  const photoCenterX = card.qrCode ? x + 15 : center;
 
-  doc.setFillColor(...purple);
-  doc.setDrawColor(...purple);
+  doc.setFillColor(...background);
+  doc.setDrawColor(...border);
   doc.setLineWidth(0.35);
-  doc.roundedRect(x, y, width, height, 1.2, 1.2, "FD");
-  doc.setFillColor(...panel);
-  doc.roundedRect(x + safe, y + 27, width - safe * 2, height - 30, 3.2, 3.2, "F");
-  const logoX = x + 7;
-  const logoY = y + 3.5;
-  doc.setFillColor(255, 255, 255);
-  doc.setDrawColor(255, 255, 255);
-  doc.circle(logoX + 4, logoY + 4, 4.5, "FD");
-  drawImageContain(doc, card.schoolLogo, logoX + 0.8, logoY + 0.8, 6.4, 6.4);
-  const headerLeft = x + 17;
+  doc.roundedRect(x, y, width, height, 1.6, 1.6, "FD");
+
+  drawImageContain(doc, card.schoolLogo, x + 9, y + 3.5, 8.5, 8.5);
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(6.4);
-  doc.setTextColor(255, 255, 255);
-  doc.text(doc.splitTextToSize(value(card.schoolName), 32).slice(0, 2), headerLeft, y + 5.8, { lineHeightFactor: 1.05 });
+  doc.setFontSize(6.6);
+  doc.setTextColor(45, 47, 54);
+  doc.text(doc.splitTextToSize(value(card.schoolName), 30).slice(0, 2), x + 20, y + 8.1, { lineHeightFactor: 1.05 });
   doc.setFont("helvetica", "normal");
   doc.setFontSize(3.8);
-  doc.text(doc.splitTextToSize(value(card.schoolAddress), 32).slice(0, 2), headerLeft, y + 12.4, { lineHeightFactor: 1.05 });
+  doc.setTextColor(75, 79, 91);
+  doc.text("STUDENT IDENTITY CARD", center, y + 15.7, { align: "center" });
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(4.8);
+  doc.text(value(card.academicYear), center, y + 18.3, { align: "center" });
 
-  const photoY = y + 18;
-  doc.setFillColor(191, 246, 244);
-  doc.circle(center, photoY + 11, 11.8, "F");
-  if (!(await drawImageCoverCircle(doc, card.studentPhoto, center, photoY + 11, 11.8))) {
+  const photoCenterY = y + 34;
+  doc.setFillColor(255, 255, 255);
+  doc.setDrawColor(255, 255, 255);
+  doc.circle(photoCenterX, photoCenterY, 11.5, "FD");
+  if (!(await drawImageCoverCircle(doc, card.studentPhoto, photoCenterX, photoCenterY, 10.6))) {
     doc.setFillColor(222, 229, 239);
-    doc.circle(center, photoY + 8.5, 4.3, "F");
+    doc.circle(photoCenterX, photoCenterY - 2.5, 4, "F");
     doc.setFillColor(164, 176, 204);
-    doc.ellipse(center, photoY + 19, 6.5, 3.6, "F");
+    doc.ellipse(photoCenterX, photoCenterY + 6, 6.5, 3.7, "F");
+  }
+
+  if (card.qrCode) {
+    drawImageContain(doc, card.qrCode, x + 32, y + 20, 18, 18);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(2.7);
+    doc.setTextColor(75, 79, 91);
+    doc.text("SCAN TO VERIFY", x + 41, y + 40, { align: "center" });
   }
 
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(6.2);
-  doc.setTextColor(255, 255, 255);
-  doc.text(doc.splitTextToSize(value(card.studentName), width - 8).slice(0, 2), center, y + 48, { align: "center", lineHeightFactor: 1.05 });
+  doc.setFontSize(10.5);
+  doc.setTextColor(12, 14, 20);
+  doc.text(doc.splitTextToSize(value(card.studentName), 25).slice(0, 1), photoCenterX, y + 48.5, { align: "center" });
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(4.1);
-  doc.text(value(card.academicYear), center, y + 53, { align: "center" });
+  doc.setFontSize(4.5);
+  doc.setTextColor(75, 79, 91);
+  doc.text("Student", photoCenterX, y + 52.1, { align: "center" });
 
-  const left = x + 8;
-  const right = center + 2;
-  drawCardField(doc, "Roll Number", card.rollNo, left, y + 59, 17);
-  drawCardField(doc, "Father's Name", card.fatherName, right, y + 59, 17);
-  drawCardField(doc, "Class / Section", [card.className, card.section].filter(Boolean).join(" - "), left, y + 65, 17);
-  drawCardField(doc, "Gender", card.gender, right, y + 65, 17);
-  drawCardField(doc, "Date of Birth", card.dateOfBirth, left, y + 71, 17);
-  drawCardField(doc, "Blood Group", card.bloodGroup, right, y + 71, 17);
+  const detailsX = x + 7.5;
+  const detailsWidth = width - 15;
+  drawDetailRow(doc, "Roll Number", card.rollNo || card.admissionNo, detailsX, y + 55.5, detailsWidth);
+  drawDetailRow(doc, "Father Name", card.fatherName, detailsX, y + 61.5, detailsWidth);
+  drawDetailRow(doc, "Class/Sec", [card.className, card.section].filter(Boolean).join("-"), detailsX, y + 67.5, detailsWidth);
+  drawDetailRow(doc, "Blood Group", card.bloodGroup, detailsX, y + 73.5, detailsWidth, [184, 35, 38]);
 
-  doc.setDrawColor(220, 201, 255);
+  doc.setDrawColor(193, 201, 217);
   doc.setLineWidth(0.25);
-  doc.line(x + 8, y + 77, x + width - 8, y + 77);
-  if (card.principalSignature) drawImageContain(doc, card.principalSignature, x + width - 28, y + 78, 21, 5.2);
-  doc.setDrawColor(247, 235, 255);
-  doc.line(x + width - 28, y + 84.5, x + width - 6, y + 84.5);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(3.2);
-  doc.setTextColor(255, 255, 255);
-  doc.text("Principal Signature", x + width - 17, y + 87, { align: "center" });
+  doc.line(x + 5, y + 77.2, x + width - 5, y + 77.2);
+
+  const emergencyContact = card.emergencyContact || card.guardianContact;
+  if (emergencyContact) {
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(2.8);
+    doc.setTextColor(75, 79, 91);
+    doc.text("Emergency Contact", x + 7, y + 81.2);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(3.4);
+    doc.text(value(emergencyContact), x + 7, y + 84.3);
+  }
+
+  if (card.principalSignature) drawImageContain(doc, card.principalSignature, x + width - 24, y + 78.3, 17, 3.8);
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(3);
-  doc.text("Property of the school", x + 8, y + 87);
+  doc.setFontSize(3.2);
+  doc.setTextColor(75, 79, 91);
+  doc.text("PRINCIPAL", x + width - 15.5, y + 84.3, { align: "center" });
 };
 
 export const buildStudentIdCardPdf = async (student) => {
   const cardWidth = 54;
-  const cardHeight = 91;
+  const cardHeight = 85.6;
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: [cardWidth, cardHeight] });
   const card = mapStudent(student);
   await drawFront(doc, card, 0, 0, cardWidth, cardHeight);
@@ -183,13 +198,27 @@ export const buildStudentIdCardPdf = async (student) => {
 export const generateStudentIdCardsPrint = async (students) => {
   if (!students?.length) return;
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-  const cardX = (210 - 54) / 2;
-  const cardPositions = [52, 153];
+  const cardWidth = 54;
+  const cardHeight = 85.6;
+  const columnGap = 12;
+  const rowGap = 12;
+  const marginX = (210 - cardWidth * 2 - columnGap) / 2;
+  const marginY = (297 - cardHeight * 3 - rowGap * 2) / 2;
 
   for (const [index, student] of students.entries()) {
-    if (index > 0 && index % 2 === 0) doc.addPage();
+    const position = index % 6;
+    if (index > 0 && position === 0) doc.addPage();
+    const column = position % 2;
+    const row = Math.floor(position / 2);
     const card = mapStudent(student);
-    await drawFront(doc, card, cardX, cardPositions[index % 2], 54, 91);
+    await drawFront(
+      doc,
+      card,
+      marginX + column * (cardWidth + columnGap),
+      marginY + row * (cardHeight + rowGap),
+      cardWidth,
+      cardHeight,
+    );
   }
 
   const pdfUrl = URL.createObjectURL(doc.output("blob"));

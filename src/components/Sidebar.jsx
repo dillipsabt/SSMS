@@ -13,6 +13,7 @@ import {
   Bell,
   Megaphone,
   MessageSquare,
+  MessageCircle,
   BarChart3,
   ChartNoAxesCombined,
   ChartColumn,
@@ -296,6 +297,11 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         icon: <ClipboardList size={20} />,
       },
       {
+        label: "Term Fees",
+        to: "/term-fees",
+        icon: <Wallet size={20} />,
+      },
+      {
         label: "Financial Overview",
         to: "/financial-overview",
         icon: <ChartColumn size={20} />,
@@ -320,6 +326,11 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         label: "School Details",
         to: "/school-details-view",
         icon: <UserCog size={20} />,
+      },
+      {
+        label: "Whatsapp Configuration",
+        to: "/whatsapp-configuration",
+        icon: <MessageCircle size={20} />,
       },
       // {
       //   icon: <FileText size={20} />,

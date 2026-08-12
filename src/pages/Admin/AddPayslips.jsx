@@ -1,187 +1,397 @@
-import React, { useState } from "react";
-import { Calendar, Save, Eraser } from "lucide-react";
+import { useState } from "react";
+import { CalendarDays, Eraser, PlusCircle, Save, Trash2 } from "lucide-react";
+
+const initialDetails = {
+  staffId: "",
+  staffName: "",
+  department: "",
+  designation: "",
+  salaryMonth: "",
+  paymentDate: "",
+  daysPayable: "",
+};
+
+const initialDeductions = {
+  providentFund: "",
+  professionalTax: "",
+  leaveDeductions: "",
+};
+
+const formatAmount = (value) =>
+  new Intl.NumberFormat("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
+
+const getAmount = (value) => Number.parseFloat(value) || 0;
 
 export default function AddPayslip() {
-    const [paymentMethod, setPaymentMethod] = useState("bank");
+  const [details, setDetails] = useState(initialDetails);
+  const [earnings, setEarnings] = useState([{ id: 1, label: "Salary", amount: "" }]);
+  const [deductions, setDeductions] = useState(initialDeductions);
+  const [includeLeaveDeductions, setIncludeLeaveDeductions] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState("bank");
+  const [remarks, setRemarks] = useState("");
 
-    return (
-        <div className="p-6 min-h-screen">
-            {/* Header */}
-            <h1 className="text-xl font-semibold text-gray-800">Add Payslips</h1>
-            <p className="text-xs text-gray-500 mt-1 mb-5">
-                Home / Accounts / Add Payslips
-            </p>
+  const totalEarnings = earnings.reduce(
+    (total, earning) => total + getAmount(earning.amount),
+    0,
+  );
+  const totalDeductions =
+    getAmount(deductions.providentFund) +
+    getAmount(deductions.professionalTax) +
+    (includeLeaveDeductions ? getAmount(deductions.leaveDeductions) : 0);
 
-            <div className="bg-white border border-gray-200 rounded shadow-sm p-4">
-                <h2 className="font-semibold text-gray-700 mb-4">Add Payslips</h2>
+  const updateDetail = (event) => {
+    const { name, value } = event.target;
+    setDetails((current) => ({ ...current, [name]: value }));
+  };
 
-                {/* Teacher / Staff Details */}
-                <div className="border border-gray-200 rounded mb-4">
-                    <div className="bg-gray-50 px-4 py-2 font-sm text-gray-800 border-b border-gray-200">
-                        Teacher / Staff Details
-                    </div>
+  const updateDeduction = (event) => {
+    const { name, value } = event.target;
+    setDeductions((current) => ({ ...current, [name]: value }));
+  };
 
-                    <div className="p-4">
-                        <div className="grid grid-cols-4 gap-2">
-                            <Input label="Teacher / Staff ID" />
-                            <Input label="Teacher / Staff Name" />
-                            <Input label="Department" placeholder="Department" />
-                            <Input label="Designation" placeholder="Designation" />
-                        </div>
+  const updateEarning = (id, field, value) => {
+    setEarnings((current) =>
+      current.map((earning) =>
+        earning.id === id ? { ...earning, [field]: value } : earning,
+      ),
+    );
+  };
 
-                        <div className="grid grid-cols-4 gap-2 mt-4">
-                            <DateInput label="Salary Month/Year" />
-                            <DateInput label="Payment Date" />
-                            <Input label="Days Payable" />
-                        </div>
-                    </div>
-                </div>
+  const addEarning = () => {
+    setEarnings((current) => [
+      ...current,
+      { id: Date.now(), label: "", amount: "" },
+    ]);
+  };
 
-                {/* Earnings + Deductions */}
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                    {/* Earnings */}
-                    <div className="border border-gray-200 rounded">
-                        <div className="bg-gray-50 px-4 py-2 font-sm text-gray-800 border-b border-gray-200">
-                            Earnings
-                        </div>
+  const removeEarning = (id) => {
+    setEarnings((current) => current.filter((earning) => earning.id !== id));
+  };
 
-                        <div className="p-4 space-y-3">
-                            <RowInput label="Basic Pay" />
-                            <RowInput label="HRA (Rent)" />
-                            <RowInput label="Conveyance" />
-                            <RowInput label="Special Allowance" />
-                            <RowInput label="Performance Bonus" />
-                        </div>
+  const clearForm = () => {
+    setDetails(initialDetails);
+    setEarnings([{ id: 1, label: "Salary", amount: "" }]);
+    setDeductions(initialDeductions);
+    setIncludeLeaveDeductions(false);
+    setPaymentMethod("bank");
+    setRemarks("");
+  };
 
-                        <div className="bg-gray-50 px-4 py-3 flex justify-between text-sm border-t border-gray-200">
-                            <span>Total Earnings</span>
-                            <span>00.00</span>
-                        </div>
-                    </div>
+  return (
+    <main className="min-h-screen p-4 sm:p-6">
+      <header className="mb-6">
+        <h1 className="text-2xl font-semibold tracking-tight text-gray-800">
+          Add Payslips
+        </h1>
+        <p className="mt-1 text-sm text-gray-500">Home / Accounts / Add Payslips</p>
+      </header>
 
-                    {/* Deductions */}
-                    <div className="border border-gray-200 rounded">
-                        <div className="bg-gray-50 px-4 py-2 font-xs text-gray-800 border-b border-gray-200">
-                            Deductions
-                        </div>
+      <section className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
+        <div className="border-b border-gray-200 px-5 py-4">
+          <h2 className="text-lg font-semibold text-gray-700">Add Payslips</h2>
+        </div>
 
-                        <div className="p-4 space-y-3">
-                            <RowInput label="Provident Fund (PF)" />
-                            <RowInput label="Income Tax (TDS)" />
-                            <RowInput label="Professional Tax" />
-                            <RowInput label="Leave Deductions" />
-                            <RowInput label="Others" />
-                        </div>
-
-                        <div className="bg-gray-50 px-4 py-3 text-sm flex justify-between border-t border-gray-200">
-                            <span>Total Deductions</span>
-                            <span>00.00</span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Payment Method + Remarks */}
-                <div className="border border-gray-300 rounded">
-                    {/* Header */}
-                    <div className="px-6 py-4 border-b border-gray-300 text-sm font-semibold text-gray-700">
-                        Payment Method
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3 p-3 items-start">
-                        {/* Left */}
-                        <div className="space-y-6">
-                            <label className="h-[40px] border border-gray-300 rounded px-5 flex items-center gap-3 cursor-pointer">
-                                <input
-                                    type="radio"
-                                    name="payment"
-                                    checked={paymentMethod === "bank"}
-                                    onChange={() => setPaymentMethod("bank")}
-                                    className="w-5 h-5 accent-teal-600 "
-                                />
-                                <span className="text-sm text-gray-700">Bank Transfer</span>
-                            </label>
-
-                            <label className="h-[40px] border border-gray-300 rounded px-5 flex items-center gap-3 cursor-pointer">
-                                <input
-                                    type="radio"
-                                    name="payment"
-                                    checked={paymentMethod === "cheque"}
-                                    onChange={() => setPaymentMethod("cheque")}
-                                    className="w-5 h-5 accent-teal-600"
-                                />
-                                <span className="text-sm text-gray-700">Cheque Payment</span>
-                            </label>
-                        </div>
-
-                        {/* Right */}
-                        <div>
-                            <label className="block text-xs font-semibold mb-1.5 text-gray-700">
-                                Remarks
-                            </label>
-
-                            <textarea
-                                rows={2}
-                                className="w-full border border-gray-300 rounded p-4 resize-none"
-                            />
-                        </div>
-                    </div>
-                </div>
-
-                {/* Buttons */}
-                <div className="flex justify-end gap-3 mt-4">
-                    <button className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded flex items-center gap-2 text-xs">
-                        <Eraser size={14} />
-                        Clear
-                    </button>
-
-                    <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded flex items-center gap-2 text-xs">
-                        <Save size={14} />
-                        Save
-                    </button>
-                </div>
+        <div className="space-y-5 p-3 sm:p-5">
+          <FormCard title="Teacher / Staff Details">
+            <div className="grid grid-cols-1 gap-x-4 gap-y-4 md:grid-cols-2 xl:grid-cols-4">
+              <TextField
+                label="Teacher / Staff ID"
+                name="staffId"
+                value={details.staffId}
+                onChange={updateDetail}
+              />
+              <TextField
+                label="Teacher / Staff Name"
+                name="staffName"
+                value={details.staffName}
+                onChange={updateDetail}
+              />
+              <TextField
+                label="Department"
+                name="department"
+                placeholder="Department"
+                value={details.department}
+                onChange={updateDetail}
+              />
+              <TextField
+                label="Designation"
+                name="designation"
+                placeholder="Designation"
+                value={details.designation}
+                onChange={updateDetail}
+              />
+              <DateField
+                label="Salary Month/Year"
+                name="salaryMonth"
+                type="month"
+                value={details.salaryMonth}
+                onChange={updateDetail}
+              />
+              <DateField
+                label="Payment Date"
+                name="paymentDate"
+                type="date"
+                value={details.paymentDate}
+                onChange={updateDetail}
+              />
+              <TextField
+                label="Days Payable"
+                name="daysPayable"
+                type="number"
+                min="0"
+                value={details.daysPayable}
+                onChange={updateDetail}
+              />
             </div>
-        </div>
-    );
-}
+          </FormCard>
 
-/* Reusable Components */
+          <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
+            <FormCard title="Earnings" footerLabel="Total Earnings" footerValue={formatAmount(totalEarnings)}>
+              <div className="space-y-3">
+                {earnings.map((earning, index) => (
+                  <div
+                    className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_2rem] items-center gap-3"
+                    key={earning.id}
+                  >
+                    {index === 0 ? (
+                      <span className="text-sm font-medium text-gray-800">Salary</span>
+                    ) : (
+                      <input
+                        aria-label="Earning name"
+                        className="form-input"
+                        placeholder="Earning name"
+                        value={earning.label}
+                        onChange={(event) =>
+                          updateEarning(earning.id, "label", event.target.value)
+                        }
+                      />
+                    )}
+                    <input
+                      aria-label={`${earning.label || "Earning"} amount`}
+                      className="form-input"
+                      inputMode="decimal"
+                      min="0"
+                      placeholder="0.00"
+                      type="number"
+                      value={earning.amount}
+                      onChange={(event) =>
+                        updateEarning(earning.id, "amount", event.target.value)
+                      }
+                    />
+                    {index === 0 ? (
+                      <span aria-hidden="true" />
+                    ) : (
+                      <button
+                        aria-label="Remove earning"
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-full text-rose-600 transition hover:bg-rose-50"
+                        onClick={() => removeEarning(earning.id)}
+                        type="button"
+                      >
+                        <Trash2 size={19} />
+                      </button>
+                    )}
+                  </div>
+                ))}
+                <div className="flex justify-end">
+                  <button
+                    aria-label="Add earning"
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-full text-brand-600 transition hover:bg-brand-50"
+                    onClick={addEarning}
+                    type="button"
+                  >
+                    <PlusCircle size={25} strokeWidth={2.5} />
+                  </button>
+                </div>
+              </div>
+            </FormCard>
 
-function Input({ label, placeholder = "" }) {
-    return (
-        <div>
-            <label className="block text-xs mb-1 font-medium">{label}</label>
-            <input
-                placeholder={placeholder}
-                className="w-full border border-gray-200 rounded px-3 py-2 text-sm"
-            />
-        </div>
-    );
-}
-
-function DateInput({ label }) {
-    return (
-        <div>
-            <label className="block text-xs mb-1 font-medium">{label}</label>
-            <div className="relative">
-                <input
-                    type="text"
-                    placeholder="dd/mm/yyyy"
-                    className="w-full border border-gray-200 rounded px-3 py-2 text-sm"
+            <FormCard
+              title="Deductions"
+              footerLabel="Total Deductions"
+              footerValue={formatAmount(totalDeductions)}
+            >
+              <div className="space-y-4">
+                <AmountField
+                  label="Provident Fund (PF)"
+                  name="providentFund"
+                  value={deductions.providentFund}
+                  onChange={updateDeduction}
                 />
-                <Calendar
-                    size={16}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+                <AmountField
+                  label="Professional Tax"
+                  name="professionalTax"
+                  value={deductions.professionalTax}
+                  onChange={updateDeduction}
                 />
+                <div className="grid grid-cols-1 items-center gap-3 sm:grid-cols-2">
+                  <label className="flex items-center gap-3 text-sm font-medium text-gray-800">
+                    <input
+                      checked={includeLeaveDeductions}
+                      className="h-5 w-5 rounded border-gray-300 text-brand-600 focus:ring-brand-600"
+                      onChange={(event) => setIncludeLeaveDeductions(event.target.checked)}
+                      type="checkbox"
+                    />
+                    Leave Deductions
+                  </label>
+                  <input
+                    aria-label="Leave deductions amount"
+                    className="form-input"
+                    disabled={!includeLeaveDeductions}
+                    inputMode="decimal"
+                    min="0"
+                    name="leaveDeductions"
+                    placeholder="0.00"
+                    type="number"
+                    value={deductions.leaveDeductions}
+                    onChange={updateDeduction}
+                  />
+                </div>
+              </div>
+            </FormCard>
+          </div>
+
+          <FormCard title="Payment Method">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+              <div className="space-y-3">
+                <PaymentOption
+                  checked={paymentMethod === "bank"}
+                  label="Bank Transfer"
+                  onChange={() => setPaymentMethod("bank")}
+                  value="bank"
+                />
+                <PaymentOption
+                  checked={paymentMethod === "cheque"}
+                  label="Cheque Payment"
+                  onChange={() => setPaymentMethod("cheque")}
+                  value="cheque"
+                />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-gray-800" htmlFor="remarks">
+                  Remarks
+                </label>
+                <textarea
+                  className="form-textarea min-h-32"
+                  id="remarks"
+                  value={remarks}
+                  onChange={(event) => setRemarks(event.target.value)}
+                />
+              </div>
             </div>
+          </FormCard>
+
+          <div className="flex justify-end gap-3 pt-1">
+            <button
+              className="inline-flex items-center gap-2 rounded-md bg-rose-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-rose-700"
+              onClick={clearForm}
+              type="button"
+            >
+              <Eraser size={17} />
+              Clear
+            </button>
+            <button
+              className="inline-flex items-center gap-2 rounded-md bg-brand-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-brand-700"
+              type="button"
+            >
+              <Save size={17} />
+              Save
+            </button>
+          </div>
         </div>
-    );
+      </section>
+    </main>
+  );
 }
 
-function RowInput({ label }) {
-    return (
-        <div className="grid grid-cols-2 gap-3 items-center">
-            <label className="text-xs">{label}</label>
-            <input className="border border-gray-200 rounded px-3 py-1.5" />
+function FormCard({ children, footerLabel, footerValue, title }) {
+  return (
+    <section className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
+      <div className="border-b border-gray-200 px-4 py-3">
+        <h2 className="text-lg font-semibold text-gray-700">{title}</h2>
+      </div>
+      <div className="p-4">{children}</div>
+      {footerLabel && (
+        <div className="flex items-center justify-between border-t border-gray-100 bg-slate-50 px-4 py-4 text-sm font-semibold text-gray-800">
+          <span>{footerLabel}</span>
+          <span>{footerValue}</span>
         </div>
-    );
+      )}
+    </section>
+  );
+}
+
+function TextField({ label, ...inputProps }) {
+  return (
+    <div>
+      <label className="mb-1.5 block text-sm font-medium text-gray-800" htmlFor={inputProps.name}>
+        {label}
+      </label>
+      <input className="form-input" id={inputProps.name} {...inputProps} />
+    </div>
+  );
+}
+
+function DateField({ label, name, type, value, onChange }) {
+  return (
+    <div>
+      <label className="mb-1.5 block text-sm font-medium text-gray-800" htmlFor={name}>
+        {label}
+      </label>
+      <div className="relative">
+        <input
+          className="form-input appearance-none pr-10"
+          id={name}
+          name={name}
+          type={type}
+          value={value}
+          onChange={onChange}
+        />
+        <CalendarDays
+          aria-hidden="true"
+          className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+          size={18}
+        />
+      </div>
+    </div>
+  );
+}
+
+function AmountField({ label, name, onChange, value }) {
+  return (
+    <div className="grid grid-cols-1 items-center gap-3 sm:grid-cols-2">
+      <label className="text-sm font-medium text-gray-800" htmlFor={name}>
+        {label}
+      </label>
+      <input
+        className="form-input"
+        id={name}
+        inputMode="decimal"
+        min="0"
+        name={name}
+        placeholder="0.00"
+        type="number"
+        value={value}
+        onChange={onChange}
+      />
+    </div>
+  );
+}
+
+function PaymentOption({ checked, label, onChange, value }) {
+  return (
+    <label className="flex min-h-16 cursor-pointer items-center gap-3 rounded-md border border-gray-300 bg-slate-50 px-4 text-sm font-medium text-slate-800 transition hover:border-brand-600">
+      <input
+        checked={checked}
+        className="h-5 w-5 border-gray-300 text-teal-700 focus:ring-teal-700"
+        name="paymentMethod"
+        onChange={onChange}
+        type="radio"
+        value={value}
+      />
+      {label}
+    </label>
+  );
 }
