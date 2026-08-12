@@ -32,13 +32,15 @@ const StudentDashboard = () => {
     dispatch(clearError());
   }, [dispatch]);
 
+  const { profileId } = useSelector((state) => state.auth);
+
   useEffect(() => {
-    const studentId = localStorage.getItem("profileId");
+    const studentId = profileId;
     if (studentId) {
       dispatch(getStudentDashboardAsync(studentId));
       dispatch(getStudentAttendanceChartAsync(studentId));
     }
-  }, [dispatch]);
+  }, [dispatch, profileId]);
 
   const welcomeCard = dashboardData?.welcomeCard || {};
   const stats = dashboardData?.stats || {};

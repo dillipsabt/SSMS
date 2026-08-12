@@ -10,7 +10,7 @@ import {
 
 const Notifications = () => {
   const dispatch = useDispatch();
-  const role = localStorage.getItem("role");
+  const role = useSelector((state) => state.auth.role);
   const [selectedNotif, setSelectedNotif] = useState(null);
 
   const { notificationsList, loading, error } = useSelector(

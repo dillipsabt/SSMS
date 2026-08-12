@@ -85,6 +85,7 @@ export const login = createAsyncThunk(
         role: role || "admin",
         isAdministration,
         schoolLogourl: data.schoolLogourl || null,
+        userName: data.userName || "User",
       };
 
       return loginPayload;
@@ -104,6 +105,7 @@ const authSlice = createSlice({
     userId: localStorage.getItem("userId") || null,
     profileId: localStorage.getItem("profileId") || null,
     schoolLogourl: localStorage.getItem("schoolLogourl") || null,
+    userName: localStorage.getItem("userName") || null,
     token: localStorage.getItem("token") || null,
     role: localStorage.getItem("role") || null,
     isAdministration: localStorage.getItem("isAdministration") === "true",
@@ -116,6 +118,7 @@ const authSlice = createSlice({
       state.user = null;
       state.userId = null;
       state.profileId = null;
+      state.userName = null;
       state.token = null;
       state.role = null;
       state.isAdministration = false;
@@ -140,11 +143,13 @@ const authSlice = createSlice({
         state.token = action.payload.token;
         state.role = action.payload.role;
         state.isAdministration = action.payload.isAdministration;
+        state.userName = action.payload.userName;
 
         localStorage.setItem("token", action.payload.token || "");
         localStorage.setItem("role", action.payload.role || "admin");
         localStorage.setItem("isAdministration", String(action.payload.isAdministration));
         localStorage.setItem("user", action.payload.user || "");
+        localStorage.setItem("userName", action.payload.userName || "");
         if (action.payload.userId) localStorage.setItem("userId", action.payload.userId);
         if (action.payload.profileId) localStorage.setItem("profileId", action.payload.profileId);
         if (action.payload.schoolLogourl) localStorage.setItem("schoolLogourl", action.payload.schoolLogourl);

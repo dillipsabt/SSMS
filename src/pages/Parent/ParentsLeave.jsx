@@ -20,7 +20,7 @@ export default function ParentsLeave() {
     reason: "",
   });
 
-  const parentId = localStorage.getItem("profileId");
+  const { profileId: parentId } = useSelector((state) => state.auth);
 
   const [selectedStudentId, setSelectedStudentId] = useState("");
 

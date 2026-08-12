@@ -14,8 +14,7 @@ export default function AssignmentHomework() {
     (state) => state.parentDashboard?.selectedStudentId,
   );
 
-  const studentId =
-    selectedStudentId || localStorage.getItem("selectedStudentId");
+  const studentId = selectedStudentId;
 
   const { homeworkList = [], loading } = useSelector(
     (state) => state.parentHomework,

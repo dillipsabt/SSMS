@@ -12,6 +12,16 @@ import {
 } from "../../features/teacher/Attendance/teacherAttendanceSlice";
 import securityIllustration from "../../assets/bannerGirl.png";
 
+const getLocalDateKey = (date = new Date()) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const getAttendanceOwnerId = (attendance) =>
+  attendance?.teacherId ?? attendance?.staffId ?? attendance?.employeeId ?? attendance?.profileId;
+
 const imageToFile = async (image, name) => {
   const blob = await fetch(image).then((response) => response.blob());
   return new File([blob], name, { type: blob.type || "image/jpeg" });
@@ -29,7 +39,7 @@ export default function StaffPunchAttendance({ onAttendanceSaved }) {
   const { todayAttendance, punchLoading, faceLoading } =
     useSelector((state) => state.teacherAttendance) || {};
   const webcamRef = useRef(null);
-  const [currentTime, setCurrentTime] = useState(Date.now());
+  const [currentTime, setCurrentTime] = useState(() => Date.now());
   const [showPunchModal, setShowPunchModal] = useState(false);
   const [showPunchOutModal, setShowPunchOutModal] = useState(false);
   const [loadingLocation, setLoadingLocation] = useState(false);
@@ -40,7 +50,7 @@ export default function StaffPunchAttendance({ onAttendanceSaved }) {
   const [punchOutStep, setPunchOutStep] = useState("camera");
 
   const isCurrentStaffAttendance =
-    todayAttendance && String(todayAttendance.teacherId) === String(profileId);
+    todayAttendance && String(getAttendanceOwnerId(todayAttendance)) === String(profileId);
   const hasPunchedIn = Boolean(isCurrentStaffAttendance && todayAttendance.punchIn);
   const hasPunchedOut = Boolean(isCurrentStaffAttendance && todayAttendance.punchOut);
   const isWorking = hasPunchedIn && !hasPunchedOut;
@@ -49,13 +59,10 @@ export default function StaffPunchAttendance({ onAttendanceSaved }) {
     : null;
   const [enrolledFaceUsers, setEnrolledFaceUsers] = useState({});
   const isFaceEnrolled = Boolean(
-    faceEnrollmentStorageKey &&
-      (enrolledFaceUsers[String(userId)] ||
-        localStorage.getItem(faceEnrollmentStorageKey)),
+    faceEnrollmentStorageKey && enrolledFaceUsers[String(userId)]
   );
 
   const markFaceEnrolled = () => {
-    localStorage.setItem(faceEnrollmentStorageKey, "true");
     setEnrolledFaceUsers((users) => ({
       ...users,
       [String(userId)]: true,
@@ -222,14 +229,14 @@ export default function StaffPunchAttendance({ onAttendanceSaved }) {
       await dispatch(
         punchInTeacher({
           teacherId: Number(profileId),
-          date: new Date().toISOString().split("T")[0],
+          date: getLocalDateKey(),
           latitude: location.latitude,
           longitude: location.longitude,
         }),
       ).unwrap();
       resetPunchIn();
       toast.success("Punch-In recorded successfully");
-      dispatch(fetchTeacherAttendance({ teacherId: profileId }));
+      await dispatch(fetchTeacherAttendance({ teacherId: profileId })).unwrap();
       onAttendanceSaved?.();
     } catch (error) {
       toast.error(getErrorMessage(error, "Punch-In failed. Please try again."));
@@ -241,14 +248,14 @@ export default function StaffPunchAttendance({ onAttendanceSaved }) {
       await dispatch(
         punchOutTeacher({
           teacherId: Number(profileId),
-          date: new Date().toISOString().split("T")[0],
+          date: getLocalDateKey(),
           latitude: location.latitude,
           longitude: location.longitude,
         }),
       ).unwrap();
       resetPunchOut();
       toast.success("Punch-Out recorded successfully");
-      dispatch(fetchTeacherAttendance({ teacherId: profileId }));
+      await dispatch(fetchTeacherAttendance({ teacherId: profileId })).unwrap();
       onAttendanceSaved?.();
     } catch (error) {
       toast.error(getErrorMessage(error, "Punch-Out failed. Please try again."));

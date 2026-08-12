@@ -65,8 +65,6 @@ export default function TeacherAssignmentSubmission() {
     assignTo: "",
   });
 
-  // TEACHER ID
-  // const teacherId = localStorage.getItem("teacherId") || 18;
 
   useEffect(() => {
     dispatch(fetchClassesAsync());

@@ -23,7 +23,7 @@ const StudentHomework = () => {
   const [submittedHomework, setSubmittedHomework] = useState({});
 
   // Get studentId from Redux (logged-in student)
-  const studentId = profileId || localStorage.getItem("profileId");
+  const studentId = profileId;
 
   // Clear stale messages on mount
   useEffect(() => {

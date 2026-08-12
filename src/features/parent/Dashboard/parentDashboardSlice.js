@@ -6,7 +6,7 @@ import { fetchParentDashboardAPI, getParentStudentsAPI } from "./parentDashboard
 
 export const fetchParentStudents = createAppAsyncThunk(
   "parentDashboard/fetchStudents",
-  () => getParentStudentsAPI()
+  (parentId) => getParentStudentsAPI(parentId)
 );
 
 export const fetchParentDashboard = createAppAsyncThunk(

@@ -26,7 +26,7 @@ export const punchOutTeacher = createAppAsyncThunk(
 
 export const fetchTeacherAttendance = createAppAsyncThunk(
   "teacherAttendance/fetchList",
-  ({ teacherId }) => fetchTeacherAttendanceAPI().then((response) => ({
+  ({ teacherId }) => fetchTeacherAttendanceAPI({ teacherId }).then((response) => ({
     response: response?.data ?? response,
     teacherId,
   }))
@@ -62,6 +62,9 @@ const toLocalDateKey = (value) => {
   const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 };
+
+const getAttendanceOwnerId = (record) =>
+  record?.teacherId ?? record?.staffId ?? record?.employeeId ?? record?.profileId;
 
 const initialState = {
   isPunchedIn: false,
@@ -150,9 +153,14 @@ const teacherAttendanceSlice = createSlice({
         const attendanceList = payload.attendanceList || [];
         const today = toLocalDateKey(new Date());
         const todayAttendance = attendanceList.find(
-          (record) =>
-            toLocalDateKey(record.attendanceDate) === today &&
-            (!teacherId || String(record.teacherId) === String(teacherId))
+          (record) => {
+            const isToday =
+              toLocalDateKey(record.attendanceDate) === today ||
+              toLocalDateKey(record.punchIn) === today ||
+              toLocalDateKey(record.punchOut) === today;
+
+            return isToday && (!teacherId || String(getAttendanceOwnerId(record)) === String(teacherId));
+          }
         ) || null;
 
         state.attendanceList = attendanceList;

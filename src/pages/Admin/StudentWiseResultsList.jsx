@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { Download, Printer, Search, X } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
-import { getTenantId } from "../../api/tenant";
 import {
   fetchClasses,
   fetchExaminationTypes,
@@ -24,7 +23,6 @@ const getAdmissionNumber = (student) => student?.admissionNo || student?.admissi
 const getPercentage = (student) => student?.percentage == null ? "-" : Number(student.percentage).toFixed(2);
 const getStatus = (student) => String(student?.status || student?.passFail || "PASS").toUpperCase();
 const getRowKey = (student, index) => String(getStudentId(student) || getAdmissionNumber(student) || index);
-const reportCardTemplateStorageKey = `reportCardTemplate:${getTenantId() || "default"}`;
 
 const StatusBadge = ({ value, tone = "green" }) => {
   const isPass = String(value).toUpperCase() === "PASS";
@@ -53,7 +51,7 @@ export default function StudentWiseResultsList() {
   const [publishToWhatsapp, setPublishToWhatsapp] = useState(true);
   const [publishNotes, setPublishNotes] = useState("Ready to publish.");
   const [selectedIds, setSelectedIds] = useState(new Set());
-  const [reportCardTemplate, setReportCardTemplate] = useState(() => localStorage.getItem(reportCardTemplateStorageKey) || "classic");
+  const [reportCardTemplate, setReportCardTemplate] = useState("classic");
 
   useEffect(() => {
     dispatch(fetchClasses());
@@ -101,7 +99,6 @@ export default function StudentWiseResultsList() {
   const handleReportCardTemplateChange = (event) => {
     const template = event.target.value;
     setReportCardTemplate(template);
-    localStorage.setItem(reportCardTemplateStorageKey, template);
   };
 
   const handlePrintAll = async () => {

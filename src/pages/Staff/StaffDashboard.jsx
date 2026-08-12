@@ -97,7 +97,7 @@ export default function StaffDashboard() {
     );
   };
 
-  const staffId = localStorage.getItem("profileId");
+  const { profileId: staffId } = useSelector((state) => state.auth);
   const { dashboardData, attendanceChartData } = useSelector(
     (state) => state.staffDashboard,
   );

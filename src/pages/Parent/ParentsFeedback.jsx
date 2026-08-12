@@ -13,9 +13,7 @@ export default function ParentsFeedback() {
     (state) => state.parentDashboard?.selectedStudentId
   );
 
-  const studentId =
-    selectedStudentId ||
-    localStorage.getItem("selectedStudentId");
+  const studentId = selectedStudentId;
 
   const parentFeedbackState = useSelector(
     (state) => state.parentFeedback

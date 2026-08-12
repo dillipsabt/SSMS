@@ -18,7 +18,7 @@ import {
 export default function ParentsExamReports() {
   const dispatch = useDispatch();
 
-  const parentId = localStorage.getItem("profileId");
+  const { profileId: parentId } = useSelector((state) => state.auth);
 
   const [selectedStudentId, setSelectedStudentId] = useState("");
   const [academicYearId, setAcademicYearId] = useState("");

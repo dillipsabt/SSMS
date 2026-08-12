@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
+import { useSelector } from "react-redux";
 import {
   LayoutDashboard,
   Users,
@@ -30,7 +31,7 @@ import {
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
   const [openDropdown, setOpenDropdown] = useState("");
-  const role = localStorage.getItem("role");
+  const { role, isAdministration } = useSelector((state) => state.auth);
 
   let navItems = [];
 
@@ -578,7 +579,6 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
 
   // ✅ STAFF PORTAL SIDEBAR
   else if (role === "staff-portal") {
-    const isAdministration = localStorage.getItem("isAdministration") === "true";
 
     navItems = [
       {

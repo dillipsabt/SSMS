@@ -15,7 +15,6 @@ import {
 } from "../../features/Admin/ExamSchedule/examScheduleSlice";
 
 import useToastMessage from "../../utils/useToastMessage";
-import { getTenantId } from "../../api/tenant";
 import {
     generateHallTicketPdf,
     generateHallTicketsPdf,
@@ -31,8 +30,6 @@ import {
     fetchStudentWiseHallTickets,
     publishHallTicketsAsync,
 } from "../../features/Admin/HallTicket/hallTicketSlice";
-
-const hallTicketTemplateStorageKey = `hallTicketTemplate:${getTenantId() || "default"}`;
 
 const PublishModal = ({ examLabel, classLabel, onClose, onPublish, loading }) => {
     const [publishToPortal, setPublishToPortal] = useState(true);
@@ -138,7 +135,7 @@ export default function HallTicketList() {
 
     const [hasSearched, setHasSearched] = useState(false);
 
-    const [hallTicketTemplate, setHallTicketTemplate] = useState(() => localStorage.getItem(hallTicketTemplateStorageKey) || "classic");
+    const [hallTicketTemplate, setHallTicketTemplate] = useState("classic");
 
     // ==========================================================
     // REDUX
@@ -342,7 +339,6 @@ export default function HallTicketList() {
     const handleHallTicketTemplateChange = (event) => {
         const template = event.target.value;
         setHallTicketTemplate(template);
-        localStorage.setItem(hallTicketTemplateStorageKey, template);
     };
 
     const handlePrintAll = async () => {

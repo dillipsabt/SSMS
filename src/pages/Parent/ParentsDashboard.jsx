@@ -18,6 +18,7 @@ export default function ParentsDashboard() {
     { value: "This Year", label: "This Year" },
   ];
 
+  const { profileId } = useSelector((state) => state.auth);
   const dashboardState = useSelector((state) => state.parentDashboard) || {};
   const {
     students = [],
@@ -42,8 +43,8 @@ export default function ParentsDashboard() {
   }, [dispatch]);
 
   useEffect(() => {
-    dispatch(fetchParentStudents());
-  }, [dispatch]);
+    if (profileId) dispatch(fetchParentStudents(profileId));
+  }, [dispatch, profileId]);
 
   useEffect(() => {
     if (selectedStudentId) {

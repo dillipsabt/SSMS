@@ -1,11 +1,10 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 const ProtectedRoute = ({ children, roles = [] }) => {
-  const token = localStorage.getItem("token");
-  const role = localStorage.getItem("role");
+  const { token, role, isAdministration } = useSelector((state) => state.auth);
   const isLoggedIn = !!token;
-  const isAdministration = localStorage.getItem("isAdministration") === "true";
   const hasRequiredRole =
     roles.includes(role) ||
     (roles.includes("staff-administration") &&

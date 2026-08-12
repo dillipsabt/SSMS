@@ -10,6 +10,7 @@ import {
 
 const UpcomingEvents = () => {
   const dispatch = useDispatch();
+  const role = useSelector((state) => state.auth.role) || "ADMIN";
   const { todayEvents, earlierEvents, loading, error, success } = useSelector(
     (state) => state.portalUpcomingEvent
   );
@@ -24,13 +25,12 @@ const UpcomingEvents = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    const role = localStorage.getItem("role") || "ADMIN";
     const params = {};
     if (searchTitle) params.title = searchTitle;
     if (selectedDate) params.eventDate = selectedDate;
 
     dispatch(getPortalUpcomingEventsAsync({ role, ...params }));
-  }, [dispatch, searchTitle, selectedDate]);
+  }, [dispatch, role, searchTitle, selectedDate]);
 
   useToastMessage({
     success,

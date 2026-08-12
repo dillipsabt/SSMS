@@ -27,7 +27,7 @@ const StudentList = () => {
   const [statusFilter, setStatusFilter] = useState("All");
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const canManageStudents = localStorage.getItem("role") !== "staff-portal";
+  const canManageStudents = useSelector((state) => state.auth.role) !== "staff-portal";
   const {
     students: reduxStudents,
     classes,

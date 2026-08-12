@@ -13,7 +13,7 @@ const roleProfileViews = {
 };
 
 const Profile = () => {
-  const role = useSelector((state) => state.auth.role) || localStorage.getItem("role");
+  const role = useSelector((state) => state.auth.role);
   const [isEditing, setIsEditing] = useState(false);
   const [profile, setProfile] = useState({
     name: "Mr. Herald",

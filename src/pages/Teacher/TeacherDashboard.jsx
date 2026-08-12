@@ -33,6 +33,13 @@ import {
 
 const WEEK_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
+const getLocalDateKey = (date = new Date()) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
 function StatusBadge({ status }) {
   const map = {
     APPROVED: "bg-green-100 text-green-600",
@@ -141,13 +148,10 @@ export default function TeacherDashboard() {
     : null;
   const [enrolledFaceUsers, setEnrolledFaceUsers] = useState({});
   const isFaceEnrolled = Boolean(
-    faceEnrollmentStorageKey &&
-      (enrolledFaceUsers[String(userId)] ||
-        localStorage.getItem(faceEnrollmentStorageKey))
+    faceEnrollmentStorageKey && enrolledFaceUsers[String(userId)]
   );
 
   const markFaceEnrolled = () => {
-    localStorage.setItem(faceEnrollmentStorageKey, "true");
     setEnrolledFaceUsers((users) => ({
       ...users,
       [String(userId)]: true,
@@ -371,7 +375,7 @@ identitySuccess
   };
 
   const saveAttendance = async () => {
-    const todayStr = new Date().toISOString().split("T")[0];
+    const todayStr = getLocalDateKey();
     try {
       await dispatch(
         punchInTeacher({
@@ -574,7 +578,7 @@ success
   // =====================================
 
   const savePunchOut = async () => {
-    const todayStr = new Date().toISOString().split("T")[0];
+    const todayStr = getLocalDateKey();
     try {
       await dispatch(
         punchOutTeacher({

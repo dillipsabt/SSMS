@@ -2,8 +2,7 @@ import API from "../../../services/api";
 import { getAuthHeader } from "../../../utils/fileUtils";
 
 // GET PARENT'S STUDENTS
-export const getParentStudentsAPI = () => {
-  const parentId = localStorage.getItem("profileId");
+export const getParentStudentsAPI = (parentId) => {
   return API.get(`/students/get-by-parentId?parentId=${parentId}`, {
     headers: getAuthHeader(),
   });

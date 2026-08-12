@@ -12,7 +12,7 @@ import { logout } from "../features/auth/authSlice";
 const Navbar = ({ onToggleSidebar }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const role = localStorage.getItem("role");
+  const role = useSelector((state) => state.auth.role);
   const portalLabel = {
     admin: "Admin Portal",
     "teacher-portal": "Teacher Portal",

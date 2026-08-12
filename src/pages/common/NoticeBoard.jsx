@@ -10,6 +10,7 @@ import {
 
 const NoticeBoard = () => {
   const dispatch = useDispatch();
+  const role = useSelector((state) => state.auth.role) || "ADMIN";
   const { todayNotices, earlierNotices, loading, error, success } = useSelector(
     (state) => state.portalNoticeBoard
   );
@@ -24,14 +25,13 @@ const NoticeBoard = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    const role = localStorage.getItem("role") || "ADMIN";
     const params = {};
     if (searchTitle) params.title = searchTitle;
     if (selectedDate) params.noticeDate = selectedDate;
     console.log("Fetching notices with params:", role, params);
 
     dispatch(getPortalNoticesAsync({ role, ...params }));
-  }, [dispatch, searchTitle, selectedDate]);
+  }, [dispatch, role, searchTitle, selectedDate]);
 
   useToastMessage({
     success,

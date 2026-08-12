@@ -27,7 +27,7 @@ const Dashboard = () => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [expandedAttendance, setExpandedAttendance] = useState(false);
 
-  const ProfileName = localStorage.getItem("profileName") || "Admin";
+  const profileName = useSelector((state) => state.auth.userName) || "Admin";
 
   useEffect(() => {
     const today = new Date();
@@ -244,7 +244,7 @@ const Dashboard = () => {
 
       {/* Welcome Banner */}
       <div className="mb-6 rounded-lg bg-gradient-to-r from-purple-600 to-purple-700 p-4 sm:p-6 text-white dashboard-welcome">
-        <h1 className="mb-1 text-lg sm:text-2xl font-bold">Welcome Back, {ProfileName}</h1>
+        <h1 className="mb-1 text-lg sm:text-2xl font-bold">Welcome Back, {profileName}</h1>
         <p className="text-purple-100 text-xs sm:text-sm">Have a Good day at work</p>
       </div>
 

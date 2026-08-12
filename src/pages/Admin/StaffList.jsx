@@ -17,7 +17,7 @@ import useToastMessage from "../../utils/useToastMessage";
 const StaffList = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const canManageStaff = localStorage.getItem("role") !== "staff-portal";
+  const canManageStaff = useSelector((state) => state.auth.role) !== "staff-portal";
  
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);

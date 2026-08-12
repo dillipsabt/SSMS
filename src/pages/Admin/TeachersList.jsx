@@ -26,7 +26,7 @@ const TeachersList = () => {
   const [menuPos, setMenuPos] = useState({ top: 0, left: 0 });
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
-  const canManageTeachers = localStorage.getItem("role") !== "staff-portal";
+  const canManageTeachers = useSelector((state) => state.auth.role) !== "staff-portal";
   const [statusFilter, setStatusFilter] = useState("All");
 
   const { teachers, message, error, success } = useSelector((state) => state.teacher);
