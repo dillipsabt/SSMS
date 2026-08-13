@@ -37,6 +37,28 @@ const formatTime = (time) => {
   return `${hour % 12 || 12}:${minute} ${hour >= 12 ? "PM" : "AM"}`;
 };
 
+const getTeacherId = (schedule) => {
+  if (!schedule) return "";
+
+  return (
+    schedule.teacherId ??
+    schedule.id ??
+    schedule.teacherid ??
+    ""
+  );
+};
+
+const getTeacherName = (teacher) => {
+  if (!teacher) return "";
+
+  return (
+    teacher.fullName ??
+    teacher.name ??
+    teacher.teacherName ??
+    `${teacher.firstName ?? ""} ${teacher.lastName ?? ""}`.trim()
+  );
+};
+
 export default function AdminAddSchedule() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -51,8 +73,19 @@ export default function AdminAddSchedule() {
 
   useEffect(() => {
     getTeachers()
-      .then((response) => setTeachers(response.data?.data ?? response.data ?? []))
-      .catch(() => toast.error("Unable to load teachers"));
+      .then((response) => {
+        const teacherData =
+          response?.data?.data ??
+          response?.data?.content ??
+          response?.data ??
+          [];
+
+        setTeachers(Array.isArray(teacherData) ? teacherData : []);
+      })
+      .catch(() => {
+        toast.error("Unable to load teachers");
+        setTeachers([]);
+      });
     dispatch(fetchClasses());
     dispatch(fetchClassTimingSchedulesAsync({ page: 0, size: 100 }));
     dispatch(getSubjectsAsync());
@@ -82,26 +115,74 @@ export default function AdminAddSchedule() {
   }, [id, items.length, periodSlots]);
 
   useEffect(() => {
-    if (!selectedSchedule || !id || !periodSlots.length) return undefined;
+    if (!selectedSchedule || !id || !periodSlots.length) {
+      return undefined;
+    }
+
     const timer = setTimeout(() => {
-      setTeacherId(String(selectedSchedule.teacherId ?? ""));
+      const selectedTeacherId = getTeacherId(selectedSchedule);
+
+      setTeacherId(
+        selectedTeacherId
+          ? String(selectedTeacherId)
+          : ""
+      );
+
       setStartDate(selectedSchedule.startDate ?? "");
-      setEndDate(selectedSchedule.endDate ?? selectedSchedule.startDate ?? "");
+
+      setEndDate(
+        selectedSchedule.endDate ??
+        selectedSchedule.startDate ??
+        ""
+      );
+
       const scheduleItems = selectedSchedule.scheduleItems ?? [];
-      setItems(periodSlots.map((slot) => {
-        const existing = scheduleItems.find((item) =>
-          (item.classTimingScheduleId ?? item.timeSlotId ?? item.timeSlot?.id ?? item.classTimingSchedule?.id) === slot.id,
-        );
-        return {
-          id: existing?.id ?? existing?.teacherScheduleDetailId,
-          classTimingScheduleId: slot.id,
-          fromTime: timeValue(existing?.startTime ?? existing?.timeSlot?.startTime ?? existing?.classTimingSchedule?.startTime ?? slot.startTime),
-          toTime: timeValue(existing?.endTime ?? existing?.timeSlot?.endTime ?? existing?.classTimingSchedule?.endTime ?? slot.endTime),
-          subjectId: existing?.subjectId ?? existing?.subject?.id ?? "",
-          classId: existing?.classId ?? existing?.class?.id ?? "",
-        };
-      }));
+
+      setItems(
+        periodSlots.map((slot) => {
+          const existing = scheduleItems.find(
+            (item) =>
+              String(
+                item.classTimingScheduleId ??
+                item.timeSlotId ??
+                item.timeSlot?.id ??
+                item.classTimingSchedule?.id
+              ) === String(slot.id)
+          );
+
+          return {
+            id: existing?.id ?? existing?.teacherScheduleDetailId,
+
+            classTimingScheduleId: slot.id,
+
+            fromTime: timeValue(
+              existing?.startTime ??
+              existing?.timeSlot?.startTime ??
+              existing?.classTimingSchedule?.startTime ??
+              slot.startTime
+            ),
+
+            toTime: timeValue(
+              existing?.endTime ??
+              existing?.timeSlot?.endTime ??
+              existing?.classTimingSchedule?.endTime ??
+              slot.endTime
+            ),
+
+            subjectId:
+              existing?.subjectId ??
+              existing?.subject?.id ??
+              "",
+
+            classId:
+              existing?.classId ??
+              existing?.class?.id ??
+              "",
+          };
+        })
+      );
     }, 0);
+
     return () => clearTimeout(timer);
   }, [id, periodSlots, selectedSchedule]);
 
@@ -169,11 +250,51 @@ export default function AdminAddSchedule() {
         <div className="p-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5 text-[12px]">
             <div>
-              <label className="form-label">Teacher Name <span className="text-red-500">*</span></label>
-              <select value={teacherId} onChange={(event) => setTeacherId(event.target.value)} className="form-select">
+              <label className="form-label">
+                Teacher Name <span className="text-red-500">*</span>
+              </label>
+
+              <select
+                value={String(teacherId)}
+                onChange={(event) => setTeacherId(event.target.value)}
+                className="form-select"
+              >
                 <option value="">Select</option>
-                {teacherId && !teachers.some((teacher) => String(teacher.id ?? teacher.teacherId) === String(teacherId)) && <option value={teacherId}>{selectedSchedule?.teacherName ?? "Selected teacher"}</option>}
-                {teachers.map((teacher) => <option key={teacher.id ?? teacher.teacherId} value={teacher.id ?? teacher.teacherId}>{teacher.fullName ?? teacher.name}</option>)}
+
+                {teachers.map((teacher) => {
+                  const currentTeacherId =
+                    teacher.id ??
+                    teacher.teacherId ??
+                    teacher.teacherID;
+
+                  return (
+                    <option
+                      key={currentTeacherId}
+                      value={String(currentTeacherId)}
+                    >
+                      {getTeacherName(teacher)}
+                    </option>
+                  );
+                })}
+
+                {/* Fallback for edit mode */}
+                {id &&
+                  teacherId &&
+                  !teachers.some((teacher) => {
+                    const currentTeacherId =
+                      teacher.id ??
+                      teacher.teacherId ??
+                      teacher.teacherID;
+
+                    return String(currentTeacherId) === String(teacherId);
+                  }) && (
+                    <option value={String(teacherId)}>
+                      {selectedSchedule?.teacherName ??
+                        selectedSchedule?.teacher?.fullName ??
+                        selectedSchedule?.teacher?.name ??
+                        "Selected teacher"}
+                    </option>
+                  )}
               </select>
             </div>
             <div className="grid grid-cols-2 gap-2">

@@ -15,9 +15,7 @@ const SLOT_TYPES = ["Period", "Interval", "Lunch Break"];
 function formatTimeInput(value) {
     if (!value) return "";
     const [h, m] = value.split(":").map(Number);
-    const period = h >= 12 ? "PM" : "AM";
-    const hour12 = h % 12 === 0 ? 12 : h % 12;
-    return `${String(hour12).padStart(2, "0")}:${String(m).padStart(2, "0")} ${period}`;
+    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
 
 function timeToInput(value) {
@@ -182,10 +180,10 @@ export default function ClassTimingSchedule() {
                             </select>
                         </div>
                         <div className="flex gap-2 sm:ml-auto">
-                            {editingId && <button onClick={resetForm} className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-50">Cancel</button>}
-                            <button onClick={handleSave} disabled={!startTime || !endTime || !slotType || mutationLoading} className="flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-indigo-700 ">
+                            <button type="button" onClick={resetForm} className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-50">Cancel</button>
+                            <button type="button" onClick={handleSave} disabled={!startTime || !endTime || !slotType || mutationLoading} className="flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-indigo-700 ">
                                 <Save size={16} />
-                                Save
+                                {editingId ? "Update" : "Save"}
                             </button>
                         </div>
                     </div>

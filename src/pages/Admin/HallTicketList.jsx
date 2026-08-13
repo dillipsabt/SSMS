@@ -1,19 +1,13 @@
 import { Download, MoreVertical, Trash2, X } from "lucide-react";
-
 import { useCallback, useEffect, useState } from "react";
-
 import { useDispatch, useSelector } from "react-redux";
-
 import { toast } from "sonner";
-
 import DeleteConfirmModal from "../../components/common/DeleteConfirmModal";
 import Pagination from "../../components/common/Pagination";
-
 import {
     fetchAcademicYears,
     fetchClasses,
 } from "../../features/Admin/ExamSchedule/examScheduleSlice";
-
 import useToastMessage from "../../utils/useToastMessage";
 import {
     generateHallTicketPdf,
@@ -108,33 +102,19 @@ const StatusPill = ({ value }) => {
 
 export default function HallTicketList() {
     const dispatch = useDispatch();
-
     const [academicYearId, setAcademicYearId] = useState("");
-
     const [examId, setExamId] = useState("");
-
     const [classId, setClassId] = useState("");
-
     const [checked, setChecked] = useState(new Set());
-
     const [publishOpen, setPublishOpen] = useState(false);
-
     const [openMenuId, setOpenMenuId] = useState(null);
-
     const [search, setSearch] = useState("");
-
     const [statusFilter, setStatusFilter] = useState("Status");
-
     const [currentPage, setCurrentPage] = useState(1);
-
     const [rowsPerPage, setRowsPerPage] = useState(10);
-
     const [deleteId, setDeleteId] = useState(null);
-
     const [downloadingId, setDownloadingId] = useState(null);
-
     const [hasSearched, setHasSearched] = useState(false);
-
     const [hallTicketTemplate, setHallTicketTemplate] = useState("classic");
 
     // ==========================================================
@@ -268,7 +248,11 @@ export default function HallTicketList() {
         error,
         clearSuccess,
         clearError,
-        onSuccess: fetchList,
+        onSuccess: () => {
+            if (hasSearched) {
+                fetchList();
+            }
+        },
     });
 
     // ==========================================================

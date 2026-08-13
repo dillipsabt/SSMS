@@ -347,6 +347,7 @@ const StudentAdmission = () => {
     if (!formData.gender) return toast.error("Gender Required");
     if (!formData.schoolJoiningDate)
       return toast.error("Joining Date Required");
+    if (!formData.penNumber) return toast.error("Pen Number Required");
     if (!formData.aadharNo) return toast.error("Aadhar Required");
     if (!/^[0-9]{12}$/.test(formData.aadharNo))
       return toast.error("Aadhar must be 12 digits");
@@ -515,6 +516,7 @@ console.log("Form Data Before Submission:", formData);
 
           <Select
             label="Class"
+            required
             name="classId"
             value={formData.classId}
             onChange={handleChange}
@@ -533,23 +535,31 @@ console.log("Form Data Before Submission:", formData);
 
           <Input
             label="DOB"
+            required
             type="date"
             name="dob"
             onChange={handleChange}
             value={formData.dob}
           />
 
-          <Input label="Age" name="age" value={formData.age} disabled />
+          <Input
+            label="Age"
+            required
+            name="age"
+            value={formData.age}
+            disabled
+          />
 
-          <label className="col-span-full flex cursor-pointer items-center gap-3 rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm font-semibold text-indigo-700 shadow-sm transition hover:border-indigo-300 hover:bg-indigo-100">
+          <div className="col-span-full flex items-center gap-3 rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm font-semibold text-indigo-700 shadow-sm transition hover:border-indigo-300 hover:bg-indigo-100">
             <input
               type="checkbox"
+              aria-label="Enable student login"
               checked={studentLoginEnabled}
               onChange={(event) => setStudentLoginEnabled(event.target.checked)}
               className="h-5 w-5 rounded border-2 border-indigo-300 accent-indigo-600 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
             />
             <span>Enable student login</span>
-          </label>
+          </div>
 
           {studentLoginEnabled && (
             <>
@@ -571,6 +581,7 @@ console.log("Form Data Before Submission:", formData);
 
           <Select
             label="Gender"
+            required
             name="gender"
             value={formData.gender}
             onChange={handleChange}
@@ -579,6 +590,7 @@ console.log("Form Data Before Submission:", formData);
 
           <Input
             label="Joining Date"
+            required
             type="date"
             name="schoolJoiningDate"
             onChange={handleChange}
@@ -616,12 +628,14 @@ console.log("Form Data Before Submission:", formData);
           />
           <Input
             label="Aadhar"
+            required
             name="aadharNo"
             onChange={handleChange}
             value={formData.aadharNo}
           />
           <Input
             label="Pen"
+            required
             name="penNumber"
             onChange={handleChange}
             value={formData.penNumber}
@@ -644,6 +658,7 @@ console.log("Form Data Before Submission:", formData);
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           <Input
             label="Father Name"
+            required
             name="fatherName"
             onChange={handleChange}
             value={formData.fatherName}
@@ -662,6 +677,7 @@ console.log("Form Data Before Submission:", formData);
           />
           <Input
             label="Mother Name"
+            required
             name="motherName"
             onChange={handleChange}
             value={formData.motherName}
@@ -686,12 +702,14 @@ console.log("Form Data Before Submission:", formData);
           />
           <Input
             label="ParentEmail"
+            required
             name="parentEmail"
             onChange={handleChange}
             value={formData.parentEmail}
           />
           <Input
             label="Phone Number"
+            required
             name="parentPhoneNo"
             onChange={handleChange}
             value={formData.parentPhoneNo}
@@ -733,7 +751,9 @@ console.log("Form Data Before Submission:", formData);
           {/* Present */}
           <div>
             <div className="flex items-center justify-between">
-              <label className="form-label">Present Address</label>
+              <label className="form-label">
+                Present Address <span className="text-red-500">*</span>
+              </label>
 
               <label className="flex items-center gap-1 text-[12px] cursor-pointer">
                 <input
@@ -756,7 +776,9 @@ console.log("Form Data Before Submission:", formData);
 
           {!sameAddress && (
             <div>
-              <label className="form-label">Permanent Address</label>
+              <label className="form-label">
+                Permanent Address <span className="text-red-500">*</span>
+              </label>
               <textarea
                 name="permanentAddress"
                 rows="3"

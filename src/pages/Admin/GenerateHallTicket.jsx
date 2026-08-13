@@ -1,21 +1,22 @@
 import { CalendarDays } from "lucide-react";
+import { useRef } from "react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import useToastMessage from "../../utils/useToastMessage";
+import { toast } from "sonner";
 import {
   fetchAcademicYears,
   fetchClasses,
 } from "../../features/Admin/ExamSchedule/examScheduleSlice";
 import { fetchBranchesAsync } from "../../features/Admin/Branch/branchSlice";
 import {
-  clearError,
   clearSuccess,
   fetchHallTicketExaminationTypes,
   generateHallTicketsAsync,
 } from "../../features/Admin/HallTicket/hallTicketSlice";
 
 export default function GenerateHallTicket() {
+  const generateDateRef = useRef(null);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -39,10 +40,6 @@ export default function GenerateHallTicket() {
     dispatch(fetchBranchesAsync());
   }, [dispatch]);
 
-  useEffect(() => {
-    dispatch(clearSuccess());
-    dispatch(clearError());
-  }, [dispatch]);
 
   useEffect(() => {
     if (formData.academicYearId && formData.classId) {
@@ -54,15 +51,6 @@ export default function GenerateHallTicket() {
       );
     }
   }, [dispatch, formData.academicYearId, formData.classId]);
-
-  useToastMessage({
-    createSuccess: success,
-    createMessage: successMessage,
-    error,
-    clearSuccess,
-    clearError,
-    onSuccess: () => navigate("/hall-ticket-list"),
-  });
 
   const inputClass =
     "w-full h-9 rounded border border-gray-300 px-3 text-[13px] focus:outline-none focus:border-gray-400";
@@ -79,21 +67,45 @@ export default function GenerateHallTicket() {
     }));
   };
 
-  const handleGenerate = () => {
-    const { academicYearId, schoolId, examId, classId, generateDate } = formData;
+  const handleGenerate = async () => {
+    const {
+      academicYearId,
+      schoolId,
+      examId,
+      classId,
+      generateDate,
+    } = formData;
+
     if (!academicYearId || !schoolId || !examId || !classId || !generateDate) {
       return;
     }
 
-    dispatch(
-      generateHallTicketsAsync({
-        academicYearId: Number(academicYearId),
-        schoolId: Number(schoolId),
-        examId: Number(examId),
-        classId: Number(classId),
-        generateDate,
-      }),
-    );
+    try {
+      const result = await dispatch(
+        generateHallTicketsAsync({
+          academicYearId: Number(academicYearId),
+          schoolId: Number(schoolId),
+          examId: Number(examId),
+          classId: Number(classId),
+          generateDate,
+        })
+      ).unwrap();
+
+      // Clear Redux success BEFORE navigating
+      dispatch(clearSuccess());
+
+      toast.success(
+        result?.message || "Hall ticket generated successfully!"
+      );
+
+      setTimeout(() => {
+        navigate("/hall-ticket-list");
+      }, 1600);
+    } catch (error) {
+      toast.error(
+        error?.message || "Failed to generate hall ticket!"
+      );
+    }
   };
 
   return (
@@ -168,9 +180,22 @@ export default function GenerateHallTicket() {
 
             <div>
               <label className={labelClass}>Generate Date</label>
+
               <div className="relative">
-                <input type="date" name="generateDate" value={formData.generateDate} onChange={handleChange} className={`${inputClass} pr-10`} />
-                <CalendarDays size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+                <input
+                  ref={generateDateRef}
+                  type="date"
+                  name="generateDate"
+                  value={formData.generateDate}
+                  onChange={handleChange}
+                  className={`${inputClass} pr-10 [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute`}
+                />
+
+                <CalendarDays
+                  size={18}
+                  onClick={() => generateDateRef.current?.showPicker()}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 cursor-pointer"
+                />
               </div>
             </div>
 

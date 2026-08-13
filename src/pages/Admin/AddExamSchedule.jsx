@@ -243,7 +243,10 @@ export default function AddExamSchedule() {
                 </div>
               </div>
             ))}
-            <div className="flex justify-end">
+            <div className="flex justify-end gap-3">
+              <button type="button" onClick={() => navigate("/exam-schedule-list")} className="rounded-xl border border-gray-300 px-6 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+                Cancel
+              </button>
               <button type="button" onClick={handleSave} disabled={loading} className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-6 py-3 text-sm font-semibold text-white shadow-md disabled:opacity-50">
                 <FaRegSave size={15} /> {loading ? "Saving..." : isEditing ? "Update Schedule" : "Save Schedule"}
               </button>

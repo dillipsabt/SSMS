@@ -26,34 +26,12 @@ export const REPORT_CARD_TEMPLATES = [
 ];
 
 const REPORT_CARD_THEMES = {
-  classic: { layout: "classic", navy: [20, 35, 62], blue: [39, 92, 166], emerald: [35, 139, 105], gold: [190, 143, 55], line: [224, 230, 238], section: [247, 249, 252], paleBlue: [238, 244, 252], paleGreen: [237, 248, 243], paleGold: [251, 247, 237] },
+  classic: { layout: "classic", navy: [18, 52, 92], blue: [31, 62, 111], emerald: [35, 139, 105], gold: [218, 157, 25], line: [211, 220, 229], section: [247, 250, 252], paleBlue: [238, 245, 251], paleGreen: [233, 243, 251], paleGold: [255, 250, 232] },
   emerald: { layout: "full", navy: [17, 70, 61], blue: [21, 119, 101], emerald: [27, 153, 116], gold: [211, 161, 64], line: [207, 231, 224], section: [245, 251, 249], paleBlue: [232, 246, 241], paleGreen: [226, 247, 238], paleGold: [252, 248, 233] },
   royal: { layout: "split", navy: [49, 34, 102], blue: [91, 65, 190], emerald: [52, 163, 145], gold: [218, 171, 76], line: [224, 216, 247], section: [249, 247, 255], paleBlue: [240, 235, 255], paleGreen: [235, 249, 245], paleGold: [255, 249, 235] },
   sunset: { layout: "banner", navy: [101, 48, 28], blue: [192, 78, 43], emerald: [43, 145, 111], gold: [218, 133, 48], line: [241, 218, 201], section: [255, 249, 245], paleBlue: [255, 240, 230], paleGreen: [237, 249, 243], paleGold: [255, 244, 218] },
   ocean: { layout: "minimal", navy: [17, 61, 92], blue: [24, 121, 174], emerald: [33, 157, 166], gold: [219, 169, 68], line: [208, 228, 240], section: [244, 250, 253], paleBlue: [230, 244, 252], paleGreen: [231, 249, 247], paleGold: [255, 249, 233] },
   rose: { layout: "soft", navy: [91, 34, 57], blue: [174, 58, 98], emerald: [44, 147, 119], gold: [206, 145, 62], line: [239, 215, 225], section: [255, 248, 251], paleBlue: [252, 236, 244], paleGreen: [235, 249, 243], paleGold: [255, 247, 231] },
-};
-const getOverallRemarks = (report) => {
-  const subjects = Array.isArray(report.subjects) ? report.subjects : [];
-  const getSubjectPercentage = (subject) => {
-    const subjectPercentage = numeric(subject.percentage);
-    if (subjectPercentage) return subjectPercentage;
-    const totalMarks = numeric(subject.totalMarks);
-    return totalMarks ? (numeric(subject.obtainedMarks) / totalMarks) * 100 : 0;
-  };
-  const failedSubjects = subjects.filter((subject) => String(subject.status || "").toUpperCase() === "FAIL" || getSubjectPercentage(subject) < 40);
-  const weakSubjects = subjects.filter((subject) => !failedSubjects.includes(subject) && getSubjectPercentage(subject) < 60);
-  const strongSubjects = subjects.filter((subject) => {
-    const subjectPercentage = getSubjectPercentage(subject);
-    return subjectPercentage >= 60 && subjectPercentage <= 80;
-  });
-  const excellentSubjects = subjects.filter((subject) => getSubjectPercentage(subject) > 80);
-  const insights = [];
-  if (failedSubjects.length) insights.push(`Needs improvement in ${failedSubjects.map((subject) => text(subject.subjectName)).join(", ")}`);
-  if (weakSubjects.length) insights.push(`Focus is recommended for ${weakSubjects.map((subject) => text(subject.subjectName)).join(", ")}`);
-  if (strongSubjects.length) insights.push(`Strong performance in ${strongSubjects.map((subject) => text(subject.subjectName)).join(", ")}`);
-  if (excellentSubjects.length) insights.push(`Excellent performance in ${excellentSubjects.map((subject) => text(subject.subjectName)).join(", ")}`);
-  return insights.length ? insights.join(". ") + "." : "Consistent performance across subjects.";
 };
 
 const addImageContain = (doc, source, x, y, width, height) => {
@@ -64,7 +42,9 @@ const addImageContain = (doc, source, x, y, width, height) => {
     const drawWidth = properties.width * scale;
     const drawHeight = properties.height * scale;
     doc.addImage(source, undefined, x + (width - drawWidth) / 2, y + (height - drawHeight) / 2, drawWidth, drawHeight);
-  } catch {}
+  } catch {
+    return;
+  }
 };
 
 const field = (doc, label, value, x, y, width = 42) => {
@@ -85,53 +65,260 @@ const roundedCard = (doc, x, y, width, height, fill = [248, 250, 253], stroke = 
   doc.roundedRect(x, y, width, height, 3, 3, "FD");
 };
 
-const drawPie = (doc, cx, cy, radius, obtained, total, colors) => {
+const drawPieChart = (doc, cx, cy, radius, obtained, total, colors) => {
   const ratio = total > 0 ? Math.max(0, Math.min(1, obtained / total)) : 0;
   const obtainedEnd = -Math.PI / 2 + Math.PI * 2 * ratio;
   const step = Math.PI / 45;
-  const sector = (start, end, color) => {
+  const drawSector = (start, end, color) => {
     doc.setFillColor(...color);
     for (let angle = start; angle < end; angle += step) {
       const next = Math.min(angle + step, end);
-      doc.triangle(
-        cx,
-        cy,
-        cx + radius * Math.cos(angle),
-        cy + radius * Math.sin(angle),
-        cx + radius * Math.cos(next),
-        cy + radius * Math.sin(next),
-        "F"
-      );
+      doc.triangle(cx, cy, cx + radius * Math.cos(angle), cy + radius * Math.sin(angle), cx + radius * Math.cos(next), cy + radius * Math.sin(next), "F");
     }
   };
-  if (ratio > 0) sector(-Math.PI / 2, obtainedEnd, colors.obtained);
-  if (ratio < 1) sector(obtainedEnd, -Math.PI / 2 + Math.PI * 2, colors.remaining);
+  if (ratio > 0) drawSector(-Math.PI / 2, obtainedEnd, colors.obtained);
+  if (ratio < 1) drawSector(obtainedEnd, -Math.PI / 2 + Math.PI * 2, colors.remaining);
   doc.setFillColor(255, 255, 255);
   doc.circle(cx, cy, radius * 0.56, "F");
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(13);
+  doc.setFontSize(8);
   doc.setTextColor(...colors.navy);
-  doc.text(percent(Math.round(ratio * 100)), cx, cy + 2, { align: "center" });
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(6.5);
-  doc.setTextColor(101, 112, 128);
-  doc.text("OVERALL", cx, cy + 7, { align: "center" });
+  doc.text(percent(Number((ratio * 100).toFixed(2))), cx, cy + 2, { align: "center" });
 };
 
 const drawLegend = (doc, x, y, color, label, value) => {
   doc.setFillColor(...color);
-  doc.circle(x + 1.5, y - 1.5, 1.5, "F");
+  doc.circle(x + 1, y - 1, 1, "F");
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(7);
+  doc.setFontSize(6.2);
   doc.setTextColor(75, 85, 99);
-  doc.text(label, x + 5, y);
+  doc.text(label, x + 4, y);
   doc.setFont("helvetica", "bold");
-  doc.text(text(value), x + 30, y);
+  doc.text(text(value), x + 29, y, { align: "right" });
+};
+
+const drawPerformanceBars = (doc, x, y, width, height, subjects, colors) => {
+  const chartSubjects = subjects.slice(0, 8);
+  const plotX = x + 10;
+  const plotY = y + 4;
+  const plotWidth = width - 14;
+  const plotHeight = height - 11;
+  [0, 25, 50, 75, 100].forEach((tick) => {
+    const lineY = plotY + plotHeight - (tick / 100) * plotHeight;
+    doc.setDrawColor(...colors.line);
+    doc.setLineWidth(0.15);
+    doc.line(plotX, lineY, plotX + plotWidth, lineY);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(4.5);
+    doc.setTextColor(...colors.muted);
+    doc.text(String(tick), plotX - 2, lineY + 1.2, { align: "right" });
+  });
+  const barSlot = chartSubjects.length ? plotWidth / chartSubjects.length : plotWidth;
+  chartSubjects.forEach((subject, index) => {
+    const obtained = numeric(subject.obtainedMarks);
+    const total = numeric(subject.totalMarks) || 100;
+    const value = Math.max(0, Math.min(100, numeric(subject.percentage) || (obtained / total) * 100));
+    const barHeight = (value / 100) * plotHeight;
+    const barWidth = Math.min(7, barSlot * 0.6);
+    const barX = plotX + index * barSlot + (barSlot - barWidth) / 2;
+    const barY = plotY + plotHeight - barHeight;
+    doc.setFillColor(...(String(subject.status || "").toUpperCase() === "FAIL" ? colors.red : colors.emerald));
+    doc.roundedRect(barX, barY, barWidth, Math.max(barHeight, 0.5), 0.5, 0.5, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(5.2);
+    doc.setTextColor(...colors.navy);
+    doc.text(percent(Math.round(value)), barX + barWidth / 2, Math.max(plotY + 2, barY - 1.2), { align: "center" });
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(4.5);
+    doc.setTextColor(...colors.muted);
+    doc.text(text(subject.subjectName).slice(0, 7), barX + barWidth / 2, plotY + plotHeight + 4, { align: "center" });
+  });
+};
+
+const DEFAULT_ATTENDANCE = {
+  month: "_",
+  daysPresent: "_",
+  daysAbsent: "_",
+  total: "_",
+};
+
+const GRADING_SYSTEM = [
+  ["A1", "91 - 100", "Outstanding", [72, 171, 92]],
+  ["A2", "81 - 90", "Excellent", [75, 173, 82]],
+  ["B1", "71 - 80", "Very Good", [49, 112, 179]],
+  ["B2", "61 - 70", "Good", [75, 126, 172]],
+  ["C1", "51 - 60", "Satisfactory", [238, 153, 23]],
+  ["C2", "41 - 50", "Average", [239, 165, 35]],
+  ["D", "33 - 40", "Below Average", [218, 87, 55]],
+  ["E", "0 - 32", "Needs Improvement", [213, 75, 70]],
+];
+
+const getAttendance = (report) => {
+  const attendance = report?.attendance || report?.attendanceSummary || {};
+  const daysPresent = attendance.daysPresent ?? attendance.present ?? report?.daysPresent ?? DEFAULT_ATTENDANCE.daysPresent;
+  const daysAbsent = attendance.daysAbsent ?? attendance.absent ?? report?.daysAbsent ?? DEFAULT_ATTENDANCE.daysAbsent;
+  return {
+    month: attendance.month || attendance.period || report?.attendanceMonth || DEFAULT_ATTENDANCE.month,
+    daysPresent,
+    daysAbsent,
+    total: attendance.total ?? report?.attendanceTotal ?? (daysPresent === "_" && daysAbsent === "_" ? DEFAULT_ATTENDANCE.total : numeric(daysPresent) + numeric(daysAbsent)),
+  };
+};
+
+const getOverallRemarks = (report) => {
+  const subjects = Array.isArray(report.subjects) ? report.subjects : [];
+  const gradingRemarks = [
+    [91, "Outstanding"],
+    [81, "Excellent"],
+    [71, "Very Good"],
+    [61, "Good"],
+    [51, "Satisfactory"],
+    [41, "Average"],
+    [33, "Below Average"],
+    [0, "Needs Improvement"],
+  ];
+  const getSubjectPercentage = (subject) => {
+    const subjectPercentage = numeric(subject.percentage);
+    if (subjectPercentage) return subjectPercentage;
+    const totalMarks = numeric(subject.totalMarks);
+    return totalMarks ? (numeric(subject.obtainedMarks) / totalMarks) * 100 : 0;
+  };
+  const remarksByGrade = new Map();
+  subjects.forEach((subject) => {
+    const percentageValue = getSubjectPercentage(subject);
+    const remark = gradingRemarks.find(([minimum]) => percentageValue >= minimum)[1];
+    const subjectNames = remarksByGrade.get(remark) || [];
+    subjectNames.push(text(subject.subjectName));
+    remarksByGrade.set(remark, subjectNames);
+  });
+  const calculatedRemarks = Array.from(remarksByGrade, ([remark, subjectNames]) => `${remark} performance in ${subjectNames.join(", ")}`).join(". ");
+  return subjects.length
+    ? `${calculatedRemarks}.`
+    : report.overallRemarks || report.remarks || report.teacherRemarks || "Consistent performance across subjects.";
+};
+
+const drawTwoColumnTable = (doc, x, y, width, title, rows, colors, note, options = {}) => {
+  const {
+    headerHeight = 9,
+    columnHeaderHeight = 0,
+    columnHeaders = null,
+    rowHeight = 7,
+    rowFontSize = 8,
+    rowTextOffset = 4.7,
+    noteFontSize = 7,
+    noteLineHeight = 4,
+    columnHeaderFill = colors.section,
+    columnHeaderTextColor = colors.navy,
+    titleFill = colors.navy,
+  } = options;
+  doc.setFontSize(noteFontSize);
+  const noteLines = note ? doc.splitTextToSize(note, width - 10) : [];
+  const noteHeight = noteLines.length ? noteLines.length * noteLineHeight + 8 : 0;
+  const rowsY = y + headerHeight + (columnHeaders ? columnHeaderHeight : 0);
+  const height = headerHeight + (columnHeaders ? columnHeaderHeight : 0) + rows.length * rowHeight + noteHeight;
+  const columnWidth = width / 2;
+
+  doc.setLineWidth(0.3);
+  doc.setDrawColor(...titleFill);
+  doc.setFillColor(...titleFill);
+  doc.roundedRect(x, y, width, headerHeight, 3, 3, "F");
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7);
+  doc.setTextColor(255, 255, 255);
+  doc.text(title, x + width / 2, y + headerHeight / 2 + 2, { align: "center" });
+
+  if (columnHeaders) {
+    doc.setFillColor(...columnHeaderFill);
+    doc.rect(x, y + headerHeight, width, columnHeaderHeight, "FD");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(rowFontSize);
+    doc.setTextColor(...columnHeaderTextColor);
+    doc.text(text(columnHeaders[0]), x + columnWidth / 2, y + headerHeight + columnHeaderHeight / 2 + 1.5, { align: "center" });
+    doc.text(text(columnHeaders[1]), x + columnWidth + columnWidth / 2, y + headerHeight + columnHeaderHeight / 2 + 1.5, { align: "center" });
+    doc.line(x + columnWidth, y + headerHeight, x + columnWidth, y + headerHeight + columnHeaderHeight);
+  }
+
+  rows.forEach(([label, value], index) => {
+    const rowY = rowsY + index * rowHeight;
+    doc.setFillColor(...(index % 2 ? [255, 255, 255] : colors.section));
+    doc.rect(x, rowY, width, rowHeight, "FD");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(rowFontSize);
+    doc.setTextColor(...colors.navy);
+    doc.text(text(label), x + columnWidth / 2, rowY + rowTextOffset, { align: "center" });
+    doc.setFont("helvetica", "bold");
+    doc.text(value === "_" ? "" : text(value), x + columnWidth + columnWidth / 2, rowY + rowTextOffset, { align: "center" });
+    doc.line(x + columnWidth, rowY, x + columnWidth, rowY + rowHeight);
+  });
+
+  if (noteLines.length) {
+    const noteY = rowsY + rows.length * rowHeight;
+    doc.setFillColor(255, 255, 255);
+    doc.rect(x, noteY, width, noteHeight, "FD");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(noteFontSize);
+    doc.setTextColor(...colors.navy);
+    doc.text(noteLines, x + width / 2, noteY + 6, { align: "center", lineHeightFactor: 1.25 });
+  }
+
+  return height;
+};
+
+const drawGradingTable = (doc, x, y, width, colors) => {
+  const titleHeight = 8;
+  const columnHeaderHeight = 7;
+  const rowHeight = 6;
+  const columns = [width * 0.24, width * 0.35, width * 0.41];
+  const tableHeight = titleHeight + columnHeaderHeight + GRADING_SYSTEM.length * rowHeight;
+
+  roundedCard(doc, x, y, width, tableHeight, [255, 255, 255], colors.line);
+  doc.setFillColor(...colors.gold);
+  doc.setDrawColor(...colors.gold);
+  doc.roundedRect(x, y, width, titleHeight, 3, 3, "F");
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7);
+  doc.setTextColor(255, 255, 255);
+  doc.text("GRADING SYSTEM", x + width / 2, y + 4.8, { align: "center" });
+
+  doc.setFillColor(...colors.blue);
+  doc.rect(x, y + titleHeight, width, columnHeaderHeight, "FD");
+  doc.setFontSize(6);
+  doc.text("Grade", x + columns[0] / 2, y + titleHeight + 4, { align: "center" });
+  doc.text("Marks Range", x + columns[0] + columns[1] / 2, y + titleHeight + 4, { align: "center" });
+  doc.text("Performance", x + columns[0] + columns[1] + columns[2] / 2, y + titleHeight + 4, { align: "center" });
+
+  GRADING_SYSTEM.forEach(([grade, range, performance, badgeColor], index) => {
+    const rowY = y + titleHeight + columnHeaderHeight + index * rowHeight;
+    doc.setFillColor(...(index % 2 ? [255, 255, 255] : colors.section));
+    doc.setDrawColor(...colors.line);
+    doc.rect(x, rowY, width, rowHeight, "FD");
+    doc.setFillColor(...badgeColor);
+    doc.roundedRect(x + columns[0] / 2 - 4.5, rowY + 1, 9, 3.5, 1, 1, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(6);
+    doc.setTextColor(255, 255, 255);
+    doc.text(grade, x + columns[0] / 2, rowY + 3.5, { align: "center" });
+    doc.setTextColor(...colors.ink);
+    doc.setFont("helvetica", "normal");
+    doc.text(range, x + columns[0] + columns[1] / 2, rowY + 3.5, { align: "center" });
+    doc.text(performance, x + columns[0] + columns[1] + columns[2] / 2, rowY + 3.5, { align: "center" });
+    doc.line(x + columns[0], rowY, x + columns[0], rowY + rowHeight);
+    doc.line(x + columns[0] + columns[1], rowY, x + columns[0] + columns[1], rowY + rowHeight);
+  });
+
+  doc.setDrawColor(...colors.line);
+  doc.line(x + columns[0], y + titleHeight, x + columns[0], y + tableHeight);
+  doc.line(x + columns[0] + columns[1], y + titleHeight, x + columns[0] + columns[1], y + tableHeight);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(4.5);
+  doc.setTextColor(...colors.navy);
+  doc.text("Note. - * Subjects are additional (Skill Subjects) & are not added in total.", x + width / 2, y + tableHeight + 5, { align: "center" });
+  return tableHeight + 8;
 };
 
 const renderStudentReportCard = (doc, report, template = "classic") => {
   const pageWidth = doc.internal.pageSize.getWidth();
-  const pageHeight = doc.internal.pageSize.getHeight();
+
   const margin = 13;
   const width = pageWidth - margin * 2;
   const colors = {
@@ -146,7 +333,7 @@ const renderStudentReportCard = (doc, report, template = "classic") => {
   const studentPhoto = imageDataUrl(report.studentPhoto);
   const principalSignature = imageDataUrl(report.principalSignature);
   const result = String(report.result || "").toUpperCase();
-  const resultColor = result === "FAIL" ? colors.red : colors.emerald;
+
   const highest = subjects.length ? Math.max(...subjects.map((item) => numeric(item.obtainedMarks))) : 0;
   const lowest = subjects.length ? Math.min(...subjects.map((item) => numeric(item.obtainedMarks))) : 0;
   const average = subjects.length ? subjects.reduce((sum, item) => sum + numeric(item.obtainedMarks), 0) / subjects.length : 0;
@@ -155,25 +342,41 @@ const renderStudentReportCard = (doc, report, template = "classic") => {
   let y = 10;
 
   const headerLayout = colors.layout;
-  doc.setFillColor(...colors.navy);
-  doc.roundedRect(margin, y, width, 2.5, 1.2, 1.2, "F");
-  y += 7;
   if (headerLayout === "classic") {
-    roundedCard(doc, margin, y, width, 31, [255, 255, 255]);
-    addImageContain(doc, logo, pageWidth / 2 - 48, y + 4, 27, 21);
+    roundedCard(doc, margin, y, width, 39, [255, 255, 255]);
+    addImageContain(doc, logo, margin + 6, y + 3, 27, 25);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
     doc.setTextColor(...colors.navy);
-    doc.text(text(report.schoolName || "EDUPORTAL ACADEMY"), pageWidth / 2 - 15, y + 12, { align: "left" });
+    doc.text(text(report.schoolName || "EDUPORTAL ACADEMY"), margin + 34, y + 10, { align: "left" });
     if (schoolAddress) {
       doc.setFont("helvetica", "normal");
       doc.setFontSize(6.5);
       doc.setTextColor(...colors.muted);
-      doc.text(doc.splitTextToSize(String(schoolAddress), 90)[0], pageWidth / 2 - 15, y + 17, { align: "left" });
+      doc.text(doc.splitTextToSize(String(schoolAddress), 90)[0], margin + 34, y + 16, { align: "left" });
     }
     doc.setFontSize(6.5);
     doc.setTextColor(...colors.gold);
-    doc.text("EDUPORTAL · ACADEMIC RECORD", pageWidth / 2 - 15, y + 23, { align: "left" });
+    doc.text("EDUPORTAL · ACADEMIC RECORD", margin + 34, y + 22, { align: "left" });
+    doc.setDrawColor(...colors.line);
+    doc.setLineWidth(0.25);
+    doc.line(margin + 34, y + 25, pageWidth - margin - 5, y + 25);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(...colors.navy);
+    doc.text("REPORT CARD", pageWidth / 2, y + 30, { align: "center" });
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.5);
+    doc.setTextColor(...colors.muted);
+    doc.text(
+      `ACADEMIC YEAR : ${text(report.academicYear)}   ·   ${text(report.examType || report.examinationType).toUpperCase()}`,
+      pageWidth / 2,
+      y + 35,
+      { align: "center" },
+    );
+    doc.setDrawColor(...colors.gold);
+    doc.setLineWidth(0.8);
+    doc.line(margin + 2, y + 38, pageWidth - margin - 2, y + 38);
   } else if (headerLayout === "full" || headerLayout === "banner") {
     doc.setFillColor(...colors.navy);
     doc.setDrawColor(...colors.navy);
@@ -232,203 +435,232 @@ const renderStudentReportCard = (doc, report, template = "classic") => {
     doc.setTextColor(...colors.navy);
     doc.text(text(report.schoolName || "EDUPORTAL ACADEMY"), pageWidth / 2, y + 25, { align: "center" });
   }
-  y += 39;
+  y += headerLayout === "classic" ? 43 : 33;
 
+  if (headerLayout !== "classic") {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(...colors.navy);
+    doc.text("REPORT CARD", pageWidth / 2, y, { align: "center" });
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(...colors.muted);
+    doc.text(
+      `ACADEMIC YEAR  ${text(report.academicYear)}   ·   ${text(report.examType || report.examinationType).toUpperCase()}`,
+      pageWidth / 2,
+      y + 6,
+      { align: "center" },
+    );
+    doc.setDrawColor(...colors.gold);
+    doc.setLineWidth(0.8);
+    doc.line(margin, y + 11, pageWidth - margin, y + 11);
+    y += 14;
+  }
+
+  roundedCard(doc, margin, y, width, 38, colors.section);
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
+  doc.setFontSize(8);
   doc.setTextColor(...colors.navy);
-  doc.text("REPORT CARD", pageWidth / 2, y, { align: "center" });
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(8);
-  doc.setTextColor(...colors.muted);
-  doc.text(
-    `ACADEMIC YEAR  ${text(report.academicYear)}   ·   ${text(report.examType || report.examinationType).toUpperCase()}`,
-    pageWidth / 2,
-    y + 6,
-    { align: "center" },
-  );
-  doc.setDrawColor(...colors.gold);
-  doc.setLineWidth(0.8);
-  doc.line(margin, y + 11, pageWidth - margin, y + 11);
-  y += 20;
-
-  roundedCard(doc, margin, y, width, 34, colors.section);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(8);
-  doc.setTextColor(...colors.blue);
   doc.text("STUDENT INFORMATION", pageWidth / 2, y + 8, { align: "center" });
   doc.setDrawColor(...colors.line);
   doc.line(margin + 6, y + 11, pageWidth - margin - 6, y + 11);
-  addImageContain(doc, studentPhoto, margin + 6, y + 13, 25, 16);
+  doc.setLineDashPattern([1, 1], 0);
+  doc.line(margin + 82, y + 13, margin + 82, y + 34);
+  doc.line(margin + 132, y + 13, margin + 132, y + 34);
+  doc.setLineDashPattern([], 0);
+  addImageContain(doc, studentPhoto, margin + 6, y + 13, 20, 22);
   const x1 = margin + 38;
   const x2 = margin + 88;
   const x3 = margin + 139;
   field(doc, "Student Name", report.studentName, x1, y + 17, 43);
   field(doc, "Father Name", report.fatherName || report.father, x2, y + 17, 43);
   field(doc, "Class / Section", report.className, x3, y + 17, 35);
-  field(doc, "Roll Number", report.rollNo || report.rollNumber, x1, y + 26, 43);
-  y += 40;
+  field(doc, "Roll Number", report.rollNo || report.rollNumber, x1, y + 25, 43);
+  y += 42;
 
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
-  doc.setTextColor(...colors.navy);
-  doc.text("ACADEMIC PERFORMANCE", margin, y);
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(7);
-  doc.setTextColor(...colors.muted);
-  doc.text("Subject-wise assessment and outcome", pageWidth - margin, y, { align: "right" });
-  y += 4;
-  const columns = [35, 22, 22, 20, 18, 19, 48];
-  const headers = ["Subject", "Obtained", "Maximum", "%", "Grade", "Status", "Remarks"];
-  roundedCard(doc, margin, y, width, 8, colors.navy, colors.navy);
-  let x = margin;
+  const attendance = getAttendance(report);
+  const tableGap = 3;
+  const performanceWidth = 120;
+  const gradingX = margin + performanceWidth + tableGap;
+  const gradingWidth = width - performanceWidth - tableGap;
+  const tableY = y;
+  const subjectTitleHeight = 8;
+  const subjectColumnHeaderHeight = 7;
+  const subjectRowHeight = Math.max(5.8, Math.min(9.6, 48 / Math.max(subjects.length + 1, 1)));
+  const subjectColumns = [23, 17, 17, 13, 13, 15, 22];
+  const subjectHeaders = ["Subject", "Obtained", "Maximum", "%", "Grade", "Status", "Remarks"];
+
+  roundedCard(doc, margin, tableY, performanceWidth, subjectTitleHeight, colors.navy, colors.navy);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(7);
   doc.setTextColor(255, 255, 255);
-  headers.forEach((header, index) => { doc.text(header, x + (columns[index] / 2), y + 5.5, { align: "center" }); x += columns[index]; });
-  y += 8;
+  doc.text("SUBJECT-WISE PERFORMANCE", margin + performanceWidth / 2, tableY + 4.8, { align: "center" });
+  doc.setFillColor(...colors.blue);
+  doc.setDrawColor(...colors.line);
+  doc.rect(margin, tableY + subjectTitleHeight, performanceWidth, subjectColumnHeaderHeight, "FD");
+  let x = margin;
+  doc.setFontSize(6.2);
+  subjectHeaders.forEach((header, index) => {
+    doc.text(header, x + subjectColumns[index] / 2, tableY + subjectTitleHeight + 4, { align: "center" });
+    x += subjectColumns[index];
+    if (index < subjectHeaders.length - 1) {
+      doc.line(x, tableY + subjectTitleHeight, x, tableY + subjectTitleHeight + subjectColumnHeaderHeight);
+    }
+  });
+
+  let subjectY = tableY + subjectTitleHeight + subjectColumnHeaderHeight;
   subjects.forEach((subject, index) => {
-    const rowHeight = 6;
     doc.setFillColor(...(index % 2 ? [255, 255, 255] : colors.paleBlue));
     doc.setDrawColor(...colors.line);
-    doc.rect(margin, y, width, rowHeight, "FD");
+    doc.rect(margin, subjectY, performanceWidth, subjectRowHeight, "FD");
     x = margin;
     const values = [subject.subjectName, subject.obtainedMarks, subject.totalMarks, percent(subject.percentage), subject.grade, subject.status, subject.remarks];
     values.forEach((value, valueIndex) => {
       doc.setFont("helvetica", valueIndex === 0 ? "bold" : "normal");
-      doc.setFontSize(7);
+      doc.setFontSize(6.2);
       doc.setTextColor(...(valueIndex === 5 ? (String(value).toUpperCase() === "FAIL" ? colors.red : colors.emerald) : colors.ink));
-      const content = doc.splitTextToSize(text(value), columns[valueIndex] - 3);
-      doc.text(content[0], x + columns[valueIndex] / 2, y + 4.2, { align: "center" });
-      x += columns[valueIndex];
+      const content = doc.splitTextToSize(text(value), subjectColumns[valueIndex] - 2.5);
+      doc.text(content[0], x + subjectColumns[valueIndex] / 2, subjectY + subjectRowHeight / 2 + 1.8, { align: "center" });
+      x += subjectColumns[valueIndex];
+      if (valueIndex < values.length - 1) {
+        doc.line(x, subjectY, x, subjectY + subjectRowHeight);
+      }
     });
-    y += rowHeight;
+    subjectY += subjectRowHeight;
   });
-  roundedCard(doc, margin, y, width, 8, colors.paleGreen);
+
+  doc.setFillColor(...colors.paleGreen);
+  doc.setDrawColor(...colors.line);
+  doc.rect(margin, subjectY, performanceWidth, subjectRowHeight, "FD");
   x = margin;
   const totalValues = ["TOTAL", report.totalObtainedMarks, report.totalMarks, percent(report.percentage), report.overallGrade, report.result, "Final outcome"];
   totalValues.forEach((value, index) => {
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(7);
+    doc.setFontSize(6.2);
     doc.setTextColor(...colors.navy);
-    doc.text(text(value), x + (index === 0 ? 3 : columns[index] / 2), y + 5.5, { align: index === 0 ? "left" : "center" });
-    x += columns[index];
+    doc.text(text(value), x + (index === 0 ? subjectColumns[index] / 2 : subjectColumns[index] / 2), subjectY + subjectRowHeight / 2 + 1.8, { align: "center" });
+    x += subjectColumns[index];
+    if (index < totalValues.length - 1) {
+      doc.line(x, subjectY, x, subjectY + subjectRowHeight);
+    }
   });
-  y += 14;
 
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
-  doc.setTextColor(...colors.navy);
-  doc.text("PERFORMANCE SNAPSHOT", margin, y);
-  y += 5;
-  const chartWidth = 62;
-  const chartHeight = 30;
-  roundedCard(doc, margin, y, chartWidth, chartHeight, colors.section);
-  drawPie(doc, margin + 24, y + 15, 10, numeric(report.totalObtainedMarks), numeric(report.totalMarks), { obtained: result === "FAIL" ? colors.red : colors.emerald, remaining: [220, 226, 235], navy: colors.navy });
-  drawLegend(doc, margin + 42, y + 11, result === "FAIL" ? colors.red : colors.emerald, "Obtained", report.totalObtainedMarks);
-  drawLegend(doc, margin + 42, y + 20, [220, 226, 235], "Remaining", Math.max(0, numeric(report.totalMarks) - numeric(report.totalObtainedMarks)));
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(7);
-  doc.setTextColor(...colors.navy);
-  doc.text("MARKS DISTRIBUTION", margin + 6, y + 28);
+  const gradingHeight = drawGradingTable(doc, gradingX, tableY, gradingWidth, colors);
+  const subjectHeight = subjectTitleHeight + subjectColumnHeaderHeight + (subjects.length + 1) * subjectRowHeight;
+  const tablesHeight = Math.max(gradingHeight, subjectHeight);
+  y = tableY + tablesHeight + 4;
 
-  const summaryX = margin + chartWidth + 5;
-  const summaryWidth = width - chartWidth - 5;
-  roundedCard(doc, summaryX, y, summaryWidth, chartHeight, [255, 255, 255]);
+  const snapshotHeaderHeight = 8;
+  const snapshotHeight = 36;
+  const pieWidth = 64;
+  const snapshotCardHeight = snapshotHeaderHeight + snapshotHeight;
+  const snapshotContentY = y + snapshotHeaderHeight;
+  roundedCard(doc, margin, y, pieWidth, snapshotCardHeight, colors.section);
+  doc.setFillColor(...colors.navy);
+  doc.roundedRect(margin, y, pieWidth, snapshotHeaderHeight, 3, 3, "F");
+
   doc.setFont("helvetica", "bold");
   doc.setFontSize(6.5);
+  doc.setTextColor(255, 255, 255);
+  doc.text("PERFORMANCE SNAPSHOT", margin + pieWidth / 2, y + 4.8, { align: "center" });
+  drawPieChart(doc, margin + 16, snapshotContentY + snapshotHeight / 2, 10, numeric(report.totalObtainedMarks), numeric(report.totalMarks), { obtained: result === "FAIL" ? colors.red : colors.emerald, remaining: [220, 226, 235], navy: colors.navy });
+  drawLegend(doc, margin + 34, snapshotContentY + 15, result === "FAIL" ? colors.red : colors.emerald, "Obtained", report.totalObtainedMarks);
+  drawLegend(doc, margin + 34, snapshotContentY + 23, [220, 226, 235], "Remaining", Math.max(0, numeric(report.totalMarks) - numeric(report.totalObtainedMarks)));
+  doc.setFontSize(6);
   doc.setTextColor(...colors.navy);
-  doc.text("EXAM RESULTS ANALYSIS", summaryX + 4, y + 5);
+  doc.text("MARKS PERCENTAGE", margin + 4, snapshotContentY + snapshotHeight - 5);
 
-  const plotX = summaryX + 9;
-  const plotY = y + 8;
-  const plotWidth = summaryWidth - 14;
-  const plotHeight = 15;
-  [0, 25, 50, 75, 100].forEach((tick) => {
-    const lineY = plotY + plotHeight - (tick / 100) * plotHeight;
-    doc.setDrawColor(...colors.line);
-    doc.setLineWidth(0.15);
-    doc.line(plotX, lineY, plotX + plotWidth, lineY);
-    if (tick === 0 || tick === 50 || tick === 100) {
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(4.5);
-      doc.setTextColor(...colors.muted);
-      doc.text(String(tick), plotX - 2, lineY + 1.5, { align: "right" });
-    }
-  });
-
-  const chartSubjects = subjects.slice(0, 8);
-  const barSlot = chartSubjects.length ? plotWidth / chartSubjects.length : plotWidth;
-  chartSubjects.forEach((subject, index) => {
-    const obtained = numeric(subject.obtainedMarks);
-    const total = numeric(subject.totalMarks) || 100;
-    const value = Math.max(0, Math.min(100, numeric(subject.percentage) || (obtained / total) * 100));
-    const barHeight = (value / 100) * plotHeight;
-    const barWidth = Math.min(8, barSlot * 0.58);
-    const barX = plotX + index * barSlot + (barSlot - barWidth) / 2;
-    const barY = plotY + plotHeight - barHeight;
-    const failed = String(subject.status || "").toUpperCase() === "FAIL";
-    doc.setFillColor(...(failed ? colors.red : colors.emerald));
-    doc.roundedRect(barX, barY, barWidth, Math.max(barHeight, 0.6), 0.8, 0.8, "F");
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(4.8);
-    doc.setTextColor(...colors.ink);
-    doc.text(String(Math.round(value)), barX + barWidth / 2, barY - 1.2, { align: "center" });
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(4.2);
-    const label = text(subject.subjectName).slice(0, 9);
-    doc.text(label, barX + barWidth / 2, plotY + plotHeight + 4, { align: "center" });
-  });
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(4.5);
-  doc.setTextColor(...colors.muted);
-  doc.text(text(report.academicYear), summaryX + summaryWidth / 2, y + chartHeight - 0.5, { align: "center" });
-  y += chartHeight + 5;
-
+  const graphX = margin + pieWidth + 5;
+  const graphWidth = width - pieWidth - 5;
+  roundedCard(doc, graphX, y, graphWidth, snapshotCardHeight, [255, 255, 255]);
+  doc.setFillColor(...colors.navy);
+  doc.roundedRect(graphX, y, graphWidth, snapshotHeaderHeight, 3, 3, "F");
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(8);
-  doc.setTextColor(...colors.navy);
-  doc.text("PERFORMANCE ANALYSIS", margin, y);
-  doc.text("OVERALL REMARKS", margin + 126, y);
-  y += 4;
+  doc.setFontSize(6.5);
+  doc.setTextColor(255, 255, 255);
+  doc.text("SUBJECT PERFORMANCE", graphX + graphWidth / 2, y + 4.8, { align: "center" });
+  drawPerformanceBars(doc, graphX + 2, snapshotContentY + 1, graphWidth - 4, snapshotHeight - 3, subjects, colors);
+  y += snapshotCardHeight + 5;
+
+  const analysisHeaderHeight = 8;
+  const analysisHeight = 17;
+  const analysisCardHeight = analysisHeaderHeight + analysisHeight;
   const analysisWidth = 120;
-  roundedCard(doc, margin, y, analysisWidth, 17, colors.paleBlue);
-  const metrics = [["Overall", percent(report.percentage)], ["Subjects", subjects.length], ["Pass", passSubjects], ["Fail", failSubjects], ["Highest", highest], ["Lowest", lowest], ["Average", average.toFixed(1)]];
-  metrics.forEach(([label, value], index) => {
-    const cellWidth = analysisWidth / metrics.length;
-    const mx = margin + index * cellWidth + 2;
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(5.5);
-    doc.setTextColor(...colors.muted);
-    doc.text(label, mx, y + 6);
-    doc.setFontSize(8.5);
-    doc.setTextColor(...colors.navy);
-    doc.text(text(value), mx, y + 12);
-    if (index === 0) {
-      doc.setFillColor(...colors.line);
-      doc.roundedRect(mx, y + 14, cellWidth - 4, 1.5, 0.6, 0.6, "F");
-      doc.setFillColor(...resultColor);
-      doc.roundedRect(mx, y + 14, (cellWidth - 4) * Math.min(1, numeric(report.percentage) / 100), 1.5, 0.6, 0.6, "F");
-    }
-  });
   const remarksX = margin + 125;
   const remarksWidth = width - 125;
-  roundedCard(doc, remarksX, y, remarksWidth, 17, colors.paleGold);
+  roundedCard(doc, margin, y, analysisWidth, analysisCardHeight, colors.paleBlue);
+  doc.setFillColor(...colors.navy);
+  doc.roundedRect(margin, y, analysisWidth, analysisHeaderHeight, 3, 3, "F");
+
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(8.5);
+  doc.setFontSize(6.5);
+  doc.setTextColor(255, 255, 255);
+  doc.text("PERFORMANCE ANALYSIS", margin + analysisWidth / 2, y + 4.8, { align: "center" });
+  const analysisMetrics = [["Overall %", percent(report.percentage)], ["Subjects", subjects.length], ["Pass", passSubjects], ["Fail", failSubjects], ["Highest", highest], ["Lowest", lowest], ["Average", average.toFixed(1)]];
+  analysisMetrics.forEach(([label, value], index) => {
+    const cellWidth = analysisWidth / analysisMetrics.length;
+    const metricX = margin + index * cellWidth + 2;
+    doc.setFont("helvetica", "bold");
+      doc.setFontSize(5.2);
+    doc.setTextColor(...colors.muted);
+    doc.text(label, metricX, y + analysisHeaderHeight + 6);
+    doc.setFontSize(8);
+    doc.setTextColor(...colors.navy);
+    doc.text(text(value), metricX, y + analysisHeaderHeight + 12);
+  });
+
+  roundedCard(doc, remarksX, y, remarksWidth, analysisCardHeight, colors.paleGold);
+  doc.setFillColor(...colors.navy);
+  doc.roundedRect(remarksX, y, remarksWidth, analysisHeaderHeight, 3, 3, "F");
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(6.5);
+  doc.setTextColor(255, 255, 255);
+  doc.text("OVERALL REMARKS", remarksX + remarksWidth / 2, y + 4.8, { align: "center" });
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7);
   doc.setTextColor(...colors.ink);
   const overallRemarks = doc.splitTextToSize(getOverallRemarks(report), remarksWidth - 8).slice(0, 3);
-  doc.text(overallRemarks, remarksX + 4, y + 6, { lineHeightFactor: 1.25 });
-  y += 22;
+  doc.text(overallRemarks, remarksX + 4, y + analysisHeaderHeight + 6, { lineHeightFactor: 1.2 });
+  y += analysisCardHeight + 5;
 
-  const signatureY = Math.min(pageHeight - 38, y + 3);
+  const attendanceWidth = width / 2;
+  const attendanceY = y - 3;
+  const attendanceHeight = drawTwoColumnTable(
+    doc,
+    margin,
+    attendanceY,
+    attendanceWidth,
+    "ATTENDANCE",
+    [
+      ["Days Present", text(attendance.daysPresent)],
+      ["Days Absent", text(attendance.daysAbsent)],
+      ["Total", text(attendance.total)],
+    ],
+    colors,
+    null,
+    {
+      headerHeight: 5,
+      columnHeaderHeight: 4,
+      columnHeaders: ["Particulars", attendance.month],
+      rowHeight: 4,
+      rowFontSize: 5,
+      rowTextOffset: 2.8,
+      columnHeaderFill: [255, 255, 255],
+      columnHeaderTextColor: colors.navy,
+    },
+  );
+
+  const signatureX = margin + attendanceWidth + 12;
+  const signatureWidth = width - attendanceWidth - 12;
+  const signatureY = y + 1;
   doc.setDrawColor(...colors.line);
-  doc.line(pageWidth - margin - 62, signatureY + 14, pageWidth - margin - 5, signatureY + 14);
-  addImageContain(doc, principalSignature, pageWidth - margin - 62, signatureY - 1, 57, 14);
+  doc.line(signatureX, signatureY + 17, signatureX + signatureWidth, signatureY + 17);
+  addImageContain(doc, principalSignature, signatureX, signatureY + 1, signatureWidth, 15);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(7);
   doc.setTextColor(...colors.navy);
-  doc.text("PRINCIPAL", pageWidth - margin - 33.5, signatureY + 19, { align: "center" });
+  doc.text("PRINCIPAL", signatureX + signatureWidth / 2, signatureY + 22, { align: "center" });
+  y += Math.max(attendanceHeight, 23);
 
 
 };

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Edit, Eye, Trash2, X } from "lucide-react";
+import { Edit, Eye, Search, Trash2, X } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -85,7 +85,10 @@ function PublishModal({ options, notes, onChange, onNotesChange, onClose, onSubm
           <label className="mt-4 block text-xs font-semibold text-gray-700">Notes (Optional)
             <textarea rows={3} value={notes} onChange={(event) => onNotesChange(event.target.value)} className="mt-1 w-full resize-none rounded border border-gray-300 px-2 py-2 text-xs focus:border-brand-600 focus:outline-none" />
           </label>
-          <div className="mt-4 flex justify-end"><button type="button" onClick={onSubmit} disabled={loading} className="rounded bg-brand-600 px-6 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50">{loading ? "Publishing..." : "Publish"}</button></div>
+          <div className="mt-4 flex justify-end gap-2">
+            <button type="button" onClick={onClose} className="rounded border border-gray-300 px-6 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Cancel</button>
+            <button type="button" onClick={onSubmit} disabled={loading} className="rounded bg-brand-600 px-6 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50">{loading ? "Publishing..." : "Publish"}</button>
+          </div>
         </div>
       </div>
     </div>
@@ -124,6 +127,10 @@ export default function ExamScheduleList() {
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / rowsPerPage));
   const current = filtered.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
+  const selectableCurrent = current.filter((exam) => exam.examStatus !== "PUBLISHED");
+  const hasPublishedSelection = examSchedules.some(
+    (exam) => selected.has(getExamId(exam)) && exam.examStatus === "PUBLISHED",
+  );
   const classes = [...new Set((examSchedules || []).map((exam) => exam.className).filter(Boolean))];
   const types = [...new Set((examSchedules || []).map((exam) => exam.examinationType).filter(Boolean))];
 
@@ -133,7 +140,7 @@ export default function ExamScheduleList() {
     return next;
   });
 
-  const toggleAll = (checked) => setSelected(checked ? new Set(current.map(getExamId)) : new Set());
+  const toggleAll = (checked) => setSelected(checked ? new Set(selectableCurrent.map(getExamId)) : new Set());
 
   const handleDelete = async () => {
     try {
@@ -151,10 +158,15 @@ export default function ExamScheduleList() {
       toast.error("Please select at least one exam");
       return;
     }
+    if (hasPublishedSelection) {
+      toast.error("Published exam schedules cannot be published again");
+      return;
+    }
     try {
       await dispatch(publishExamSchedulesAsync({ examIds: [...selected], examStatus: "PUBLISHED", ...publishOptions, notes: publishNotes })).unwrap();
       toast.success("Exam schedules published successfully");
       setPublishOpen(false);
+      setPublishNotes("");
       setSelected(new Set());
       dispatch(fetchExamSchedules());
     } catch (error) {
@@ -163,54 +175,161 @@ export default function ExamScheduleList() {
   };
 
   const handleStatus = async (exam) => {
-    const nextStatus = exam.examStatus === "PUBLISHED" ? "DRAFT" : "PUBLISHED";
+    if (exam.examStatus === "PUBLISHED") return;
+    const nextStatus = "PUBLISHED";
     try {
       await dispatch(updateExamStatusAsync({ examIds: [getExamId(exam)], examStatus: nextStatus })).unwrap();
       toast.success("Exam status updated successfully");
+      if (nextStatus === "PUBLISHED") {
+        setSelected((currentSelected) => {
+          const next = new Set(currentSelected);
+          next.delete(getExamId(exam));
+          return next;
+        });
+      }
       dispatch(fetchExamSchedules());
     } catch (error) {
       toast.error(error?.message || "Unable to update exam status");
     }
   };
 
+  const handleClosePublish = () => {
+    setPublishOpen(false);
+    setPublishNotes("");
+  };
+
   return (
-    <div className="page-wrap p-4 sm:p-6">
-      <h2 className="text-base sm:text-[18px] font-semibold text-[#333333]">Exam Schedule List</h2>
-      <p className="mb-4 text-xs sm:text-sm text-gray-500">Exam &amp; Results / Exam Schedule List</p>
+    <div>
+      <h2 className="text-[18px] font-semibold text-[#333333]">Exam Schedule List</h2>
+      <p className="mb-4 text-[11px] text-gray-500 sm:text-[12px]">Exam &amp; Results / Exam Schedule List</p>
       <div className="card p-3 sm:p-4">
-        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end sm:gap-3">
-          <input placeholder="Search Academic Year / Class / Exam Type" value={search} onChange={(event) => { setSearch(event.target.value); setCurrentPage(1); }} className="h-9 w-full rounded-lg border border-gray-200 bg-white px-3 text-[12px] focus:outline-none sm:w-auto" />
-          <input type="date" value={dateFilter} onChange={(event) => { setDateFilter(event.target.value); setCurrentPage(1); }} className="w-full rounded border border-gray-300 px-2 py-1.5 text-[12px] sm:w-auto" />
-          <select value={classFilter} onChange={(event) => setClassFilter(event.target.value)} className="w-full rounded border border-gray-300 px-2 py-1.5 text-[12px] sm:w-auto"><option value="">Class</option>{classes.map((value) => <option key={value} value={value}>{value}</option>)}</select>
-          <select value={typeFilter} onChange={(event) => setTypeFilter(event.target.value)} className="w-full rounded border border-gray-300 px-2 py-1.5 text-[12px] sm:w-auto"><option value="">Exam Type</option>{types.map((value) => <option key={value} value={value}>{value}</option>)}</select>
+        <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="text-sm font-medium text-gray-700">Exam Schedule List</h2>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <div className="relative w-full sm:w-[250px]">
+              <input
+                type="text"
+                placeholder="Search"
+                value={search}
+                onChange={(event) => {
+                  setSearch(event.target.value);
+                  setCurrentPage(1);
+                }}
+                className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 pr-10 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+              <Search
+                size={16}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+              />
+            </div>
+            <input
+              type="date"
+              value={dateFilter}
+              onChange={(event) => {
+                setDateFilter(event.target.value);
+                setCurrentPage(1);
+              }}
+              className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 sm:w-[150px]"
+            />
+            <select
+              value={classFilter}
+              onChange={(event) => {
+                setClassFilter(event.target.value);
+                setCurrentPage(1);
+              }}
+              className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 sm:w-[130px]"
+            >
+              <option value="">Class</option>
+              {classes.map((value) => <option key={value} value={value}>{value}</option>)}
+            </select>
+            <select
+              value={typeFilter}
+              onChange={(event) => {
+                setTypeFilter(event.target.value);
+                setCurrentPage(1);
+              }}
+              className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 sm:w-[150px]"
+            >
+              <option value="">Exam Types</option>
+              {types.map((value) => <option key={value} value={value}>{value}</option>)}
+            </select>
+          </div>
         </div>
-        <div className="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
-          <table className="w-full min-w-[900px] text-[12px] sm:text-[13px] text-gray-700">
-            <thead className="bg-gradient-to-r from-brand-600 to-brand-500 text-white"><tr>{["", "S.No.", "Academic Year", "Examination Type", "Class", "Subjects", "Status", "Created Date", "Actions"].map((heading, index) => <th key={index} className="px-3 py-2 text-left font-semibold">{index === 0 ? <input type="checkbox" checked={current.length > 0 && current.every((exam) => selected.has(getExamId(exam)))} onChange={(event) => toggleAll(event.target.checked)} /> : heading}</th>)}</tr></thead>
+        <div className="overflow-x-auto rounded border border-gray-300">
+          <table className="w-full min-w-[900px] text-[12px]">
+            <thead className="thead-row">
+              <tr>
+                <th className="px-3 py-2 text-left">
+                  <input
+                    type="checkbox"
+                    checked={selectableCurrent.length > 0 && selectableCurrent.every((exam) => selected.has(getExamId(exam)))}
+                    onChange={(event) => toggleAll(event.target.checked)}
+                  />
+                </th>
+                <th className="px-3 py-2 text-left">S No.</th>
+                <th className="px-3 py-2 text-left">Academic Year</th>
+                <th className="px-3 py-2 text-left">Examination Type</th>
+                <th className="px-3 py-2 text-left">Class</th>
+                <th className="px-3 py-2 text-left">Subjects</th>
+                <th className="px-3 py-2 text-left">Status</th>
+                <th className="px-3 py-2 text-left">Created Date</th>
+                <th className="px-3 py-2 text-left">Action</th>
+              </tr>
+            </thead>
             <tbody>
-              {loading ? <tr><td colSpan="9" className="py-6 text-center text-gray-500">Loading...</td></tr> : current.length ? current.map((exam, index) => {
-                const examId = getExamId(exam);
-                const published = exam.examStatus === "PUBLISHED";
-                return <tr key={examId} className="border-t border-gray-100 hover:bg-brand-50">
-                  <td className="px-3 py-2"><input type="checkbox" checked={selected.has(examId)} onChange={() => toggleSelect(examId)} /></td>
-                  <td className="px-3 py-2">{(currentPage - 1) * rowsPerPage + index + 1}</td>
-                  <td className="px-3 py-2">{exam.academicYear || "-"}</td>
-                  <td className="px-3 py-2">{exam.examinationType || "-"}</td>
-                  <td className="px-3 py-2">{exam.className || "-"}</td>
-                  <td className="px-3 py-2">{exam.schedules?.length || 0}</td>
-                  <td className="px-3 py-2"><button type="button" onClick={() => handleStatus(exam)} className={`rounded-full px-2 py-1 text-[10px] font-semibold ${published ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}>{exam.examStatus || "DRAFT"}</button></td>
-                  <td className="px-3 py-2">{formatDate(exam.createdDate)}</td>
-                  <td className="px-3 py-2"><div className="flex items-center gap-2"><button type="button" title="View schedule" onClick={() => setViewExam(exam)} className="text-brand-600 hover:text-brand-800"><Eye size={16} /></button><button type="button" title="Edit schedule" onClick={() => navigate(`/add-exam/${examId}`)} className="text-indigo-600 hover:text-indigo-800"><Edit size={16} /></button><button type="button" title="Delete schedule" onClick={() => setDeleteId(examId)} className="text-red-600 hover:text-red-800"><Trash2 size={16} /></button></div></td>
-                </tr>;
-              }) : <tr><td colSpan="9" className="py-6 text-center text-gray-500">No Data Found</td></tr>}
+              {loading ? (
+                <tr>
+                  <td colSpan="9" className="px-3 py-6 text-center text-gray-500">Loading...</td>
+                </tr>
+              ) : current.length ? (
+                current.map((exam, index) => {
+                  const examId = getExamId(exam);
+                  const published = exam.examStatus === "PUBLISHED";
+
+                  return (
+                    <tr key={examId} className="border-t border-gray-200 hover:bg-gray-50">
+                      <td className="px-3 py-2">
+                        <input type="checkbox" checked={!published && selected.has(examId)} disabled={published} onChange={() => toggleSelect(examId)} />
+                      </td>
+                      <td className="px-3 py-2">{(currentPage - 1) * rowsPerPage + index + 1}</td>
+                      <td className="px-3 py-2">{exam.academicYear || "-"}</td>
+                      <td className="px-3 py-2">{exam.examinationType || "-"}</td>
+                      <td className="px-3 py-2">{exam.className || "-"}</td>
+                      <td className="px-3 py-2">{exam.schedules?.length || 0}</td>
+                      <td className="px-3 py-2">
+                        <button
+                          type="button"
+                          onClick={() => handleStatus(exam)}
+                          disabled={published}
+                          className={`rounded px-2 py-1 text-xs ${published ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"}`}
+                        >
+                          {exam.examStatus || "DRAFT"}
+                        </button>
+                      </td>
+                      <td className="px-3 py-2">{formatDate(exam.createdDate)}</td>
+                      <td className="px-3 py-2">
+                        <div className="flex items-center gap-2">
+                          <button type="button" title="View schedule" onClick={() => setViewExam(exam)} className="text-brand-600 hover:text-brand-800"><Eye size={16} /></button>
+                          <button type="button" title="Edit schedule" onClick={() => navigate(`/add-exam/${examId}`)} className="text-indigo-600 hover:text-indigo-800"><Edit size={16} /></button>
+                          <button type="button" title="Delete schedule" onClick={() => setDeleteId(examId)} className="text-red-600 hover:text-red-800"><Trash2 size={16} /></button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan="9" className="px-3 py-6 text-center text-gray-500">No Data Found</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
         <Pagination currentPage={currentPage} totalPages={totalPages} rowsPerPage={rowsPerPage} setCurrentPage={setCurrentPage} setRowsPerPage={setRowsPerPage} />
       </div>
-      <div className="mt-4 flex justify-end"><button type="button" onClick={() => setPublishOpen(true)} disabled={!selected.size || loading} className="rounded-lg bg-brand-600 px-6 py-2.5 text-sm font-medium text-white shadow-md hover:bg-brand-700 disabled:opacity-50">Publish Selected</button></div>
+      <div className="mt-3 flex justify-end"><button type="button" onClick={() => setPublishOpen(true)} disabled={!selected.size || hasPublishedSelection || loading} className="rounded bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50">Publish Selected</button></div>
       {viewExam && <ScheduleDetails exam={viewExam} onClose={() => setViewExam(null)} />}
-      {publishOpen && <PublishModal options={publishOptions} notes={publishNotes} onChange={(key, value) => setPublishOptions((currentOptions) => ({ ...currentOptions, [key]: value }))} onNotesChange={setPublishNotes} onClose={() => setPublishOpen(false)} onSubmit={handlePublish} loading={loading} />}
+      {publishOpen && <PublishModal options={publishOptions} notes={publishNotes} onChange={(key, value) => setPublishOptions((currentOptions) => ({ ...currentOptions, [key]: value }))} onNotesChange={setPublishNotes} onClose={handleClosePublish} onSubmit={handlePublish} loading={loading} />}
       <DeleteConfirmModal isOpen={Boolean(deleteId)} title="Delete Exam Schedule" message="Are you sure you want to delete this exam schedule?" onClose={() => setDeleteId(null)} onConfirm={handleDelete} />
     </div>
   );

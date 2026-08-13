@@ -226,7 +226,7 @@ const Branches = () => {
   return (
     <div className="p-4 sm:p-6 bg-gray-50 min-h-screen">
       <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-6">
-        Branch Management
+        Branchs
       </h2>
 
       {/* Form Card */}
