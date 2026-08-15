@@ -2,7 +2,7 @@ import axios from "axios";
 import { toast } from "sonner";
 import { getTenantId } from "./tenant";
 import { getApiBaseUrl, getApiTimeout } from "../utils/env";
-import { getAuthToken } from "../utils/storage";
+import { clearAuthStorage, getAuthToken } from "../utils/storage";
 
 const getErrorMessage = (error) => {
   const message = error.response?.data?.message || error.response?.data?.error;
@@ -27,7 +27,10 @@ api.interceptors.request.use((config) => {
     console.warn("Missing VITE_TENANT_ID for localhost requests.");
   }
 
-  if (token) {
+  const hasAuthorizationHeader =
+    config.headers?.Authorization || config.headers?.authorization;
+
+  if (token && !config.skipAuth && !hasAuthorizationHeader) {
     config.headers.Authorization = token.startsWith("Bearer ")
       ? token
       : `Bearer ${token}`;
@@ -47,6 +50,13 @@ api.interceptors.response.use(
 
     if (status && !error.config?.skipErrorToast) {
       toast.error(getErrorMessage(error));
+    }
+
+    if (status === 401 && !error.config?.skipAuth) {
+      clearAuthStorage();
+      if (window.location.pathname !== "/") {
+        window.location.assign("/");
+      }
     }
 
     if (import.meta.env.DEV) {

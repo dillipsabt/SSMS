@@ -60,7 +60,8 @@ const StudentList = () => {
       age: `${s.age}Y / ${s.gender}`,
       dob: s.dob,
       parentPhoneNo: s.parentPhoneNo,
-      email: s.parentEmail,
+      parentemail: s.parentEmail,
+      fatherName: s.fatherName,
       joining: s.schoolJoiningDate,
       status: s.status || "Active",
       raw: s,
@@ -106,7 +107,7 @@ const StudentList = () => {
         s.age,
         s.dob,
         s.parentPhoneNo,
-        s.email,
+        s.parentemail,
         s.joining,
       ]
         .filter(Boolean)
@@ -199,12 +200,13 @@ const StudentList = () => {
                 <th className="px-3 py-2 text-left">S.No.</th>
                 <th className="px-3 py-2 text-left">Roll No.</th>
                 <th className="px-3 py-2 text-left">admission No.</th>
-                <th className="px-3 py-2 text-left">Name</th>
+                <th className="px-3 py-2 text-left">Student Name</th>
                 <th className="px-3 py-2 text-left">Class</th>
                 <th className="px-3 py-2 text-left">Age / Gender</th>
                 <th className="px-3 py-2 text-left">DOB</th>
-                <th className="px-3 py-2 text-left">Phone</th>
-                <th className="px-3 py-2 text-left">Email</th>
+                <th className="px-3 py-2 text-left">Parent Phone</th>
+                <th className="px-3 py-2 text-left">Parent Email</th>
+                <th className="px-3 py-2 text-left">Father Name</th>
                 <th className="px-3 py-2 text-left">Joining</th>
                 <th className="px-3 py-2 text-left">Status</th>
                 <th className="px-3 py-2 text-left">Action</th>
@@ -225,7 +227,8 @@ const StudentList = () => {
                   <td className="px-3 py-2">{s.age}</td>
                   <td className="px-3 py-2">{s.dob}</td>
                   <td className="px-3 py-2">{s.parentPhoneNo}</td>
-                  <td className="px-3 py-2">{s.email}</td>
+                  <td className="px-3 py-2">{s.parentemail}</td>
+                  <td className="px-3 py-2">{s.fatherName}</td>
                   <td className="px-3 py-2">{s.joining}</td>
 
                   <td className="px-3 py-2">
