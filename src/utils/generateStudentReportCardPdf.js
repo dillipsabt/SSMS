@@ -1,4 +1,5 @@
 import { jsPDF } from "jspdf";
+import { getCalculatedExamSubjects, isAdditionalExamSubject } from "./examSubjectUtils";
 
 const imageDataUrl = (image) => {
   if (!image) return null;
@@ -166,7 +167,7 @@ const getAttendance = (report) => {
 };
 
 const getOverallRemarks = (report) => {
-  const subjects = Array.isArray(report.subjects) ? report.subjects : [];
+  const subjects = Array.isArray(report) ? report : Array.isArray(report.subjects) ? report.subjects : [];
   const gradingRemarks = [
     [91, "Outstanding"],
     [81, "Excellent"],
@@ -194,7 +195,7 @@ const getOverallRemarks = (report) => {
   const calculatedRemarks = Array.from(remarksByGrade, ([remark, subjectNames]) => `${remark} performance in ${subjectNames.join(", ")}`).join(". ");
   return subjects.length
     ? `${calculatedRemarks}.`
-    : report.overallRemarks || report.remarks || report.teacherRemarks || "Consistent performance across subjects.";
+    : (Array.isArray(report) ? "" : report.overallRemarks || report.remarks || report.teacherRemarks) || "Consistent performance across subjects.";
 };
 
 const drawTwoColumnTable = (doc, x, y, width, title, rows, colors, note, options = {}) => {
@@ -328,17 +329,25 @@ const renderStudentReportCard = (doc, report, template = "classic") => {
     red: [185, 67, 67],
   };
   const subjects = Array.isArray(report.subjects) ? report.subjects : [];
+  const calculatedSubjects = getCalculatedExamSubjects(subjects);
+  const totalObtainedMarks = calculatedSubjects.reduce((sum, subject) => sum + numeric(subject.obtainedMarks), 0);
+  const totalMarks = calculatedSubjects.reduce((sum, subject) => sum + numeric(subject.totalMarks), 0);
+  const totalPercentage = totalMarks ? (totalObtainedMarks / totalMarks) * 100 : 0;
+  const calculatedResult = calculatedSubjects.length
+    ? calculatedSubjects.every((subject) => String(subject.status || "").toUpperCase() === "PASS") ? "PASS" : "FAIL"
+    : "N/A";
+  const calculatedOverallGrade = calculatedSubjects.length
+    ? totalPercentage >= 91 ? "A1" : totalPercentage >= 81 ? "A2" : totalPercentage >= 71 ? "B1" : totalPercentage >= 61 ? "B2" : totalPercentage >= 51 ? "C1" : totalPercentage >= 41 ? "C2" : totalPercentage >= 33 ? "D" : "E"
+    : "N/A";
   const logo = imageDataUrl(report.schoolLogo);
   const schoolAddress = report.schoolAddress || report.address || report.school?.address || report.schoolDetails?.address;
   const studentPhoto = imageDataUrl(report.studentPhoto);
   const principalSignature = imageDataUrl(report.principalSignature);
-  const result = String(report.result || "").toUpperCase();
-
-  const highest = subjects.length ? Math.max(...subjects.map((item) => numeric(item.obtainedMarks))) : 0;
-  const lowest = subjects.length ? Math.min(...subjects.map((item) => numeric(item.obtainedMarks))) : 0;
-  const average = subjects.length ? subjects.reduce((sum, item) => sum + numeric(item.obtainedMarks), 0) / subjects.length : 0;
-  const passSubjects = subjects.filter((item) => String(item.status || "").toUpperCase() === "PASS").length;
-  const failSubjects = subjects.filter((item) => String(item.status || "").toUpperCase() === "FAIL").length;
+  const highest = calculatedSubjects.length ? Math.max(...calculatedSubjects.map((item) => numeric(item.obtainedMarks))) : 0;
+  const lowest = calculatedSubjects.length ? Math.min(...calculatedSubjects.map((item) => numeric(item.obtainedMarks))) : 0;
+  const average = calculatedSubjects.length ? totalObtainedMarks / calculatedSubjects.length : 0;
+  const passSubjects = calculatedSubjects.filter((item) => String(item.status || "").toUpperCase() === "PASS").length;
+  const failSubjects = calculatedSubjects.filter((item) => String(item.status || "").toUpperCase() === "FAIL").length;
   let y = 10;
 
   const headerLayout = colors.layout;
@@ -514,7 +523,8 @@ const renderStudentReportCard = (doc, report, template = "classic") => {
     doc.setDrawColor(...colors.line);
     doc.rect(margin, subjectY, performanceWidth, subjectRowHeight, "FD");
     x = margin;
-    const values = [subject.subjectName, subject.obtainedMarks, subject.totalMarks, percent(subject.percentage), subject.grade, subject.status, subject.remarks];
+    const additionalSubject = isAdditionalExamSubject(subject);
+    const values = [subject.subjectName, subject.obtainedMarks, subject.totalMarks, additionalSubject ? "N/A" : percent(subject.percentage), additionalSubject ? "N/A" : subject.grade, additionalSubject ? "N/A" : subject.status, subject.remarks];
     values.forEach((value, valueIndex) => {
       doc.setFont("helvetica", valueIndex === 0 ? "bold" : "normal");
       doc.setFontSize(6.2);
@@ -533,7 +543,7 @@ const renderStudentReportCard = (doc, report, template = "classic") => {
   doc.setDrawColor(...colors.line);
   doc.rect(margin, subjectY, performanceWidth, subjectRowHeight, "FD");
   x = margin;
-  const totalValues = ["TOTAL", report.totalObtainedMarks, report.totalMarks, percent(report.percentage), report.overallGrade, report.result, "Final outcome"];
+  const totalValues = ["TOTAL", calculatedSubjects.length ? totalObtainedMarks : "N/A", calculatedSubjects.length ? totalMarks : "N/A", calculatedSubjects.length ? percent(totalPercentage) : "N/A", calculatedOverallGrade, calculatedResult, "Final outcome"];
   totalValues.forEach((value, index) => {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(6.2);
@@ -563,9 +573,9 @@ const renderStudentReportCard = (doc, report, template = "classic") => {
   doc.setFontSize(6.5);
   doc.setTextColor(255, 255, 255);
   doc.text("PERFORMANCE SNAPSHOT", margin + pieWidth / 2, y + 4.8, { align: "center" });
-  drawPieChart(doc, margin + 16, snapshotContentY + snapshotHeight / 2, 10, numeric(report.totalObtainedMarks), numeric(report.totalMarks), { obtained: result === "FAIL" ? colors.red : colors.emerald, remaining: [220, 226, 235], navy: colors.navy });
-  drawLegend(doc, margin + 34, snapshotContentY + 15, result === "FAIL" ? colors.red : colors.emerald, "Obtained", report.totalObtainedMarks);
-  drawLegend(doc, margin + 34, snapshotContentY + 23, [220, 226, 235], "Remaining", Math.max(0, numeric(report.totalMarks) - numeric(report.totalObtainedMarks)));
+  drawPieChart(doc, margin + 16, snapshotContentY + snapshotHeight / 2, 10, totalObtainedMarks, totalMarks, { obtained: calculatedResult === "FAIL" ? colors.red : colors.emerald, remaining: [220, 226, 235], navy: colors.navy });
+  drawLegend(doc, margin + 34, snapshotContentY + 15, calculatedResult === "FAIL" ? colors.red : colors.emerald, "Obtained", calculatedSubjects.length ? totalObtainedMarks : "N/A");
+  drawLegend(doc, margin + 34, snapshotContentY + 23, [220, 226, 235], "Remaining", calculatedSubjects.length ? Math.max(0, totalMarks - totalObtainedMarks) : "N/A");
   doc.setFontSize(6);
   doc.setTextColor(...colors.navy);
   doc.text("MARKS PERCENTAGE", margin + 4, snapshotContentY + snapshotHeight - 5);
@@ -579,7 +589,7 @@ const renderStudentReportCard = (doc, report, template = "classic") => {
   doc.setFontSize(6.5);
   doc.setTextColor(255, 255, 255);
   doc.text("SUBJECT PERFORMANCE", graphX + graphWidth / 2, y + 4.8, { align: "center" });
-  drawPerformanceBars(doc, graphX + 2, snapshotContentY + 1, graphWidth - 4, snapshotHeight - 3, subjects, colors);
+  drawPerformanceBars(doc, graphX + 2, snapshotContentY + 1, graphWidth - 4, snapshotHeight - 3, calculatedSubjects, colors);
   y += snapshotCardHeight + 5;
 
   const analysisHeaderHeight = 8;
@@ -596,7 +606,7 @@ const renderStudentReportCard = (doc, report, template = "classic") => {
   doc.setFontSize(6.5);
   doc.setTextColor(255, 255, 255);
   doc.text("PERFORMANCE ANALYSIS", margin + analysisWidth / 2, y + 4.8, { align: "center" });
-  const analysisMetrics = [["Overall %", percent(report.percentage)], ["Subjects", subjects.length], ["Pass", passSubjects], ["Fail", failSubjects], ["Highest", highest], ["Lowest", lowest], ["Average", average.toFixed(1)]];
+  const analysisMetrics = [["Overall %", calculatedSubjects.length ? percent(totalPercentage) : "N/A"], ["Subjects", subjects.length], ["Pass", passSubjects], ["Fail", failSubjects], ["Highest", calculatedSubjects.length ? highest : "N/A"], ["Lowest", calculatedSubjects.length ? lowest : "N/A"], ["Average", calculatedSubjects.length ? average.toFixed(1) : "N/A"]];
   analysisMetrics.forEach(([label, value], index) => {
     const cellWidth = analysisWidth / analysisMetrics.length;
     const metricX = margin + index * cellWidth + 2;
@@ -619,7 +629,7 @@ const renderStudentReportCard = (doc, report, template = "classic") => {
   doc.setFont("helvetica", "bold");
   doc.setFontSize(7);
   doc.setTextColor(...colors.ink);
-  const overallRemarks = doc.splitTextToSize(getOverallRemarks(report), remarksWidth - 8).slice(0, 3);
+  const overallRemarks = doc.splitTextToSize(getOverallRemarks({ ...report, subjects: calculatedSubjects }), remarksWidth - 8).slice(0, 3);
   doc.text(overallRemarks, remarksX + 4, y + analysisHeaderHeight + 6, { lineHeightFactor: 1.2 });
   y += analysisCardHeight + 5;
 

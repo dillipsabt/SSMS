@@ -10,6 +10,7 @@ import {
 } from "recharts";
 import studentReportImg from "../../assets/student_report.png";
 import studentReportLogo from "../../assets/school_logo_card.png";
+import { getCalculatedExamSubjects, isAdditionalExamSubject } from "../../utils/examSubjectUtils";
 
 const GRADING_SYSTEM = [
   ["A1", "91 - 100", "Outstanding", "bg-[#48ab5c]"],
@@ -117,17 +118,18 @@ export default function StudentExamReportCard({
     };
   });
 
-  const totalMaxMarks = subjectRows.reduce((sum, subject) => sum + Number(subject.maxMarks || 0), 0);
-  const totalObtainedMarks = subjectRows.reduce((sum, subject) => sum + Number(subject.marksObtained || 0), 0);
+  const calculatedSubjectRows = getCalculatedExamSubjects(subjectRows);
+  const totalMaxMarks = calculatedSubjectRows.reduce((sum, subject) => sum + Number(subject.maxMarks || 0), 0);
+  const totalObtainedMarks = calculatedSubjectRows.reduce((sum, subject) => sum + Number(subject.marksObtained || 0), 0);
   const percentageValue = totalMaxMarks ? (totalObtainedMarks / totalMaxMarks) * 100 : 0;
   const percentage = formatPercentage(percentageValue);
-  const overallGrade = getOverallGrade(percentageValue);
-  const passSubjects = subjectRows.filter((subject) => String(subject.status).toUpperCase() === "PASS").length;
-  const failSubjects = subjectRows.filter((subject) => String(subject.status).toUpperCase() === "FAIL").length;
-  const highest = subjectRows.length ? Math.max(...subjectRows.map((subject) => Number(subject.marksObtained || 0))) : 0;
-  const lowest = subjectRows.length ? Math.min(...subjectRows.map((subject) => Number(subject.marksObtained || 0))) : 0;
-  const average = subjectRows.length ? totalObtainedMarks / subjectRows.length : 0;
-  const overallRemarks = getOverallRemarks(subjectRows, teacherRemarks);
+  const overallGrade = calculatedSubjectRows.length ? getOverallGrade(percentageValue) : "N/A";
+  const passSubjects = calculatedSubjectRows.filter((subject) => String(subject.status).toUpperCase() === "PASS").length;
+  const failSubjects = calculatedSubjectRows.filter((subject) => String(subject.status).toUpperCase() === "FAIL").length;
+  const highest = calculatedSubjectRows.length ? Math.max(...calculatedSubjectRows.map((subject) => Number(subject.marksObtained || 0))) : 0;
+  const lowest = calculatedSubjectRows.length ? Math.min(...calculatedSubjectRows.map((subject) => Number(subject.marksObtained || 0))) : 0;
+  const average = calculatedSubjectRows.length ? totalObtainedMarks / calculatedSubjectRows.length : 0;
+  const overallRemarks = getOverallRemarks(calculatedSubjectRows, teacherRemarks);
 
   return (
     <div className="mx-auto my-2 max-w-5xl rounded-2xl border border-gray-200 bg-white p-3 font-sans shadow-xl">
@@ -209,19 +211,19 @@ export default function StudentExamReportCard({
                     <td className="px-1 py-2 text-center font-semibold text-[#2a3444]">{subject.name}</td>
                     <td className="px-1 py-2 text-center">{subject.marksObtained}</td>
                     <td className="px-1 py-2 text-center">{subject.maxMarks}</td>
-                    <td className="px-1 py-2 text-center">{formatPercentage(subject.percentage)}%</td>
-                    <td className="px-1 py-2 text-center font-semibold">{subject.grade}</td>
-                    <td className={`px-1 py-2 text-center font-semibold ${String(subject.status).toUpperCase() === "FAIL" ? "text-red-600" : "text-emerald-600"}`}>{subject.status}</td>
+                    <td className="px-1 py-2 text-center">{isAdditionalExamSubject(subject) ? "N/A" : `${formatPercentage(subject.percentage)}%`}</td>
+                    <td className="px-1 py-2 text-center font-semibold">{isAdditionalExamSubject(subject) ? "N/A" : subject.grade}</td>
+                    <td className={`px-1 py-2 text-center font-semibold ${isAdditionalExamSubject(subject) ? "text-gray-400" : String(subject.status).toUpperCase() === "FAIL" ? "text-red-600" : "text-emerald-600"}`}>{isAdditionalExamSubject(subject) ? "N/A" : subject.status}</td>
                     <td className="px-1 py-2 text-center">{subject.remarks}</td>
                   </tr>
                 ))}
                 <tr className="bg-[#edf8f3] font-bold text-[#14233e]">
                   <td className="px-1 py-2 text-center">TOTAL</td>
-                  <td className="px-1 py-2 text-center">{totalObtainedMarks}</td>
-                  <td className="px-1 py-2 text-center">{totalMaxMarks}</td>
-                  <td className="px-1 py-2 text-center">{percentage}%</td>
+                  <td className="px-1 py-2 text-center">{calculatedSubjectRows.length ? totalObtainedMarks : "N/A"}</td>
+                  <td className="px-1 py-2 text-center">{calculatedSubjectRows.length ? totalMaxMarks : "N/A"}</td>
+                  <td className="px-1 py-2 text-center">{calculatedSubjectRows.length ? `${percentage}%` : "N/A"}</td>
                   <td className="px-1 py-2 text-center">{overallGrade}</td>
-                  <td className="px-1 py-2 text-center">{failSubjects ? "FAIL" : "PASS"}</td>
+                  <td className="px-1 py-2 text-center">{calculatedSubjectRows.length ? (failSubjects ? "FAIL" : "PASS") : "N/A"}</td>
                   <td className="px-1 py-2 text-center">Final outcome</td>
                 </tr>
               </tbody>
@@ -278,7 +280,7 @@ export default function StudentExamReportCard({
             <h4 className="bg-[#14233e] px-3 py-2 text-center text-sm font-bold text-white">SUBJECT PERFORMANCE</h4>
             <div className="p-3">
               <ResponsiveContainer width="100%" height={130}>
-                <BarChart data={subjectRows} margin={{ top: 18, right: 8, left: -12, bottom: 0 }}>
+                <BarChart data={calculatedSubjectRows} margin={{ top: 18, right: 8, left: -12, bottom: 0 }}>
                   <CartesianGrid stroke="#e0e6ee" vertical={false} />
                   <XAxis dataKey="name" tick={{ fontSize: 11 }} tickFormatter={(value) => String(value).slice(0, 7)} />
                   <YAxis domain={[0, 100]} ticks={[0, 25, 50, 75, 100]} tick={{ fontSize: 10 }} />

@@ -6,6 +6,7 @@ import Select from "react-select";
 import { fetchReportCardDownload } from "../../features/Admin/ExamResult/examResultSlice";
 import { generateStudentReportCardPdf } from "../../utils/generateStudentReportCardPdf";
 import useToastMessage from "../../utils/useToastMessage";
+import { getCalculatedExamSubjects, isAdditionalExamSubject } from "../../utils/examSubjectUtils";
 import {
   getStudentsByParentThunk,
   fetchAcademicYears,
@@ -107,11 +108,13 @@ export default function ParentsExamReports() {
       ? examResults.subjects
       : [];
 
-  const total = reportData.reduce(
+  const calculatedReportData = getCalculatedExamSubjects(reportData);
+  const hasCalculatedResults = calculatedReportData.length > 0;
+  const total = calculatedReportData.reduce(
     (sum, item) => sum + Number(item.obtainedMarks || 0),
     0,
   );
-  const totalMarks = reportData.reduce(
+  const totalMarks = calculatedReportData.reduce(
     (sum, item) => sum + Number(item.totalMarks || 0),
     0,
   );
@@ -120,8 +123,8 @@ export default function ParentsExamReports() {
     ? ((total / totalMarks) * 100).toFixed(2)
     : "0.00";
   const totalPercentageValue = Number(totalPercentage);
-  const overallGrade = examResults?.overallGrade || (
-    totalPercentageValue >= 90
+  const overallGrade = hasCalculatedResults
+    ? totalPercentageValue >= 90
       ? "A+"
       : totalPercentageValue >= 80
         ? "A"
@@ -130,12 +133,12 @@ export default function ParentsExamReports() {
           : totalPercentageValue >= 60
             ? "C"
             : "F"
-  );
-  const overallStatus = examResults?.overallStatus || (
-    reportData.length > 0 && reportData.every((item) => String(item.status).toUpperCase() === "PASS")
+    : "N/A";
+  const overallStatus = hasCalculatedResults
+    ? calculatedReportData.every((item) => String(item.status).toUpperCase() === "PASS")
       ? "PASS"
       : "FAIL"
-  );
+    : "N/A";
 
   return (
     <div className="w-full px-4 sm:px-6">
@@ -266,26 +269,30 @@ export default function ParentsExamReports() {
                   <tr key={i} className="border-b">
                     <td className="px-4 py-3">{row.subjectName}</td>
                     <td className="px-4 py-3">{row.obtainedMarks}</td>
-                    <td className="px-4 py-3">{row.percentage}%</td>
-                    <td className="px-4 py-3">{row.grade}</td>
+                    <td className="px-4 py-3">{isAdditionalExamSubject(row) ? "N/A" : `${row.percentage}%`}</td>
+                    <td className="px-4 py-3">{isAdditionalExamSubject(row) ? "N/A" : row.grade}</td>
                     <td className="px-4 py-3">
-                      <span
-                        className={`px-3 py-1 rounded text-xs ${
-                          String(row.status).toUpperCase() === "PASS"
-                            ? "bg-green-100 text-green-700"
-                            : "bg-red-100 text-red-700"
-                        }`}
-                      >
-                        {row.status}
-                      </span>
+                      {isAdditionalExamSubject(row) ? (
+                        <span className="px-3 py-1 rounded bg-gray-100 text-gray-500 text-xs">N/A</span>
+                      ) : (
+                        <span
+                          className={`px-3 py-1 rounded text-xs ${
+                            String(row.status).toUpperCase() === "PASS"
+                              ? "bg-green-100 text-green-700"
+                              : "bg-red-100 text-red-700"
+                          }`}
+                        >
+                          {row.status}
+                        </span>
+                      )}
                     </td>
                   </tr>
                 ))}
 
                 <tr className="bg-gray-50 border-t-2">
                   <td className="px-4 py-3 font-bold">Total</td>
-                  <td className="px-4 py-3 font-bold">{total}</td>
-                  <td className="px-4 py-3 font-bold">{totalPercentage}%</td>
+                  <td className="px-4 py-3 font-bold">{hasCalculatedResults ? total : "N/A"}</td>
+                  <td className="px-4 py-3 font-bold">{hasCalculatedResults ? `${totalPercentage}%` : "N/A"}</td>
                   <td className="px-4 py-3 font-bold">
                     {overallGrade}
                   </td>

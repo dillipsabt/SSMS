@@ -9,41 +9,100 @@ import {
   fetchReportCardDownload,
   resetExamResultState,
 } from "../../features/Admin/ExamResult/examResultSlice";
-import { fetchTeachers } from "../../features/Admin/Notifications/notificationSlice";
 import {
   generateStudentReportCardPdf,
   generateStudentReportCardsPdf,
   REPORT_CARD_TEMPLATES,
 } from "../../utils/generateStudentReportCardPdf";
+import {
+  getCalculatedExamSubjects,
+  getExamResultSubjects,
+  getExamSubjectObtainedMarks,
+  getExamSubjectTotalMarks,
+} from "../../utils/examSubjectUtils";
 
 const getStudentId = (student) => student?.studentId || student?.id || student?.profileId;
 const getStudentName = (student) => student?.studentName || student?.fullName || student?.name || "-";
 const getRollNumber = (student) => student?.rollNo || student?.rollNumber || "-";
 const getAdmissionNumber = (student) => student?.admissionNo || student?.admissionNumber || "-";
-const getPercentage = (student) => student?.percentage == null ? "-" : Number(student.percentage).toFixed(2);
+const getPercentage = (student) => student?.percentage == null ? "N/A" : `${Number(student.percentage).toFixed(2)}%`;
 const getStatus = (student) => String(student?.status || student?.passFail || "PASS").toUpperCase();
 const getRowKey = (student, index) => String(getStudentId(student) || getAdmissionNumber(student) || index);
 
+const getOverallGrade = (percentage) => {
+  if (percentage >= 91) return "A1";
+  if (percentage >= 81) return "A2";
+  if (percentage >= 71) return "B1";
+  if (percentage >= 61) return "B2";
+  if (percentage >= 51) return "C1";
+  if (percentage >= 41) return "C2";
+  if (percentage >= 33) return "D";
+  return "E";
+};
+
+const gradePoints = { A1: 10, A2: 9, B1: 8, B2: 7, C1: 6, C2: 5, D: 4, E: 0 };
+
+const getCalculatedStudentResult = (student) => {
+  const subjectResults = getExamResultSubjects(student);
+  if (!subjectResults) return student;
+
+  const calculatedSubjects = getCalculatedExamSubjects(subjectResults)
+    .map((subject) => ({
+      subject,
+      obtainedMarks: getExamSubjectObtainedMarks(subject),
+      totalMarks: getExamSubjectTotalMarks(subject),
+    }))
+    .filter(({ obtainedMarks, totalMarks }) => obtainedMarks != null && totalMarks != null);
+
+  if (!calculatedSubjects.length) {
+    return {
+      ...student,
+      totalObtainedMarks: "N/A",
+      totalMarks: "N/A",
+      percentage: null,
+      grade: "N/A",
+      gradePoint: "N/A",
+      status: "N/A",
+    };
+  }
+
+  const totalObtainedMarks = calculatedSubjects.reduce((sum, item) => sum + item.obtainedMarks, 0);
+  const totalMarks = calculatedSubjects.reduce((sum, item) => sum + item.totalMarks, 0);
+  const percentage = totalMarks ? (totalObtainedMarks / totalMarks) * 100 : 0;
+  const grade = getOverallGrade(percentage);
+  const hasFailedSubject = calculatedSubjects.some(({ subject }) => String(subject.status || "").toUpperCase() === "FAIL");
+
+  return {
+    ...student,
+    totalObtainedMarks,
+    totalMarks,
+    percentage,
+    grade,
+    gradePoint: gradePoints[grade],
+    status: hasFailedSubject ? "FAIL" : "PASS",
+  };
+};
+
 const StatusBadge = ({ value, tone = "green" }) => {
-  const isPass = String(value).toUpperCase() === "PASS";
-  const classes = tone === "fee"
-    ? String(value).toLowerCase() === "completed"
-      ? "bg-green-100 text-green-600"
-      : "bg-amber-100 text-amber-600"
-    : isPass
-      ? "bg-green-100 text-green-600"
-      : "bg-red-100 text-red-600";
+  const normalizedValue = String(value || "-").toUpperCase();
+  const isPass = normalizedValue === "PASS";
+  const classes = normalizedValue === "N/A" || normalizedValue === "-"
+    ? "bg-gray-100 text-gray-500"
+    : tone === "fee"
+      ? String(value).toLowerCase() === "completed"
+        ? "bg-green-100 text-green-600"
+        : "bg-amber-100 text-amber-600"
+      : isPass
+        ? "bg-green-100 text-green-600"
+        : "bg-red-100 text-red-600";
   return <span className={`inline-flex min-w-[72px] justify-center rounded-full px-3 py-1 text-xs font-medium ${classes}`}>{value || "-"}</span>;
 };
 
 export default function StudentWiseResultsList() {
   const dispatch = useDispatch();
   const { classes = [], examinationTypes = [], examResults = [], loading, error } = useSelector((state) => state.examResult || {});
-  const { teachers = [] } = useSelector((state) => state.notification || {});
   const [classId, setClassId] = useState("");
-  const [teacherId, setTeacherId] = useState("");
   const [examTypeId, setExamTypeId] = useState("");
-  const [date, setDate] = useState("");
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
   const [publishOpen, setPublishOpen] = useState(false);
@@ -56,16 +115,17 @@ export default function StudentWiseResultsList() {
   useEffect(() => {
     dispatch(fetchClasses());
     dispatch(fetchExaminationTypes());
-    dispatch(fetchTeachers());
     return () => dispatch(resetExamResultState());
   }, [dispatch]);
 
-  const rows = useMemo(() => examResults.filter((student) => {
-    const term = search.trim().toLowerCase();
-    const matchesSearch = !term || getStudentName(student).toLowerCase().includes(term) || getRollNumber(student).toLowerCase().includes(term);
-    const matchesStatus = !status || getStatus(student) === status;
-    return matchesSearch && matchesStatus;
-  }), [examResults, search, status]);
+  const rows = useMemo(() => examResults
+    .map(getCalculatedStudentResult)
+    .filter((student) => {
+      const term = search.trim().toLowerCase();
+      const matchesSearch = !term || getStudentName(student).toLowerCase().includes(term) || getRollNumber(student).toLowerCase().includes(term);
+      const matchesStatus = !status || getStatus(student) === status;
+      return matchesSearch && matchesStatus;
+    }), [examResults, search, status]);
 
   const handleSearch = async () => {
     if (!classId || !examTypeId) {
@@ -76,7 +136,6 @@ export default function StudentWiseResultsList() {
       await dispatch(fetchReportCards({
         classId,
         examinationTypeId: examTypeId,
-        ...(teacherId ? { teacherId } : {}),
       })).unwrap();
       toast.success("Student results fetched successfully");
     } catch (requestError) {
@@ -252,7 +311,7 @@ export default function StudentWiseResultsList() {
                     <td className="px-3 py-2.5 align-middle">{student.academicYear || "-"}</td>
                     <td className="px-3 py-2.5 align-middle">{student.totalObtainedMarks ?? "-"}</td>
                     <td className="px-3 py-2.5 align-middle">{student.totalMarks ?? "-"}</td>
-                    <td className="px-3 py-2.5 align-middle">{getPercentage(student)}%</td>
+                    <td className="px-3 py-2.5 align-middle">{getPercentage(student)}</td>
                     <td className="px-3 py-2.5 align-middle">{student.grade || "-"}</td>
                     <td className="px-3 py-2.5 align-middle">{student.gradePoint ?? "-"}</td>
                     <td className="px-3 py-2.5 align-middle"><StatusBadge value={getStatus(student)} /></td>

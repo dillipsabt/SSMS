@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 import Pagination from "../../components/common/Pagination";
 import useToastMessage from "../../utils/useToastMessage";
+import { isAdditionalExamSubject } from "../../utils/examSubjectUtils";
 import {
   fetchAcademicYears,
   fetchClasses,
@@ -80,6 +81,10 @@ const TeacherAddExamResults = () => {
   const indexOfFirst = indexOfLast - rowsPerPage;
   const currentStudents = filteredStudents.slice(indexOfFirst, indexOfLast);
   const totalPages = Math.ceil(filteredStudents.length / rowsPerPage);
+  const selectedSubject = (subjects || []).find(
+    (subject) => String(subject.id) === String(formData.subjectId),
+  );
+  const isAdditionalSubject = isAdditionalExamSubject(selectedSubject);
 
   const calculateGradeAndStatus = (percentage) => {
     const percent = parseFloat(percentage) || 0;
@@ -119,7 +124,11 @@ const TeacherAddExamResults = () => {
       [field]: value,
     };
 
-    if (field === "obtainedMarks" || field === "totalMarks") {
+    if (isAdditionalSubject) {
+      updatedMarks.percentage = "";
+      updatedMarks.grade = "";
+      updatedMarks.status = "";
+    } else if (field === "obtainedMarks" || field === "totalMarks") {
       const obtainedMarks = Number(updatedMarks.obtainedMarks);
       const totalMarks = Number(updatedMarks.totalMarks);
 
@@ -345,12 +354,21 @@ const TeacherAddExamResults = () => {
                   label: subject.subjectName || subject.name,
                 })) || []),
               ].find((item) => item.value == formData.subjectId)}
-              onChange={(selected) =>
-                setFormData({
-                  ...formData,
-                  subjectId: selected?.value || "",
-                })
-              }
+              onChange={(selected) => {
+                const subjectId = selected?.value || "";
+                const additionalSubject = isAdditionalExamSubject(selected?.label || "");
+                setFormData((current) => ({ ...current, subjectId }));
+                if (additionalSubject) {
+                  setStudentMarks((current) =>
+                    Object.fromEntries(
+                      Object.entries(current).map(([studentId, marks]) => [
+                        studentId,
+                        { ...marks, percentage: "", grade: "", status: "" },
+                      ]),
+                    ),
+                  );
+                }
+              }}
             />
           </div>
           <div>
@@ -498,52 +516,64 @@ const TeacherAddExamResults = () => {
                     />
                   </td>
                   <td className="px-4 py-3">
-                    <input
-                      type="number"
-                      value={studentMarks[student.id]?.percentage ?? ""}
-                      readOnly
-                      className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                      placeholder=""
-                    />
+                    {isAdditionalSubject ? (
+                      <span className="text-xs font-medium text-gray-400">N/A</span>
+                    ) : (
+                      <input
+                        type="number"
+                        value={studentMarks[student.id]?.percentage ?? ""}
+                        readOnly
+                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        placeholder=""
+                      />
+                    )}
                   </td>
                   <td className="px-4 py-3">
-                    <select
-                      value={studentMarks[student.id]?.grade || ""}
-                      onChange={(e) =>
-                        handleMarksChange(student.id, "grade", e.target.value)
-                      }
-                      disabled={!!studentMarks[student.id]?.percentage}
-                      className={`w-30 px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 ${studentMarks[student.id]?.percentage
-                        ? "bg-gray-100 cursor-not-allowed opacity-60"
-                        : ""
-                        }`}
-                    >
-                      <option value="">Select</option>
-                      <option value="A+">A+</option>
-                      <option value="A">A</option>
-                      <option value="B+">B+</option>
-                      <option value="B">B</option>
-                      <option value="C">C</option>
-                      <option value="D">D</option>
-                      <option value="F">F</option>
-                    </select>
+                    {isAdditionalSubject ? (
+                      <span className="text-xs font-medium text-gray-400">N/A</span>
+                    ) : (
+                      <select
+                        value={studentMarks[student.id]?.grade || ""}
+                        onChange={(e) =>
+                          handleMarksChange(student.id, "grade", e.target.value)
+                        }
+                        disabled={!!studentMarks[student.id]?.percentage}
+                        className={`w-30 px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 ${studentMarks[student.id]?.percentage
+                          ? "bg-gray-100 cursor-not-allowed opacity-60"
+                          : ""
+                          }`}
+                      >
+                        <option value="">Select</option>
+                        <option value="A+">A+</option>
+                        <option value="A">A</option>
+                        <option value="B+">B+</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                        <option value="D">D</option>
+                        <option value="F">F</option>
+                      </select>
+                    )}
                   </td>
                   <td className="px-4 py-3">
-                    <select
-                      value={studentMarks[student.id]?.status || ""}
-                      onChange={(e) =>
-                        handleMarksChange(student.id, "status", e.target.value)
-                      }
-                      disabled={!!studentMarks[student.id]?.percentage}
-                      className={`w-30 px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 ${studentMarks[student.id]?.percentage
-                        ? "bg-gray-100 cursor-not-allowed opacity-60"
-                        : ""
-                        }`}
-                    >
-                      <option value="">Select</option>
-                      <option value="Pass">Pass</option>
-                      <option value="Fail">Fail</option>
-                    </select>
+                    {isAdditionalSubject ? (
+                      <span className="text-xs font-medium text-gray-400">N/A</span>
+                    ) : (
+                      <select
+                        value={studentMarks[student.id]?.status || ""}
+                        onChange={(e) =>
+                          handleMarksChange(student.id, "status", e.target.value)
+                        }
+                        disabled={!!studentMarks[student.id]?.percentage}
+                        className={`w-30 px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 ${studentMarks[student.id]?.percentage
+                          ? "bg-gray-100 cursor-not-allowed opacity-60"
+                          : ""
+                          }`}
+                      >
+                        <option value="">Select</option>
+                        <option value="Pass">Pass</option>
+                        <option value="Fail">Fail</option>
+                      </select>
+                    )}
                   </td>
                   <td className="px-4 py-3">
                     <input

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Search } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import useToastMessage from "../../utils/useToastMessage";
+import { getCalculatedExamSubjects, isAdditionalExamSubject } from "../../utils/examSubjectUtils";
 import {
   fetchStudentExamResults,
   fetchAcademicYears,
@@ -103,12 +104,16 @@ const StudentExamReports = () => {
   //   },
   // ];
 
-  // Calculate totals
-  const totalObtained = examResults.reduce(
-    (sum, r) => sum + r.obtainedMarks,
+  const calculatedExamResults = getCalculatedExamSubjects(examResults);
+  const hasCalculatedResults = calculatedExamResults.length > 0;
+  const totalObtained = calculatedExamResults.reduce(
+    (sum, result) => sum + Number(result.obtainedMarks || 0),
     0,
   );
-  const totalMax = examResults.reduce((sum, r) => sum + r.totalMarks, 0); //const totalPercentage = Math.round((totalObtained / totalMax) * 100);
+  const totalMax = calculatedExamResults.reduce(
+    (sum, result) => sum + Number(result.totalMarks || 0),
+    0,
+  );
   const totalPercentage =
     totalMax > 0 ? Math.round((totalObtained / totalMax) * 100) : 0;
 
@@ -124,7 +129,7 @@ const StudentExamReports = () => {
   };
 
   // Check if any subject failed
-  const hasFailed = examResults.some((r) => r.status === "Fail");
+  const hasFailed = calculatedExamResults.some((result) => result.status === "Fail");
 
   const handleSearch = () => {
     if (!academicYear || !examType) {
@@ -246,23 +251,29 @@ const StudentExamReports = () => {
                         </td>
 
                         <td className="px-4 py-3 text-center text-gray-600">
-                          {result.percentage}%
+                          {isAdditionalExamSubject(result) ? "N/A" : `${result.percentage}%`}
                         </td>
 
                         <td className="px-4 py-3 text-center text-gray-600">
-                          {result.grade}
+                          {isAdditionalExamSubject(result) ? "N/A" : result.grade}
                         </td>
 
                         <td className="px-4 py-3 text-center">
-                          <span
-                            className={`px-3 py-1 rounded-full text-xs font-medium ${
-                              result.status === "PASS"
-                                ? "bg-green-100 text-green-600"
-                                : "bg-red-100 text-red-500"
-                            }`}
-                          >
-                            {result.status}
-                          </span>
+                          {isAdditionalExamSubject(result) ? (
+                            <span className="px-3 py-1 rounded-full bg-gray-100 text-gray-500 text-xs font-medium">
+                              N/A
+                            </span>
+                          ) : (
+                            <span
+                              className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                result.status === "PASS"
+                                  ? "bg-green-100 text-green-600"
+                                  : "bg-red-100 text-red-500"
+                              }`}
+                            >
+                              {result.status}
+                            </span>
+                          )}
                         </td>
                       </tr>
                     ))}
@@ -272,15 +283,15 @@ const StudentExamReports = () => {
                       <td className="px-4 py-3 text-gray-800">Total</td>
 
                       <td className="px-4 py-3 text-center text-gray-800">
-                        {totalObtained}
+                        {hasCalculatedResults ? totalObtained : "N/A"}
                       </td>
 
                       <td className="px-4 py-3 text-center text-gray-800">
-                        {totalPercentage}%
+                        {hasCalculatedResults ? `${totalPercentage}%` : "N/A"}
                       </td>
 
                       <td className="px-4 py-3 text-center text-gray-800">
-                        {getOverallGrade(totalPercentage)}
+                        {hasCalculatedResults ? getOverallGrade(totalPercentage) : "N/A"}
                       </td>
 
                       <td className="px-4 py-3 text-center">
@@ -291,7 +302,7 @@ const StudentExamReports = () => {
                               : "bg-green-100 text-green-600"
                           }`}
                         >
-                          {hasFailed ? "FAIL" : "PASS"}
+                          {hasCalculatedResults ? (hasFailed ? "FAIL" : "PASS") : "N/A"}
                         </span>
                       </td>
                     </tr>
