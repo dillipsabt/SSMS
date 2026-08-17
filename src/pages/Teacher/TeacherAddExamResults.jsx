@@ -112,17 +112,6 @@ const TeacherAddExamResults = () => {
     return { grade, status };
   };
 
-  const handleFormChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    if (name === "classId") {
-      setStudentMarks({});
-      setCurrentPage(1);
-      if (value) {
-        dispatch(fetchStudentsByClass(value));
-      }
-    }
-  };
 
   const handleMarksChange = (studentId, field, value) => {
     const updatedMarks = {
@@ -579,8 +568,8 @@ const TeacherAddExamResults = () => {
             currentPage={currentPage}
             totalPages={totalPages}
             rowsPerPage={rowsPerPage}
-            onPageChange={setCurrentPage}
-            onRowsPerPageChange={setRowsPerPage}
+            setCurrentPage={setCurrentPage}
+            setRowsPerPage={setRowsPerPage}
           />
         </div>
 

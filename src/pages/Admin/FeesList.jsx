@@ -4,17 +4,30 @@ import { Download, X, Search, Calendar } from "lucide-react";
 import logo from "../../assets/defaultLogo.png";
 import Pagination from "../../components/common/Pagination";
 import { fetchReceiptsAsync, fetchReceiptByTransactionIdAsync, clearSelectedReceipt } from "../../features/Admin/FeesTransaction/feesTransactionSlice";
+import { getSchoolDetailsAsync } from "../../features/Admin/SchoolDetails/schoolDetailsSlice";
+import {
+  generateCardPaymentSlipPdf,
+  generatePaymentReceiptPdf,
+  printCardPaymentSlipPdf,
+  printPaymentReceiptPdf,
+  getReceiptImageSource,
+} from "../../utils/generatePaymentReceiptPdf";
 
 export default function FeesList() {
   const dispatch = useDispatch();
   const { receipts, pagination, loading, selectedReceipt } = useSelector(
     (state) => state.feesTransaction
   );
+  const { schoolDetails } = useSelector((state) => state.schoolDetails);
 
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  useEffect(() => {
+    dispatch(getSchoolDetailsAsync());
+  }, [dispatch]);
 
   useEffect(() => {
     const params = {
@@ -34,6 +47,12 @@ export default function FeesList() {
   }, [dispatch, currentPage, rowsPerPage, fromDate, toDate]);
 
   const receipt = selectedReceipt;
+  const schoolLogo = getReceiptImageSource(
+    schoolDetails?.schoolLogoBase64 || schoolDetails?.logoBase64 || schoolDetails?.logo || schoolDetails?.schoolLogo || schoolDetails?.schoolLogoUrl || schoolDetails?.logoUrl,
+  );
+  const principalSignature = getReceiptImageSource(
+    schoolDetails?.principalSignatureBase64 || schoolDetails?.signatureBase64 || schoolDetails?.principalSignBase64 || schoolDetails?.principalSignature || schoolDetails?.principalSign || schoolDetails?.principalSignatureUrl || schoolDetails?.signatureUrl,
+  );
 
   const subTotal = receipt
     ? (receipt.items || []).reduce(
@@ -42,13 +61,14 @@ export default function FeesList() {
     )
     : 0;
 
-  const gstAmount = Number(receipt?.gstAmount || 0);
-
   const netAmount = Number(receipt?.netAmount || 0);
 
   const totalPages = pagination.totalPages || 0;
 
-  const handlePrint = () => window.print();
+  const runReceiptAction = async (action) => {
+    if (!receipt) return;
+    await action(receipt, schoolDetails);
+  };
 
   return (
     <div className="p-4 sm:p-6 fees-theme-scope">
@@ -190,14 +210,14 @@ export default function FeesList() {
               <div className="flex items-center justify-between mb-1 border-b-2 border-gray-200 pb-3">
                 <div className="flex-shrink-0">
                   <img
-                    src={logo}
+                    src={schoolLogo || logo}
                     alt="School Logo"
                     className="w-16 h-16 object-contain border border-gray-200 rounded"
                   />
                 </div>
                 <div className="flex-1 text-center">
                   <h1 className="text-2xl font-bold text-gray-800 tracking-wide">
-                    School Name
+                    {schoolDetails?.schoolName || "School Name"}
                   </h1>
                 </div>
                 <div className="w-16" />
@@ -239,7 +259,7 @@ export default function FeesList() {
                   </div>
                   <div className="px-4 py-2">
                     <span className="text-gray-500">Address</span>
-                    <span className="ml-2 font-medium text-gray-800">{receipt.address}</span>
+                    <span className="ml-2 font-medium text-gray-800">{receipt.address || schoolDetails?.address || "-"}</span>
                   </div>
                 </div>
               </div>
@@ -301,23 +321,49 @@ export default function FeesList() {
               <div className="flex justify-between items-end text-[11px] text-gray-500 border-t border-gray-200 pt-3">
                 <div>
                   <p className="font-medium text-gray-700">Principal</p>
-                  <p>Surjeed Reddy</p>
+                  {principalSignature ? (
+                    <img
+                      src={principalSignature}
+                      alt="Principal signature"
+                      className="mt-1 h-10 w-28 object-contain object-left"
+                    />
+                  ) : (
+                    <p>{schoolDetails?.principalName || "-"}</p>
+                  )}
                 </div>
                 <p>{new Date().toLocaleDateString("en-GB")} {new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}</p>
               </div>
             </div>
 
             {/* ── Modal Action Buttons ── */}
-            <div className="flex justify-center gap-4 pb-6 print:hidden">
+            <div className="grid grid-cols-2 gap-2 px-4 pb-5 print:hidden sm:grid-cols-3 lg:grid-cols-5">
               <button
-                onClick={handlePrint}
-                className="bg-sky-600 text-white px-6 py-2 rounded text-[13px] font-medium hover:bg-sky-700 transition"
+                onClick={() => runReceiptAction(printPaymentReceiptPdf)}
+                className="w-full min-h-11 rounded-lg bg-sky-600 px-2 py-2 text-[11px] font-semibold leading-tight text-white transition hover:bg-sky-700"
               >
-                Print
+                Print Normal Receipt
+              </button>
+              <button
+                onClick={() => runReceiptAction(generatePaymentReceiptPdf)}
+                className="w-full min-h-11 rounded-lg bg-teal-600 px-2 py-2 text-[11px] font-semibold leading-tight text-white transition hover:bg-teal-700"
+              >
+                Download PDF
+              </button>
+              <button
+                onClick={() => runReceiptAction(printCardPaymentSlipPdf)}
+                className="w-full min-h-11 rounded-lg bg-indigo-600 px-2 py-2 text-[11px] font-semibold leading-tight text-white transition hover:bg-indigo-700"
+              >
+                Print Card Slip
+              </button>
+              <button
+                onClick={() => runReceiptAction(generateCardPaymentSlipPdf)}
+                className="w-full min-h-11 rounded-lg bg-violet-600 px-2 py-2 text-[11px] font-semibold leading-tight text-white transition hover:bg-violet-700"
+              >
+                Download Card PDF
               </button>
               <button
                 onClick={() => dispatch(clearSelectedReceipt())}
-                className="bg-red-700 text-white px-6 py-2 rounded text-[13px] font-medium hover:bg-red-800 transition"
+                className="w-full min-h-11 rounded-lg bg-red-700 px-2 py-2 text-[11px] font-semibold leading-tight text-white transition hover:bg-red-800"
               >
                 Close
               </button>

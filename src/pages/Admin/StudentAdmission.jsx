@@ -367,6 +367,7 @@ const StudentAdmission = () => {
 
     return true;
   };
+  
 
   // Clear stale messages on mount
   useEffect(() => {

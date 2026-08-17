@@ -24,6 +24,7 @@ const PAYMENT_MODES = [
   "Select Mode",
   "Cash",
   "Online Transfer",
+  "Card",
   "Cheque",
   "Demand Draft",
   "UPI",
@@ -359,6 +360,7 @@ const Fees = () => {
     const paymentModeMap = {
       Cash: "CASH",
       "Online Transfer": "ONLINE_TRANSFER",
+      Card: "CARD",
       Cheque: "CHEQUE",
       "Demand Draft": "DEMAND_DRAFT",
       UPI: "UPI",

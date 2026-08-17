@@ -11,7 +11,7 @@ import {
 
 export const getSchoolDetailsAsync = createAppAsyncThunk(
   "schoolDetails/getSchoolDetails",
-  () => getSchoolDetails()
+  async () => (await getSchoolDetails()).data
 );
 
 export const createSchoolDetailsAsync = createAppAsyncThunk(

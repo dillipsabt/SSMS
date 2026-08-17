@@ -182,7 +182,7 @@ export default function SchoolDetails() {
   const { state } = useLocation();
   const school = state?.school;
   const [form, setForm] = useState(() => ({ ...emptyForm, ...(school || {}) }));
-  const [createdSchoolId, setCreatedSchoolId] = useState(null);
+  const [schoolIdForLogo, setSchoolIdForLogo] = useState(null);
   const [isLogoModalOpen, setIsLogoModalOpen] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -217,7 +217,6 @@ export default function SchoolDetails() {
     successMessage,
     clearSuccess,
     clearError,
-    onSuccess: () => navigate("/school-details/lists", { replace: true }),
   });
 
   useToastMessage({
@@ -265,7 +264,13 @@ export default function SchoolDetails() {
     const id = school?.id ?? school?.schoolId;
 
     if (id) {
-      dispatch(updateSuperAdminSchoolAsync({ id, data: payload }));
+      try {
+        await dispatch(updateSuperAdminSchoolAsync({ id, data: payload })).unwrap();
+        setSchoolIdForLogo(id);
+        setIsLogoModalOpen(true);
+      } catch {
+        return;
+      }
       return;
     }
 
@@ -277,7 +282,7 @@ export default function SchoolDetails() {
         createdSchool?.data?.id ??
         createdSchool?.data?.schoolId;
 
-      setCreatedSchoolId(newSchoolId);
+      setSchoolIdForLogo(newSchoolId);
       setIsLogoModalOpen(true);
     } catch {
       return;
@@ -285,7 +290,7 @@ export default function SchoolDetails() {
   };
 
   const uploadLogo = (file) =>
-    dispatch(uploadSchoolLogoAsync({ schoolId: createdSchoolId, file }));
+    dispatch(uploadSchoolLogoAsync({ schoolId: schoolIdForLogo, file }));
 
   return (
     <div className="sa-page">
