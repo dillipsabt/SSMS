@@ -5,9 +5,7 @@ import { toast } from "sonner";
 import { Toaster } from "sonner";
 
 import { useDispatch, useSelector } from "react-redux";
-import Select from "react-select";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
+
 
 import {
   fetchClassesAsync,
@@ -15,7 +13,6 @@ import {
   fetchHomeworkSubmissionsAsync,
   acceptHomeworkAsync,
   rejectHomeworkAsync,
-  fetchTeachersAsync,
 } from "../../features/teacher/homework/teacherHomeworkSlice";
 
 const getStatusStyle = (status) => {
@@ -31,16 +28,16 @@ const getStatusStyle = (status) => {
 export default function TeacherAssignmentSubmission() {
   const dispatch = useDispatch();
 
-  const { classes, classCode, subjects, submissions, teachers } = useSelector(
+  const { classes, subjects, submissions } = useSelector(
     (state) => state.teacherHomework,
   );
+  const { profileId } = useSelector((state) => state.auth || {});
 
   const [openActionId, setOpenActionId] = useState(null);
   const [openModal, setOpenModal] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [openRejectModal, setOpenRejectModal] = useState(false);
   const [rejectItem, setRejectItem] = useState(null);
-  const [selectedTeacherId, setSelectedTeacherId] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
 
   const [comment, setComment] = useState("");
@@ -48,7 +45,6 @@ export default function TeacherAssignmentSubmission() {
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const [form, setForm] = useState({
-    teacherId: "",
     subject: "",
     classId: "",
     classCode: "",
@@ -57,7 +53,6 @@ export default function TeacherAssignmentSubmission() {
   });
 
   const [errors, setErrors] = useState({
-    teacherId: "",
     subject: "",
     classId: "",
     classCode: "",
@@ -69,7 +64,6 @@ export default function TeacherAssignmentSubmission() {
   useEffect(() => {
     dispatch(fetchClassesAsync());
     dispatch(fetchSubjectsAsync());
-    dispatch(fetchTeachersAsync());
   }, [dispatch]);
 
   const handleChange = (e) => {
@@ -90,7 +84,6 @@ export default function TeacherAssignmentSubmission() {
 
   const validate = () => {
     const newErrors = {
-      teacherId: "",
       subject: "",
       classId: "",
       classCode: "",
@@ -127,7 +120,6 @@ export default function TeacherAssignmentSubmission() {
     }
 
     setErrors({
-      teacherId: "",
       subject: "",
       classId: "",
       classCode: "",
@@ -144,10 +136,15 @@ export default function TeacherAssignmentSubmission() {
 
     if (!isValid) return;
 
+    if (!profileId) {
+      toast.error("Teacher profile not found");
+      return;
+    }
+
     try {
       await dispatch(
         fetchHomeworkSubmissionsAsync({
-          teacherId: selectedTeacherId ? Number(selectedTeacherId) : null,
+          teacherId: Number(profileId),
           classId: form.classId ? Number(form.classId) : null,
           classCode: form.classCode,
         }),
@@ -205,9 +202,10 @@ export default function TeacherAssignmentSubmission() {
         item.homeworkTitle?.toLowerCase().includes(searchTerm.toLowerCase()),
     ) || [];
 
-  const totalPages = Math.ceil(filteredSubmissions.length / itemsPerPage);
+  const totalPages = Math.max(1, Math.ceil(filteredSubmissions.length / itemsPerPage));
+  const visiblePage = Math.min(currentPage, totalPages);
 
-  const startIndex = (currentPage - 1) * itemsPerPage;
+  const startIndex = (visiblePage - 1) * itemsPerPage;
 
   const paginatedSubmissions = filteredSubmissions.slice(
     startIndex,
@@ -234,75 +232,37 @@ export default function TeacherAssignmentSubmission() {
 
         <div className="p-4 grid grid-cols-1 md:grid-cols-5 gap-4">
           {/* Subject */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Teacher <span className="text-red-500">*</span>
-            </label>
-            <Select
-              className="w-full"
-              options={teachers?.map((item) => ({
-                value: item.id || item.teacherId,
-                label: item.fullName || item.name,
-              }))}
-              value={teachers
-                ?.map((item) => ({
-                  value: item.id || item.teacherId,
-                  label: item.fullName || item.name,
-                }))
-                .find((item) => item.value == selectedTeacherId)}
-              onChange={(selected) =>
-                setSelectedTeacherId(selected?.value || "")
-              }
-              placeholder="Select"
-              classNamePrefix="react-select"
-            />
-
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Subject <span className="text-red-500">*</span>
-            </label>
-            <Select
-              className="w-full"
-              options={subjects?.map((item) => ({
-                value: item.id || item.subjectId,
-                label: item.subjectName,
-              }))}
-              value={subjects
-                ?.map((item) => ({
-                  value: item.id || item.subjectId,
-                  label: item.subjectName,
-                }))
-                .find((item) => item.value == form.subject)}
-              onChange={(selected) =>
-                setForm({
-                  ...form,
-                  subject: selected?.value || "",
-                })
-              }
-              placeholder="Select"
-              classNamePrefix="react-select"
-            />
+          <div className="flex flex-col w-full min-w-0">
+            <div className="flex flex-col w-full min-w-0">
+              <label className="form-label">
+                Subject <span className="text-red-500">*</span>
+              </label>
+              <select
+                name="subject"
+                value={form.subject}
+                onChange={handleChange}
+                className="form-select"
+              >
+                <option value="">Select Subject</option>
+                {subjects?.map((item) => (
+                  <option key={item.id || item.subjectId} value={item.id || item.subjectId}>
+                    {item.subjectName}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           {/* Class */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+          <div className="flex flex-col w-full min-w-0">
+            <label className="form-label">
               Class <span className="text-red-500">*</span>
             </label>
-            <Select
-              className="w-full"
-              options={classes?.map((item) => ({
-                value: item.id,
-                label: item.classCode,
-              }))}
-              value={classes
-                ?.map((item) => ({
-                  value: item.id,
-                  label: item.classCode,
-                }))
-                .find((item) => item.value == form.classId)}
-              onChange={(selected) => {
-                const item = classes.find(
-                  (x) => x.id === selected?.value
+            <select
+              value={form.classId}
+              onChange={(event) => {
+                const item = classes?.find(
+                  (classItem) => String(classItem.id) === event.target.value,
                 );
 
                 setForm({
@@ -311,64 +271,47 @@ export default function TeacherAssignmentSubmission() {
                   classCode: item?.classCode || "",
                 });
               }}
-              placeholder="Select"
-              classNamePrefix="react-select"
-            />
+              className="form-select"
+            >
+              <option value="">Select Class</option>
+              {classes?.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.classCode}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Date */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+          <div className="flex flex-col w-full min-w-0">
+            <label className="form-label">
               Date <span className="text-red-500">*</span>
             </label>
-            <DatePicker
-              selected={form.date ? new Date(form.date) : null}
-              onChange={(date) =>
-                setForm({
-                  ...form,
-                  date: date ? date.toISOString().split("T")[0] : "",
-                })
-              }
-              dateFormat="dd/MM/yyyy"
-              placeholderText="Select Date"
-              popperPlacement="bottom-start"
-              className="w-full border border-gray-300 px-3 py-2 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
-              wrapperClassName="w-full sm:w-auto"
+            <input
+              type="date"
+              name="date"
+              value={form.date}
+              onChange={handleChange}
+              className="form-input"
             />
           </div>
 
           {/* Assign To */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+          <div className="flex flex-col w-full min-w-0">
+            <label className="form-label">
               Assign To <span className="text-red-500">*</span>
             </label>
-            <Select
-              className="w-full"
-              options={[
-                { value: "CLASS", label: "All Students" },
-                { value: "GROUP", label: "Group" },
-                { value: "INDIVIDUAL", label: "Individual" },
-              ]}
-              value={
-                form.assignTo
-                  ? {
-                    value: form.assignTo,
-                    label:
-                      form.assignTo === "CLASS"
-                        ? "All Students"
-                        : form.assignTo,
-                  }
-                  : null
-              }
-              onChange={(selected) =>
-                setForm({
-                  ...form,
-                  assignTo: selected?.value || "",
-                })
-              }
-              placeholder="Select"
-              classNamePrefix="react-select"
-            />
+            <select
+              name="assignTo"
+              value={form.assignTo}
+              onChange={handleChange}
+              className="form-select"
+            >
+              <option value="">Select Assign To</option>
+              <option value="CLASS">All Students</option>
+              <option value="GROUP">Group</option>
+              <option value="INDIVIDUAL">Individual</option>
+            </select>
           </div>
 
           {/* Search Button */}
@@ -396,18 +339,13 @@ export default function TeacherAssignmentSubmission() {
                 setCurrentPage(1);
               }}
               placeholder="Search Student Name"
-              className="w-full sm:w-56 px-3 py-2 rounded bg-transparent text-white placeholder-white border border-white focus:outline-none focus:ring-1 focus:ring-white"
+              className="form-input w-full sm:w-56 bg-transparent text-white placeholder-white border-white"
             />
-            <Select
-              className="w-full sm:w-32 text-black"
-              options={[
-                { value: "export", label: "Export" },
-                { value: "csv", label: "CSV" },
-                { value: "pdf", label: "PDF" },
-              ]}
-              placeholder="Export"
-              classNamePrefix="react-select"
-            />
+            <select className="form-select w-full sm:w-32 text-black" defaultValue="">
+              <option value="">Export</option>
+              <option value="csv">CSV</option>
+              <option value="pdf">PDF</option>
+            </select>
           </div>
         </div>
 
@@ -528,32 +466,32 @@ export default function TeacherAssignmentSubmission() {
         </div>
 
         {/* Pagination */}
-        {submissions?.length > 0 && (
+        {filteredSubmissions.length > 0 && (
           <div className="px-4 py-3 border-t border-gray-200 flex flex-wrap justify-between items-center gap-2">
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <span>Prev</span>
               <button
-                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(Math.max(1, visiblePage - 1))}
+                disabled={visiblePage === 1}
                 className="px-2 py-1 border border-gray-300 rounded disabled:opacity-50"
               >
                 &lt;
               </button>
               <span className="px-3 py-1 bg-indigo-600 text-white rounded">
-                {currentPage}
+                {visiblePage}
               </span>
               <button
                 onClick={() =>
-                  setCurrentPage(Math.min(totalPages, currentPage + 1))
+                  setCurrentPage(Math.min(totalPages, visiblePage + 1))
                 }
-                disabled={currentPage === totalPages}
+                disabled={visiblePage === totalPages}
                 className="px-2 py-1 border border-gray-300 rounded disabled:opacity-50"
               >
                 &gt;
               </button>
               <span>Next</span>
               <span className="ml-4">
-                Page {currentPage} of {totalPages || 1}
+                Page {visiblePage} of {totalPages}
               </span>
             </div>
             <div className="flex items-center gap-2 text-sm">
@@ -563,7 +501,7 @@ export default function TeacherAssignmentSubmission() {
                   setItemsPerPage(Number(e.target.value));
                   setCurrentPage(1);
                 }}
-                className="border border-gray-300 px-2 py-1 rounded text-gray-600"
+                className="form-select w-auto"
               >
                 <option value={10}>10</option>
                 <option value={25}>25</option>

@@ -30,10 +30,6 @@ const extractFilename = (url) => {
     : raw;
 };
 
-// Capitalize first letter
-const capitalize = (str) =>
-  str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : "";
-
 // Derive row-level status from a student's submissions
 const getRowStatus = (subs) => {
   const statuses = (subs || []).map((s) => (s.status || "").toUpperCase());
@@ -72,10 +68,6 @@ export default function StudentAssignmentSubmission() {
   useEffect(() => {
     dispatch(getHomeworkSubmissionsAsync());
   }, [dispatch]);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [search]);
 
   // Group submissions by studentCode
   const grouped = submissions.reduce((acc, sub) => {
@@ -151,21 +143,24 @@ export default function StudentAssignmentSubmission() {
           <input
             placeholder="Search Name / Student ID"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="border border-gray-300 px-2 py-[5px] text-[12px] rounded w-[200px] focus:outline-none focus:border-brand-600"
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="form-input w-[200px] text-xs"
           />
 
           <input
             type="date"
             value={dateFilter}
             onChange={(e) => setDateFilter(e.target.value)}
-            className="border border-gray-300 px-2 py-[5px] text-[12px] rounded focus:outline-none focus:border-brand-600"
+            className="form-input w-auto text-xs"
           />
 
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="border border-gray-300 px-2 py-[5px] text-[12px] rounded focus:outline-none"
+            className="form-select w-auto text-xs"
           >
             <option value="">Status</option>
             <option>Pending</option>

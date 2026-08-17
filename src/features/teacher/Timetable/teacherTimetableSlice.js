@@ -15,6 +15,18 @@ const getList = (payload) => {
   return data?.content ?? data?.items ?? data?.scheduleItems ?? data?.teacherScheduleDetails ?? (Array.isArray(data) ? data : []);
 };
 
+const getTotalPages = (payload, pageSize) => {
+  const data = getPayload(payload);
+  const totalPages = data?.totalPages ?? data?.totalPagesCount ?? data?.page?.totalPages;
+
+  if (totalPages != null) return Number(totalPages);
+
+  const totalRecords = data?.totalElements ?? data?.totalRecords ?? data?.totalCount;
+  return pageSize && totalRecords != null
+    ? Math.ceil(Number(totalRecords) / pageSize)
+    : 1;
+};
+
 export const fetchTeacherTimetableAsync = createAppAsyncThunk(
   "teacherTimetable/fetchTimetable",
   () => fetchTeacherTimetableAPI(),
@@ -50,6 +62,7 @@ const teacherTimetableSlice = createSlice({
   initialState: {
     timetable: [],
     requests: [],
+    requestsTotalPages: 1,
     subjects: [],
     classes: [],
     timeSlots: [],
@@ -78,6 +91,10 @@ const teacherTimetableSlice = createSlice({
       .addCase(fetchTeacherTimetableRequestsAsync.fulfilled, (state, action) => {
         state.loading = false;
         state.requests = getList(action.payload);
+        state.requestsTotalPages = getTotalPages(
+          action.payload,
+          action.meta.arg?.size,
+        );
       })
       .addCase(fetchTeacherTimetableRequestsAsync.rejected, (state, action) => {
         state.loading = false;

@@ -6,27 +6,24 @@ import { useDispatch, useSelector } from "react-redux";
 
 import AttachmentModal from "../../components/Teacher/AttachmentModal";
 import Pagination from "../../components/common/Pagination";
-import Select from "react-select";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
+
 
 import {
   fetchHomeworkAsync,
   createHomeworkAsync,
   fetchClassesAsync,
   fetchSubjectsAsync,
-  fetchTeachersAsync,
 } from "../../features/teacher/homework/teacherHomeworkSlice";
 
 const TeacherAssignmentHomework = () => {
   const dispatch = useDispatch();
 
-  const { homeworks, classes, classCode, subjects, teachers } = useSelector(
+  const { homeworks, classes, subjects } = useSelector(
     (state) => state.teacherHomework,
   );
+  const { profileId } = useSelector((state) => state.auth || {});
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedTeacherId, setSelectedTeacherId] = useState("");
   const [selectedAttachment, setSelectedAttachment] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -46,10 +43,14 @@ const TeacherAssignmentHomework = () => {
   useEffect(() => {
     dispatch(fetchClassesAsync());
     dispatch(fetchSubjectsAsync());
-    dispatch(fetchTeachersAsync());
-  }, [dispatch]);
+
+    if (profileId) {
+      dispatch(fetchHomeworkAsync(profileId));
+    }
+  }, [dispatch, profileId]);
 
   const validate = () => {
+    if (!profileId) return toast.error("Teacher profile not found");
     if (!form.title) return toast.error("Title Required");
     if (!form.classCode) return toast.error("Class Code Required");
     if (!form.subject) return toast.error("Subject Required");
@@ -86,7 +87,7 @@ const TeacherAssignmentHomework = () => {
         subjectId: form.subject ? Number(form.subject) : null,
         dueDate: form.dueDate,
         description: form.description,
-        teacherId: Number(selectedTeacherId),
+        teacherId: Number(profileId),
         assignmentType: form.assignTo,
         groupId: null,
         studentIds: [],
@@ -107,13 +108,12 @@ const TeacherAssignmentHomework = () => {
 
       toast.success("Assignment Created Successfully");
 
-      if (selectedTeacherId) {
-        dispatch(fetchHomeworkAsync(selectedTeacherId));
+      if (profileId) {
+        dispatch(fetchHomeworkAsync(profileId));
       }
 
       setForm({
         title: "",
-        Teacher: "",
         classCode: "",
         // section: "",
         subject: "",
@@ -135,9 +135,10 @@ const TeacherAssignmentHomework = () => {
       return item.dueDate?.split("T")[0] === filterDate;
     }) || [];
 
-  const totalPages = Math.ceil(filteredHomeworks.length / itemsPerPage);
+  const totalPages = Math.max(1, Math.ceil(filteredHomeworks.length / itemsPerPage));
+  const visiblePage = Math.min(currentPage, totalPages);
 
-  const startIndex = (currentPage - 1) * itemsPerPage;
+  const startIndex = (visiblePage - 1) * itemsPerPage;
 
   const paginatedHomeworks = filteredHomeworks.slice(
     startIndex,
@@ -174,57 +175,29 @@ const TeacherAssignmentHomework = () => {
 
         <div className="p-4 grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
           {/* TITLE */}
-          <div className="flex flex-col">
-            <label className="mb-1 block text-[13px] font-semibold text-gray-700">
+          <div className="flex flex-col w-full min-w-0">
+            <label className="form-label">
               Title <span className="text-red-500">*</span>
             </label>
             <input
-              className="border border-gray-300 px-3 py-2 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="form-input"
               type="text"
               value={form.title}
               onChange={(e) => setForm({ ...form, title: e.target.value })}
             />
-            <label className="mb-1 block text-[13px] font-semibold text-gray-700">
-              Teacher <span className="text-red-500">*</span>
-            </label>
-            <Select
-              options={teachers?.map((item) => ({
-                value: item.id || item.teacherId,
-                label: item.fullName || item.name,
-              }))}
-              value={teachers
-                ?.map((item) => ({
-                  value: item.id || item.teacherId,
-                  label: item.fullName || item.name,
-                }))
-                .find((item) => item.value == selectedTeacherId)}
-              onChange={(selected) =>
-                setSelectedTeacherId(selected?.value || "")
-              }
-              placeholder="Select"
-              classNamePrefix="react-select"
-            />
+
           </div>
 
           {/* CLASS */}
-          <div className="flex flex-col">
-            <label className="mb-1 block text-[13px] font-semibold text-gray-700">
+          <div className="flex flex-col w-full min-w-0">
+            <label className="form-label">
               Class <span className="text-red-500">*</span>
             </label>
-            <Select
-              options={classes?.map((item) => ({
-                value: item.id,
-                label: item.classCode,
-              }))}
-              value={classes
-                ?.map((item) => ({
-                  value: item.id,
-                  label: item.classCode,
-                }))
-                .find((item) => item.value == form.classId)}
-              onChange={(selected) => {
-                const item = classes.find(
-                  (x) => x.id === selected?.value
+            <select
+              value={form.classId}
+              onChange={(event) => {
+                const item = classes?.find(
+                  (classItem) => String(classItem.id) === event.target.value,
                 );
 
                 setForm({
@@ -233,9 +206,15 @@ const TeacherAssignmentHomework = () => {
                   classCode: item?.classCode || "",
                 });
               }}
-              placeholder="Select"
-              classNamePrefix="react-select"
-            />
+              className="form-select"
+            >
+              <option value="">Select Class</option>
+              {classes?.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.classCode}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* SECTION */}
@@ -256,95 +235,77 @@ const TeacherAssignmentHomework = () => {
           </div> */}
 
           {/* SUBJECT */}
-          <div className="flex flex-col">
-            <label className="mb-1 block text-[13px] font-semibold text-gray-700">
+          <div className="flex flex-col w-full min-w-0">
+            <label className="form-label">
               Subject <span className="text-red-500">*</span>
             </label>
-            <Select
-              options={subjects?.map((item) => ({
-                value: item.id || item.subjectId,
-                label: item.subjectName,
-              }))}
-              value={subjects
-                ?.map((item) => ({
-                  value: item.id || item.subjectId,
-                  label: item.subjectName,
-                }))
-                .find((item) => item.value == form.subject)}
-              onChange={(selected) =>
+            <select
+              value={form.subject}
+              onChange={(event) =>
                 setForm({
                   ...form,
-                  subject: selected?.value || "",
+                  subject: event.target.value,
                 })
               }
-              placeholder="Select"
-              classNamePrefix="react-select"
-            />
+              className="form-select"
+            >
+              <option value="">Select Subject</option>
+              {subjects?.map((item) => (
+                <option key={item.id || item.subjectId} value={item.id || item.subjectId}>
+                  {item.subjectName}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* DUE DATE */}
-          <div className="flex flex-col">
-            <label className="mb-1 block text-[13px] font-semibold text-gray-700">
+          <div className="flex flex-col w-full min-w-0">
+            <label className="form-label">
               Due Date <span className="text-red-500">*</span>
             </label>
-            <DatePicker
-              selected={form.dueDate ? new Date(form.dueDate) : null}
-              onChange={(date) =>
+            <input
+              type="date"
+              value={form.dueDate}
+              onChange={(event) =>
                 setForm({
                   ...form,
-                  dueDate: date
-                    ? date.toISOString().split("T")[0]
-                    : "",
+                  dueDate: event.target.value,
                 })
               }
-              dateFormat="dd/MM/yyyy"
-              placeholderText="Select Date"
-              className="w-full border border-gray-300 px-3 py-2 rounded-md"
-              wrapperClassName="w-full sm:w-auto"
+              className="form-input"
             />
           </div>
 
           {/* ASSIGN TO */}
-          <div className="flex flex-col">
-            <label className="mb-1 block text-[13px] font-semibold text-gray-700">
+          <div className="flex flex-col w-full min-w-0">
+            <label className="form-label">
               Assign To <span className="text-red-500">*</span>
             </label>
-            <Select
-              options={[
-                { value: "CLASS", label: "All Students" },
-                { value: "GROUP", label: "Group" },
-                { value: "INDIVIDUAL", label: "Individual" },
-              ]}
-              value={
-                form.assignTo
-                  ? {
-                    value: form.assignTo,
-                    label:
-                      form.assignTo === "CLASS"
-                        ? "All Students"
-                        : form.assignTo,
-                  }
-                  : null
-              }
-              onChange={(selected) =>
+            <select
+              value={form.assignTo}
+              onChange={(event) =>
                 setForm({
                   ...form,
-                  assignTo: selected?.value || "",
+                  assignTo: event.target.value,
                 })
               }
-              placeholder="Select"
-              classNamePrefix="react-select"
-            />
+              className="form-select"
+            >
+              <option value="">Select Assign To</option>
+              <option value="CLASS">All Students</option>
+              <option value="GROUP">Group</option>
+              <option value="INDIVIDUAL">Individual</option>
+            </select>
           </div>
 
           {/* FILE */}
-          <div className="flex flex-col md:col-span-2">
-            <label className="mb-1 block text-[13px] font-semibold text-gray-700">
+          <div className="flex flex-col md:col-span-2 w-full min-w-0">
+            <label className="form-label">
               Upload Attachment <span className="text-red-500">*</span>
             </label>
-            <div className="flex items-center border border-gray-300 rounded-md overflow-hidden">
-              <label className="bg-indigo-100 text-indigo-600 px-4 py-2 text-sm cursor-pointer hover:bg-indigo-200 transition-colors">
-                Choose File
+            <div className="flex items-center border border-gray-300 rounded-md h-9 overflow-hidden bg-white">
+              <label className="bg-brand-100 text-brand-600 px-3 text-[12px] h-full flex items-center cursor-pointer shrink-0 hover:bg-brand-50 transition-colors">
+                Choose
                 <input
                   type="file"
                   className="hidden"
@@ -353,15 +314,15 @@ const TeacherAssignmentHomework = () => {
                   }
                 />
               </label>
-              <span className="px-3 text-gray-500 text-sm truncate flex-1">
+              <span className="px-2 text-[12px] text-gray-500 truncate min-w-0 flex-1">
                 {form.file ? form.file.name : "No file chosen"}
               </span>
             </div>
           </div>
 
           {/* DESCRIPTION */}
-          <div className="flex flex-col md:col-span-4">
-            <label className="mb-1 block text-[13px] font-semibold text-gray-700">
+          <div className="flex flex-col md:col-span-4 w-full min-w-0">
+            <label className="form-label">
               Description <span className="text-red-500">*</span>
             </label>
             <textarea
@@ -370,7 +331,7 @@ const TeacherAssignmentHomework = () => {
                 setForm({ ...form, description: e.target.value })
               }
               placeholder="Write here"
-              className="border border-gray-300 px-3 py-2 rounded-md h-24 resize-none focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="form-textarea h-24 resize-none"
             />
           </div>
         </div>
@@ -390,61 +351,36 @@ const TeacherAssignmentHomework = () => {
         <div className="border-b border-gray-200 px-4 py-3 text-sm font-semibold text-gray-700 flex flex-wrap justify-between items-center gap-2">
           <span>Assignment List</span>
 
-          <div className="flex flex-col gap-2 w-full">
-            <Select
-              className="w-full"
-              options={teachers?.map((item) => ({
-                value: item.id || item.teacherId,
-                label: item.fullName || item.name,
-              }))}
-              value={teachers
-                ?.map((item) => ({
-                  value: item.id || item.teacherId,
-                  label: item.fullName || item.name,
-                }))
-                .find((item) => item.value == selectedTeacherId)}
-              onChange={(selected) =>
-                setSelectedTeacherId(selected?.value || "")
-              }
-              placeholder="Select"
-              classNamePrefix="react-select"
-            />
-
-            <DatePicker
-              selected={filterDate ? new Date(filterDate) : null}
-              onChange={(date) => {
-                setFilterDate(
-                  date ? date.toISOString().split("T")[0] : ""
-                );
-                setCurrentPage(1);
-              }}
-              dateFormat="dd/MM/yyyy"
-              placeholderText="Select Date"
-              className="border border-gray-300 px-3 py-1.5 rounded-md text-xs w-full"
-              wrapperClassName="w-full sm:w-auto"
-            />
-            {filterDate && (
-              <button
-                onClick={() => {
-                  setFilterDate("");
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full">
+            <div className="relative min-w-0">
+              <input
+                type="date"
+                value={filterDate}
+                onChange={(event) => {
+                  setFilterDate(event.target.value);
                   setCurrentPage(1);
                 }}
-                className="px-3 py-1.5 text-xs bg-gray-100 rounded-md hover:bg-gray-200"
-              >
-                Reset
-              </button>
-            )}
+                className="form-input pr-14"
+              />
+              {filterDate && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFilterDate("");
+                    setCurrentPage(1);
+                  }}
+                  className="absolute right-1 top-1/2 -translate-y-1/2 rounded px-2 py-1 text-[11px] text-gray-600 hover:bg-gray-100"
+                >
+                  Reset
+                </button>
+              )}
+            </div>
 
-            <Select
-              className="w-full"
-              options={[
-                { value: "export", label: "Export" },
-                { value: "csv", label: "CSV" },
-                { value: "pdf", label: "PDF" },
-              ]}
-              placeholder="Export"
-              classNamePrefix="react-select"
-            />
+            <select className="form-select min-w-0" defaultValue="">
+              <option value="">Export</option>
+              <option value="csv">CSV</option>
+              <option value="pdf">PDF</option>
+            </select>
           </div>
         </div>
 
@@ -504,7 +440,7 @@ const TeacherAssignmentHomework = () => {
               ) : (
                 <tr>
                   <td colSpan="9" className="text-center py-8 text-gray-500">
-                    No assignments found. Select a teacher to view assignments.
+                    No assignments found.
                   </td>
                 </tr>
               )}
@@ -518,27 +454,27 @@ const TeacherAssignmentHomework = () => {
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <span>Prev</span>
               <button
-                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(Math.max(1, visiblePage - 1))}
+                disabled={visiblePage === 1}
                 className="px-2 py-1 border border-gray-300 rounded disabled:opacity-50"
               >
                 &lt;
               </button>
               <span className="px-3 py-1 bg-indigo-600 text-white rounded">
-                {currentPage}
+                {visiblePage}
               </span>
               <button
                 onClick={() =>
-                  setCurrentPage(Math.min(totalPages, currentPage + 1))
+                  setCurrentPage(Math.min(totalPages, visiblePage + 1))
                 }
-                disabled={currentPage === totalPages}
+                disabled={visiblePage === totalPages}
                 className="px-2 py-1 border border-gray-300 rounded disabled:opacity-50"
               >
                 &gt;
               </button>
               <span>Next</span>
               <span className="ml-4">
-                Page {currentPage} of {totalPages}
+                Page {visiblePage} of {totalPages}
               </span>
             </div>
             <div className="flex items-center gap-2 text-sm">
@@ -548,7 +484,7 @@ const TeacherAssignmentHomework = () => {
                   setItemsPerPage(Number(e.target.value));
                   setCurrentPage(1);
                 }}
-                className="border border-gray-300 px-2 py-1 rounded text-gray-600"
+                className="form-select w-auto"
               >
                 <option value={10}>10</option>
                 <option value={25}>25</option>

@@ -19,13 +19,25 @@ const PERFORMANCE_OPTIONS = [
     "Poor",
 ];
 
+const formatDateInputValue = (date) => {
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${date.getFullYear()}-${month}-${day}`;
+};
+
+const formatDisplayDate = (dateValue) => {
+    const [year, month, day] = String(dateValue).slice(0, 10).split("-");
+
+    return year && month && day ? `${day}/${month}/${year}` : dateValue;
+};
+
 const TeacherStudentPerformanceList = () => {
     const dispatch = useDispatch();
     const {
         performanceListData,
         availableDates,
         classesFromAPI,
-        dateRange,
         loading,
         error,
         currentPerformance,
@@ -53,15 +65,28 @@ const TeacherStudentPerformanceList = () => {
         setCurrentPage(1);
     };
 
+    const resetDateFilters = () => {
+        setSelectedClass(null);
+        setSelectedSubject(null);
+        setCurrentPage(1);
+        setSearchStudent("");
+        setSelectedPerformance("All");
+    };
+
+    const handleStartDateChange = (event) => {
+        setStartDate(event.target.value);
+        resetDateFilters();
+    };
+
+    const handleEndDateChange = (event) => {
+        setEndDate(event.target.value);
+        resetDateFilters();
+    };
+
     // Fetch dates when date range is entered
     useEffect(() => {
         if (startDate && endDate) {
             dispatch(fetchAvailableDates({ startDate, endDate }));
-            setSelectedClass(null);
-            setSelectedSubject(null);
-            setCurrentPage(1);
-            setSearchStudent("");
-            setSelectedPerformance("All");
         }
     }, [startDate, endDate, dispatch]);
 
@@ -138,27 +163,11 @@ const TeacherStudentPerformanceList = () => {
         }
     });
     const uniqueDates = Array.from(uniqueDateMap.keys());
-    const formattedDates = uniqueDates.map((dateStr) => {
-        const date = new Date(dateStr);
-        return {
-            id: dateStr,
-            date: date.toLocaleDateString("en-GB"),
-            raw: dateStr,
-        };
-    });
-
-    // Get classes and subjects for the dropdowns
-    const uniqueClasses = Array.from(
-        new Map(
-            (classesFromAPI || []).map((item) => [item.classId, item])
-        ).values()
-    );
-
-    const uniqueSubjects = Array.from(
-        new Map(
-            (classesFromAPI || []).map((item) => [item.subjectId, item])
-        ).values()
-    );
+    const formattedDates = uniqueDates.map((dateStr) => ({
+        id: dateStr,
+        date: formatDisplayDate(dateStr),
+        raw: dateStr,
+    }));
 
     // Transform students from API
     // Handle multiple possible response structures
@@ -205,15 +214,12 @@ const TeacherStudentPerformanceList = () => {
     };
 
     // Calculate date limits for validation
-    const getTodayDate = () => {
-        const today = new Date();
-        return today.toISOString().split('T')[0];
-    };
+    const getTodayDate = () => formatDateInputValue(new Date());
 
     const get30DaysAgoDate = () => {
         const date = new Date();
         date.setDate(date.getDate() - 30);
-        return date.toISOString().split('T')[0];
+        return formatDateInputValue(date);
     };
 
     // Requirement 1: Single Date Selection - if one date is selected and it's today, only today is allowed
@@ -228,7 +234,7 @@ const TeacherStudentPerformanceList = () => {
             const endDateObj = new Date(endDate);
             const minDate = new Date(endDateObj);
             minDate.setDate(minDate.getDate() - 30);
-            return minDate.toISOString().split('T')[0];
+            return formatDateInputValue(minDate);
         }
         return undefined;
     };
@@ -280,29 +286,29 @@ const TeacherStudentPerformanceList = () => {
                         <div className="p-3 border-b border-gray-200">
                             <div className="grid grid-cols-2 gap-2">
                                 <div>
-                                    <label className="block text-xs font-semibold text-gray-700 mb-1">
+                                    <label className="form-label">
                                         Start Date
                                     </label>
                                     <input
                                         type="date"
                                         value={startDate}
-                                        onChange={(e) => setStartDate(e.target.value)}
+                                        onChange={handleStartDateChange}
                                         min={getStartDateMinDate()}
                                         max={getStartDateMaxDate()}
-                                        className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                        className="form-input text-xs"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-semibold text-gray-700 mb-1">
+                                    <label className="form-label">
                                         End Date
                                     </label>
                                     <input
                                         type="date"
                                         value={endDate}
-                                        onChange={(e) => setEndDate(e.target.value)}
+                                        onChange={handleEndDateChange}
                                         min={getEndDateMinDate()}
                                         max={getEndDateMaxDate()}
-                                        className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                        className="form-input text-xs"
                                     />
                                 </div>
                             </div>
@@ -410,7 +416,7 @@ const TeacherStudentPerformanceList = () => {
                                     setSearchStudent(e.target.value);
                                     setCurrentPage(1);
                                 }}
-                                className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                className="form-input"
                             />
                             <select
                                 value={selectedPerformance}
@@ -418,7 +424,7 @@ const TeacherStudentPerformanceList = () => {
                                     setSelectedPerformance(e.target.value);
                                     setCurrentPage(1);
                                 }}
-                                className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                className="form-select"
                             >
                                 {PERFORMANCE_OPTIONS.map((option) => (
                                     <option key={option} value={option}>
@@ -543,7 +549,7 @@ const TeacherStudentPerformanceList = () => {
                                 totalPages={totalPages}
                                 rowsPerPage={rowsPerPage}
                                 setCurrentPage={setCurrentPage}
-                                setRowsPerPage={() => {}}
+                                setRowsPerPage={setRowsPerPage}
                             />
                         </div>
                     )}

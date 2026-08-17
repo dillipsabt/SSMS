@@ -15,7 +15,7 @@ import {
   clearSuccess,
   clearError,
 } from "../../features/teacher/ExamResults/examResultsSlice";
-import Select from "react-select";
+
 
 const TeacherAddExamResults = () => {
   const dispatch = useDispatch();
@@ -275,88 +275,55 @@ const TeacherAddExamResults = () => {
         {/* Form Filters */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-2">
+            <label className="form-label">
               Academic Year <span className="text-red-500">*</span>
             </label>
-            <Select
-              className="w-full"
-              classNamePrefix="react-select"
-              options={[
-                { value: "", label: "Select Academic Year" },
-                ...(academicYears?.map((year) => ({
-                  value: year.id,
-                  label: year.year || year.name,
-                })) || []),
-              ]}
-              value={[
-                { value: "", label: "Select Academic Year" },
-                ...(academicYears?.map((year) => ({
-                  value: year.id,
-                  label: year.year || year.name,
-                })) || []),
-              ].find((item) => item.value == formData.academicYearId)}
-              onChange={(selected) =>
-                setFormData({
-                  ...formData,
-                  academicYearId: selected?.value || "",
-                })
-              }
-            />
+            <select
+              value={formData.academicYearId}
+              onChange={(event) => setFormData({ ...formData, academicYearId: event.target.value })}
+              className="form-select"
+            >
+              <option value="">Select Academic Year</option>
+              {academicYears?.map((year) => (
+                <option key={year.id} value={year.id}>
+                  {year.year || year.name}
+                </option>
+              ))}
+            </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-2">
+            <label className="form-label">
               Class / Section <span className="text-red-500">*</span>
             </label>
-            <Select
-              className="w-full"
-              classNamePrefix="react-select"
-              options={[
-                { value: "", label: "Select Class" },
-                ...(classes?.map((cls) => ({
-                  value: cls.id,
-                  label: cls.classCode || cls.className,
-                })) || []),
-              ]}
-              value={[
-                { value: "", label: "Select Class" },
-                ...(classes?.map((cls) => ({
-                  value: cls.id,
-                  label: cls.classCode || cls.className,
-                })) || []),
-              ].find((item) => item.value == formData.classId)}
-              onChange={(selected) => {
-                const value = selected?.value || "";
+            <select
+              value={formData.classId}
+              onChange={(event) => {
+                const value = event.target.value;
                 setFormData({ ...formData, classId: value });
                 setStudentMarks({});
                 setCurrentPage(1);
                 if (value) dispatch(fetchStudentsByClass(value));
               }}
-            />
+              className="form-select"
+            >
+              <option value="">Select Class</option>
+              {classes?.map((cls) => (
+                <option key={cls.id} value={cls.id}>
+                  {cls.classCode || cls.className}
+                </option>
+              ))}
+            </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-2">
+            <label className="form-label">
               Subject <span className="text-red-500">*</span>
             </label>
-            <Select
-              className="w-full"
-              classNamePrefix="react-select"
-              options={[
-                { value: "", label: "Select Subject" },
-                ...(subjects?.map((subject) => ({
-                  value: subject.id,
-                  label: subject.subjectName || subject.name,
-                })) || []),
-              ]}
-              value={[
-                { value: "", label: "Select Subject" },
-                ...(subjects?.map((subject) => ({
-                  value: subject.id,
-                  label: subject.subjectName || subject.name,
-                })) || []),
-              ].find((item) => item.value == formData.subjectId)}
-              onChange={(selected) => {
-                const subjectId = selected?.value || "";
-                const additionalSubject = isAdditionalExamSubject(selected?.label || "");
+            <select
+              value={formData.subjectId}
+              onChange={(event) => {
+                const subjectId = event.target.value;
+                const subject = subjects?.find((item) => String(item.id) === String(subjectId));
+                const additionalSubject = isAdditionalExamSubject(subject);
                 setFormData((current) => ({ ...current, subjectId }));
                 if (additionalSubject) {
                   setStudentMarks((current) =>
@@ -369,36 +336,32 @@ const TeacherAddExamResults = () => {
                   );
                 }
               }}
-            />
+              className="form-select"
+            >
+              <option value="">Select Subject</option>
+              {subjects?.map((subject) => (
+                <option key={subject.id} value={subject.id}>
+                  {subject.subjectName || subject.name}
+                </option>
+              ))}
+            </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-2">
+            <label className="form-label">
               Exam Type <span className="text-red-500">*</span>
             </label>
-            <Select
-              className="w-full"
-              classNamePrefix="react-select"
-              options={[
-                { value: "", label: "Select Exam Type" },
-                ...(examinationTypes?.map((exam) => ({
-                  value: exam.id,
-                  label: exam.examType || exam.name,
-                })) || []),
-              ]}
-              value={[
-                { value: "", label: "Select Exam Type" },
-                ...(examinationTypes?.map((exam) => ({
-                  value: exam.id,
-                  label: exam.examType || exam.name,
-                })) || []),
-              ].find((item) => item.value == formData.examTypeId)}
-              onChange={(selected) =>
-                setFormData({
-                  ...formData,
-                  examTypeId: selected?.value || "",
-                })
-              }
-            />
+            <select
+              value={formData.examTypeId}
+              onChange={(event) => setFormData({ ...formData, examTypeId: event.target.value })}
+              className="form-select"
+            >
+              <option value="">Select Exam Type</option>
+              {examinationTypes?.map((exam) => (
+                <option key={exam.id} value={exam.id}>
+                  {exam.examType || exam.name}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 
@@ -435,35 +398,46 @@ const TeacherAddExamResults = () => {
         )}
 
         {/* Results Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-blue-50 border-b border-gray-200">
+        <div className="overflow-x-auto rounded-lg border border-gray-200">
+          <table className="min-w-[1180px] w-full table-fixed text-sm">
+            <colgroup>
+              <col className="w-[64px]" />
+              <col className="w-[132px]" />
+              <col className="w-[172px]" />
+              <col className="w-[124px]" />
+              <col className="w-[132px]" />
+              <col className="w-[132px]" />
+              <col className="w-[140px]" />
+              <col className="w-[140px]" />
+              <col className="w-[180px]" />
+            </colgroup>
+            <thead className="bg-indigo-50 border-b border-indigo-100">
               <tr>
-                <th className="px-4 py-3 text-left font-medium text-gray-700">
+                <th className="px-4 py-3 text-left text-xs font-semibold leading-tight text-gray-700">
                   S.No.
                 </th>
-                <th className="px-4 py-3 text-left font-medium text-gray-700">
+                <th className="px-4 py-3 text-left text-xs font-semibold leading-tight text-gray-700">
                   Admission Number
                 </th>
-                <th className="px-4 py-3 text-left font-medium text-gray-700">
+                <th className="px-4 py-3 text-left text-xs font-semibold leading-tight text-gray-700">
                   Student Name
                 </th>
-                <th className="px-4 py-3 text-left font-medium text-gray-700">
+                <th className="px-4 py-3 text-left text-xs font-semibold leading-tight text-gray-700">
                   Total Marks
                 </th>
-                <th className="px-4 py-3 text-left font-medium text-gray-700">
+                <th className="px-4 py-3 text-left text-xs font-semibold leading-tight text-gray-700">
                   Obtained Marks
                 </th>
-                <th className="px-4 py-3 text-left font-medium text-gray-700">
+                <th className="px-4 py-3 text-left text-xs font-semibold leading-tight text-gray-700">
                   Percentage (%)
                 </th>
-                <th className="px-4 py-3 text-left font-medium text-gray-700">
+                <th className="px-4 py-3 text-left text-xs font-semibold leading-tight text-gray-700">
                   Grade
                 </th>
-                <th className="px-4 py-3 text-left font-medium text-gray-700">
+                <th className="px-4 py-3 text-left text-xs font-semibold leading-tight text-gray-700">
                   Status
                 </th>
-                <th className="px-4 py-3 text-left font-medium text-gray-700">
+                <th className="px-4 py-3 text-left text-xs font-semibold leading-tight text-gray-700">
                   Remarks
                 </th>
               </tr>
@@ -474,14 +448,16 @@ const TeacherAddExamResults = () => {
                   key={student.id}
                   className="border-b border-gray-200 hover:bg-gray-50"
                 >
-                  <td className="px-4 py-3 text-gray-800">{student.sNo}</td>
-                  <td className="px-4 py-3 text-gray-800">
+                  <td className="px-4 py-3 align-middle text-center text-gray-800">
+                    {student.sNo}
+                  </td>
+                  <td className="px-4 py-3 align-left text-gray-800">
                     {student.admissionNumber}
                   </td>
-                  <td className="px-4 py-3 text-gray-800">
+                  <td className="px-4 py-3 align-middle text-gray-800">
                     {student.studentName}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 align-left">
                     <input
                       type="number"
                       min="0"
@@ -494,11 +470,11 @@ const TeacherAddExamResults = () => {
                           e.target.value
                         )
                       }
-                      className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="table-input min-w-[96px] text-left"
                       placeholder=""
                     />
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 align-middle">
                     <input
                       type="number"
                       min="0"
@@ -511,11 +487,11 @@ const TeacherAddExamResults = () => {
                           e.target.value
                         )
                       }
-                      className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="table-input min-w-[96px] text-left"
                       placeholder=""
                     />
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 align-middle">
                     {isAdditionalSubject ? (
                       <span className="text-xs font-medium text-gray-400">N/A</span>
                     ) : (
@@ -523,12 +499,12 @@ const TeacherAddExamResults = () => {
                         type="number"
                         value={studentMarks[student.id]?.percentage ?? ""}
                         readOnly
-                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        className="table-input min-w-[96px] text-left"
                         placeholder=""
                       />
                     )}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 align-middle">
                     {isAdditionalSubject ? (
                       <span className="text-xs font-medium text-gray-400">N/A</span>
                     ) : (
@@ -538,7 +514,7 @@ const TeacherAddExamResults = () => {
                           handleMarksChange(student.id, "grade", e.target.value)
                         }
                         disabled={!!studentMarks[student.id]?.percentage}
-                        className={`w-30 px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 ${studentMarks[student.id]?.percentage
+                        className={`form-select min-w-[112px] text-xs ${studentMarks[student.id]?.percentage
                           ? "bg-gray-100 cursor-not-allowed opacity-60"
                           : ""
                           }`}
@@ -554,7 +530,7 @@ const TeacherAddExamResults = () => {
                       </select>
                     )}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 align-middle">
                     {isAdditionalSubject ? (
                       <span className="text-xs font-medium text-gray-400">N/A</span>
                     ) : (
@@ -564,7 +540,7 @@ const TeacherAddExamResults = () => {
                           handleMarksChange(student.id, "status", e.target.value)
                         }
                         disabled={!!studentMarks[student.id]?.percentage}
-                        className={`w-30 px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 ${studentMarks[student.id]?.percentage
+                        className={`form-select min-w-[112px] text-xs ${studentMarks[student.id]?.percentage
                           ? "bg-gray-100 cursor-not-allowed opacity-60"
                           : ""
                           }`}
@@ -575,14 +551,14 @@ const TeacherAddExamResults = () => {
                       </select>
                     )}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 align-middle">
                     <input
                       type="text"
                       value={studentMarks[student.id]?.remarks || ""}
                       onChange={(e) =>
                         handleMarksChange(student.id, "remarks", e.target.value)
                       }
-                      className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="table-input min-w-[150px]"
                       placeholder=""
                     />
                   </td>

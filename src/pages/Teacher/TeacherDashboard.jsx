@@ -27,6 +27,7 @@ import {
   punchInTeacher,
   punchOutTeacher,
   fetchTeacherAttendance,
+  fetchTeacherPunchDetails,
   enrollTeacherFace,
   verifyTeacherFace,
 } from "../../features/teacher/Attendance/teacherAttendanceSlice";
@@ -119,15 +120,32 @@ export default function TeacherDashboard() {
   const { profileId, userId } = useSelector((state) => state.auth);
   const {
     todayAttendance,
+    punchDetails,
+    punchDetailsLoaded,
+    punchDetailsLoading,
     punchLoading,
     faceLoading,
   } = useSelector((state) => state.teacherAttendance) || {};
   const [currentTime, setCurrentTime] = useState(0);
   const hasCurrentTeacherAttendance =
     todayAttendance && String(todayAttendance.teacherId) === String(profileId);
-  const hasPunchedIn = Boolean(hasCurrentTeacherAttendance && todayAttendance.punchIn);
-  const hasPunchedOut = Boolean(hasCurrentTeacherAttendance && todayAttendance.punchOut);
+  const attendancePunchIn = hasCurrentTeacherAttendance
+    ? todayAttendance.punchIn
+    : null;
+  const attendancePunchOut = hasCurrentTeacherAttendance
+    ? todayAttendance.punchOut
+    : null;
+  const punchInValue = punchDetailsLoaded
+    ? punchDetails?.punchIn
+    : attendancePunchIn;
+  const punchOutValue = punchDetailsLoaded
+    ? punchDetails?.punchOut
+    : attendancePunchOut;
+  const hasPunchedIn = Boolean(punchInValue);
+  const hasPunchedOut = Boolean(punchOutValue);
   const isWorking = hasPunchedIn && !hasPunchedOut;
+  const canPunchIn = punchDetailsLoaded && !punchInValue;
+  const canPunchOut = punchDetailsLoaded && Boolean(punchInValue) && !punchOutValue;
 
   const webcamRef = useRef(null);
 
@@ -239,10 +257,13 @@ identitySuccess
   }, [dispatch]);
 
   useEffect(() => {
-    if (profileId) {
-      dispatch(fetchTeacherAttendance({ teacherId: profileId }));
-    }
+    if (!profileId) return;
+
+    const date = getLocalDateKey();
+    dispatch(fetchTeacherAttendance({ teacherId: profileId }));
+    dispatch(fetchTeacherPunchDetails({ teacherId: profileId, date }));
   }, [dispatch, profileId]);
+
 
   useEffect(() => {
     if (!isWorking) return;
@@ -392,6 +413,7 @@ identitySuccess
       toast.success("Punch-In recorded successfully");
       dispatch(fetchTeacherDashboard());
       dispatch(fetchTeacherAttendance({ teacherId: profileId }));
+      dispatch(fetchTeacherPunchDetails({ teacherId: profileId, date: todayStr }));
     } catch (err) {
       const msg =
         typeof err === "object"
@@ -426,7 +448,7 @@ identitySuccess
   };
 
   const runningWorkingHours = isWorking
-    ? formatWorkingHours(currentTime - new Date(todayAttendance.punchIn).getTime())
+    ? formatWorkingHours(currentTime - new Date(punchInValue).getTime())
     : null;
 
   const finalWorkingHours = todayAttendance?.productionHours != null
@@ -595,6 +617,7 @@ success
       toast.success("Punch-Out recorded successfully");
       dispatch(fetchTeacherDashboard());
       dispatch(fetchTeacherAttendance({ teacherId: profileId }));
+      dispatch(fetchTeacherPunchDetails({ teacherId: profileId, date: todayStr }));
     } catch (err) {
       const msg =
         typeof err === "object"
@@ -796,21 +819,21 @@ success
 
               {isWorking && (
                 <div className="w-full mb-4 text-center text-sm text-gray-600 space-y-1">
-                  <p>Punch In: {formatTime(todayAttendance.punchIn)}</p>
+                  <p>Punch In: {formatTime(punchInValue)}</p>
                   <p>Working Hours: {runningWorkingHours}</p>
                 </div>
               )}
 
               {hasPunchedOut && (
                 <div className="w-full mb-4 text-center text-sm text-gray-600 space-y-1">
-                  <p>Punch In: {formatTime(todayAttendance.punchIn)}</p>
-                  <p>Punch Out: {formatTime(todayAttendance.punchOut)}</p>
+                  <p>Punch In: {formatTime(punchInValue)}</p>
+                  <p>Punch Out: {formatTime(punchOutValue)}</p>
                   <p>Working Hours: {finalWorkingHours || "-"}</p>
-                  <p>Status: {todayAttendance.status || "-"}</p>
+                  <p>Status: {todayAttendance?.status || "-"}</p>
                 </div>
               )}
 
-              {isWorking ? (
+              {canPunchOut ? (
                 <button
                   onClick={handlePunchOut}
                   disabled={punchLoading || loadingLocation}
@@ -818,13 +841,21 @@ success
                 >
                   {loadingLocation ? "Getting Location..." : "Punch Out"}
                 </button>
-              ) : (
+              ) : canPunchIn ? (
                 <button
                   onClick={handlePunchIn}
                   disabled={punchLoading || loadingLocation}
                   className="w-full h-12 rounded-md bg-[#4F46E5] text-white font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {loadingLocation ? "Getting Location..." : "Punch In"}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  disabled
+                  className="w-full h-12 rounded-md bg-gray-300 text-gray-600 font-semibold disabled:cursor-not-allowed"
+                >
+                  {punchDetailsLoading ? "Checking Punch Status..." : "Today's Punch Completed"}
                 </button>
               )}
             </div>
@@ -842,7 +873,7 @@ success
             </h3>
             {/* FIXED: Custom dropdown replaces native <select> */}
             <CustomDropdown
-              options={["This Month"]}
+              options={["TODAY", "THIS_WEEK", "THIS_MONTH"]}
               value={attendanceFilter}
               onChange={setAttendanceFilter}
             />

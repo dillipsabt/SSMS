@@ -9,6 +9,7 @@ import {
   punchInTeacherAPI,
   punchOutTeacherAPI,
   fetchTeacherAttendanceAPI,
+  fetchTeacherPunchDetailsAPI,
   fetchTeacherAttendanceHistoryAPI,
   enrollTeacherFaceAPI,
   verifyTeacherFaceAPI,
@@ -30,6 +31,14 @@ export const fetchTeacherAttendance = createAppAsyncThunk(
     response: response?.data ?? response,
     teacherId,
   }))
+);
+
+export const fetchTeacherPunchDetails = createAppAsyncThunk(
+  "teacherAttendance/fetchPunchDetails",
+  ({ teacherId, date }) =>
+    fetchTeacherPunchDetailsAPI({ teacherId, date }).then((response) =>
+      response?.data ?? response
+    )
 );
 
 export const fetchTeacherAttendanceHistory = createAppAsyncThunk(
@@ -70,6 +79,9 @@ const initialState = {
   isPunchedIn: false,
   isPunchedOut: false,
   todayAttendance: null,
+  punchDetails: null,
+  punchDetailsLoaded: false,
+  punchDetailsLoading: false,
   attendanceList: [],
   totalPresent: 0,
   totalAbsent: 0,
@@ -172,6 +184,23 @@ const teacherAttendanceSlice = createSlice({
         state.totalHalfDay = payload.totalHalfDay || 0;
       })
       .addCase(fetchTeacherAttendance.rejected, handleRejected)
+
+      // ─── Current Punch Details ───
+      .addCase(fetchTeacherPunchDetails.pending, (state) => {
+        state.punchDetailsLoaded = false;
+        state.punchDetailsLoading = true;
+      })
+      .addCase(fetchTeacherPunchDetails.fulfilled, (state, action) => {
+        state.punchDetailsLoading = false;
+        state.punchDetailsLoaded = true;
+        state.punchDetails = action.payload || null;
+      })
+      .addCase(fetchTeacherPunchDetails.rejected, (state, action) => {
+        state.punchDetailsLoading = false;
+        state.punchDetailsLoaded = false;
+        state.punchDetails = null;
+        handleRejected(state, action);
+      })
 
       // ─── Attendance History ───
       .addCase(fetchTeacherAttendanceHistory.pending, handlePending)

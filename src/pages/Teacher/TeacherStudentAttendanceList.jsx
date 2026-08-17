@@ -1,6 +1,5 @@
 import React from "react";
-import Select from "react-select";
-import { UserCheck2, UserX2, Calendar } from "lucide-react";
+import { UserCheck2, UserX2 } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import {
   fetchStudentAttendence,
@@ -9,17 +8,25 @@ import {
 } from "../../features/teacher/StudentAttendence/studentAttendenceSlice";
 import { useEffect, useState } from "react";
 import Pagination from "../../components/common/Pagination";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
+
+const getTodayDate = () => {
+  const date = new Date();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${date.getFullYear()}-${month}-${day}`;
+};
+
+const getAdmissionNumber = (item) => item?.admissionNumber || item?.admissionNo || item?.rollNumber || "-";
 
 export default function StudentAttendanceSummary() {
-  const { attendenceDetails, loading, error, classes, subjects } = useSelector(
+  const { attendenceDetails, classes, subjects } = useSelector(
     (state) => state.studentAttendence,
   );
   const dispatch = useDispatch();
+  const { profileId } = useSelector((state) => state.auth || {});
   const [selectedClass, setSelectedClass] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("");
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(getTodayDate);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
@@ -28,7 +35,7 @@ export default function StudentAttendanceSummary() {
   const filteredData = data.filter(
     (item) =>
       item.studentName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.rollNumber?.toString().includes(searchTerm),
+      getAdmissionNumber(item).toString().toLowerCase().includes(searchTerm.toLowerCase()),
   );
   useEffect(() => {
     dispatch(fetchClasses());
@@ -36,16 +43,17 @@ export default function StudentAttendanceSummary() {
   }, [dispatch]);
 
   useEffect(() => {
-    if (selectedClass && selectedSubject && selectedDate) {
+    if (profileId && selectedClass && selectedSubject && selectedDate) {
       dispatch(
         fetchStudentAttendence({
+          teacherId: Number(profileId),
           classRoomId: selectedClass,
           subjectId: selectedSubject,
-          date: selectedDate?.toISOString().split("T")[0],
+          date: selectedDate,
         }),
       );
     }
-  }, [dispatch, selectedClass, selectedSubject, selectedDate]);
+  }, [dispatch, profileId, selectedClass, selectedSubject, selectedDate]);
 
   const presentCount = attendenceDetails?.totalPresent || 0;
   const absentCount = attendenceDetails?.totalAbsent || 0;
@@ -71,7 +79,7 @@ export default function StudentAttendanceSummary() {
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-2 gap-4 mb-4">
+        <div className="grid grid-cols-1 gap-3 mb-4 sm:grid-cols-2">
           {/* Present */}
           <div className="flex items-center justify-between bg-green-100 p-4 rounded-md">
             <div className="bg-green-200 p-2 rounded-md">
@@ -95,62 +103,60 @@ export default function StudentAttendanceSummary() {
           </div>
         </div>
         {/* Filters */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-3 gap-2">
-          <div className="text-sm text-gray-600 flex flex-col sm:flex-row gap-2 w-full md:w-auto">
-            <Select
-              options={classes?.map((item) => ({
-                value: item.id,
-                label: item.classCode || item.name,
-              }))}
-              value={classes
-                ?.map((item) => ({
-                  value: item.id,
-                  label: item.classCode || item.name,
-                }))
-                .find((item) => item.value === selectedClass)}
-              onChange={(selected) => setSelectedClass(selected?.value)}
-              placeholder="Select Class"
-              className="w-full text-sm"
-              classNamePrefix="react-select"
-            />
+        <div className="mb-4 grid grid-cols-1 items-end gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(320px,auto)]">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:col-span-2">
+            <select
+              value={selectedClass}
+              onChange={(event) => {
+                setSelectedClass(event.target.value);
+                setCurrentPage(1);
+              }}
+              className="form-select"
+            >
+              <option value="">Select Class</option>
+              {classes?.map((classItem) => (
+                <option key={classItem.classRoomId || classItem.id} value={classItem.classRoomId || classItem.id}>
+                  {classItem.classroomName || classItem.classCode || classItem.name}
+                </option>
+              ))}
+            </select>
 
-            <Select
-              options={subjects?.map((item) => ({
-                value: item.id,
-                label: item.subjectName || item.name,
-              }))}
-              value={subjects
-                ?.map((item) => ({
-                  value: item.id,
-                  label: item.subjectName || item.name,
-                }))
-                .find((item) => item.value === selectedSubject)}
-              onChange={(selected) => setSelectedSubject(selected?.value)}
-              placeholder="Select Subject"
-              className="w-full text-sm"
-              classNamePrefix="react-select"
-            />
+            <select
+              value={selectedSubject}
+              onChange={(event) => {
+                setSelectedSubject(event.target.value);
+                setCurrentPage(1);
+              }}
+              className="form-select"
+            >
+              <option value="">Select Subject</option>
+              {subjects?.map((subject) => (
+                <option key={subject.id} value={subject.id}>
+                  {subject.subjectName || subject.name}
+                </option>
+              ))}
+            </select>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
-            <DatePicker
-              selected={selectedDate}
-              onChange={(date) => setSelectedDate(date)}
-              dateFormat="dd-MM-yyyy"
-              placeholderText="Select Date"
-              popperPlacement="bottom-start"
-              className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full sm:w-auto"
-              wrapperClassName="w-full sm:w-auto"
+          <div className="flex flex-col gap-2 sm:flex-row xl:col-span-1">
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(event) => {
+                setSelectedDate(event.target.value);
+                setCurrentPage(1);
+              }}
+              className="form-input w-full sm:w-[150px]"
             />
             <input
               type="text"
-              placeholder="Search Name / Roll Number"
+              placeholder="Search Name / Admission Number"
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
                 setCurrentPage(1);
               }}
-              className="border border-gray-300 rounded-md px-3 py-2 text-sm"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
             />
             {/* <select className="border border-gray-300 rounded-md px-3 py-1 text-sm">
               <option>Export</option>
@@ -166,7 +172,7 @@ export default function StudentAttendanceSummary() {
             <thead className="bg-blue-50">
               <tr>
                 <th className="p-2 text-left">S.No.</th>
-                <th className="p-2 text-left">Roll Number</th>
+                <th className="p-2 text-left">Admission Number</th>
                 {/* <th className="p-2 text-left">Serial Number</th> */}
                 <th className="p-2 text-left">Student Name</th>
                 <th className="p-2 text-left">Status</th>
@@ -175,9 +181,9 @@ export default function StudentAttendanceSummary() {
             <tbody>
               {currentData.length > 0 ? (
                 currentData.map((item, index) => (
-                  <tr key={item.id} className="border-t border-gray-200">
+                  <tr key={item.id || item.studentId || `${item.admissionNumber}-${index}`} className="border-t border-gray-200">
                     <td className="p-2">{indexOfFirst + index + 1}</td>
-                    <td className="p-2">{item.rollNumber}</td>
+                    <td className="p-2">{getAdmissionNumber(item)}</td>
                     {/* <td className="p-2">{item.serialNumber}</td> */}
                     <td className="p-2">{item.studentName}</td>
                     <td className="p-2">

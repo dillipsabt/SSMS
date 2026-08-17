@@ -9,6 +9,12 @@ export const punchOutTeacherAPI = (data) =>
 export const fetchTeacherAttendanceAPI = (params) =>
   API.get("/teacher-attendance", { params, skipErrorToast: true });
 
+export const fetchTeacherPunchDetailsAPI = ({ teacherId, date }) =>
+  API.get("/teacher-attendance/get-punch-details", {
+    params: { teacherId, date },
+    skipErrorToast: true,
+  });
+
 export const fetchTeacherAttendanceHistoryAPI = (teacherId) =>
   API.get(`/teacher-attendance/teacher/${teacherId}`, {
     skipErrorToast: true,

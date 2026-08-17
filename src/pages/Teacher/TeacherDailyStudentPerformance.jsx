@@ -1,14 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import Select from "react-select";
 import {
     fetchSubjects,
     fetchClasses,
     fetchStudentByRollNumber,
     createPerformanceThunk,
-    updatePerformanceThunk,
     clearSuccess,
     clearStudentInfo
 } from "../../features/teacher/studentPerformance/performanceSlice";
@@ -142,16 +139,21 @@ const DEFAULT_NON_ACADEMICS = [
     },
 ];
 
+const getTodayDate = () => {
+    const today = new Date();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
+
+    return `${today.getFullYear()}-${month}-${day}`;
+};
+
 export default function TeacherDailyStudentPerformance() {
     const dispatch = useDispatch();
-    const navigate = useNavigate();
 
     const {
         subjects,
         classes,
         studentInfo,
-        studentLoading,
-        loading,
         error,
         success,
     } = useSelector(
@@ -168,7 +170,7 @@ export default function TeacherDailyStudentPerformance() {
         classSection: "",
         subject: "",
         subjectId: null,
-        date: new Date().toISOString().split("T")[0],
+        date: getTodayDate(),
         teacherComments: "",
         overallPerformance: "",
     });
@@ -232,14 +234,14 @@ export default function TeacherDailyStudentPerformance() {
         return "Poor";
     };
 
-    const resetForm = () => {
+    const resetForm = useCallback(() => {
         setFormData({
             studentRollNo: "",
             studentName: "",
             classSection: "",
             subject: "",
             subjectId: null,
-            date: "",
+            date: getTodayDate(),
             teacherComments: "",
             overallPerformance: "",
         });
@@ -262,7 +264,7 @@ export default function TeacherDailyStudentPerformance() {
                 ...item,
             }))
         );
-    };
+    }, [subjects]);
 
     /* =========================
           ACADEMIC TABLE
@@ -317,7 +319,7 @@ export default function TeacherDailyStudentPerformance() {
 
         dispatch(clearStudentInfo());
         dispatch(clearSuccess());
-    }, [success, dispatch, subjects]);
+    }, [success, dispatch, resetForm]);
 
     useEffect(() => {
         if (error && error !== null) {
@@ -495,10 +497,9 @@ export default function TeacherDailyStudentPerformance() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
 
                         {/* Roll Number */}
-                        <div>
-                            <label className="block text-sm font-medium text-[#334155] mb-2">
-                                Student Roll No
-                                <span className="text-red-500 ml-1">*</span>
+                        <div className="flex flex-col w-full min-w-0">
+                            <label className="form-label">
+                                Student Roll No <span className="text-red-500">*</span>
                             </label>
                             <input
                                 type="text"
@@ -519,15 +520,14 @@ export default function TeacherDailyStudentPerformance() {
                                     }
                                 }}
                                 placeholder="Enter Roll Number"
-                                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                className="form-input"
                             />
                         </div>
 
                         {/* Student Name */}
-                        <div>
-                            <label className="block text-sm font-medium text-[#334155] mb-2">
-                                Student Name
-                                <span className="text-red-500 ml-1">*</span>
+                        <div className="flex flex-col w-full min-w-0">
+                            <label className="form-label">
+                                Student Name <span className="text-red-500">*</span>
                             </label>
 
                             <input
@@ -537,66 +537,45 @@ export default function TeacherDailyStudentPerformance() {
                                 onChange={handleInputChange}
                                 readOnly
                                 placeholder="Student Name"
-                                className="w-full h-11 px-3 rounded-md border border-gray-300 text-sm "
+                                className="form-input"
                             />
                         </div>
 
                         {/* Class Section */}
-                        <div>
-                            <label className="block text-sm font-medium text-[#334155] mb-2">
-                                Class / Section
-                                <span className="text-red-500 ml-1">*</span>
+                        <div className="flex flex-col w-full min-w-0">
+                            <label className="form-label">
+                                Class / Section <span className="text-red-500">*</span>
                             </label>
 
-                            <Select
-                                isDisabled={true}
-                                className="w-full"
-                                classNamePrefix="react-select"
-                                menuPortalTarget={document.body}
-                                styles={{
-                                    menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-                                }}
-                                options={[
-                                    { value: "", label: "Select" },
-                                    ...(classes?.map((cls) => ({
-                                        value: cls.classCode,
-                                        label: cls.classCode,
-                                    })) || []),
-                                ]}
-                                value={[
-                                    { value: "", label: "Select" },
-                                    ...(classes?.map((cls) => ({
-                                        value: cls.classCode,
-                                        label: cls.classCode,
-                                    })) || []),
-                                ].find((item) => item.value === formData.classSection)}
-                                onChange={(selected) =>
-                                    setFormData({
-                                        ...formData,
-                                        classSection: selected?.value || "",
-                                    })
-                                }
-                            />
+                            <select
+                                name="classSection"
+                                value={formData.classSection}
+                                onChange={handleInputChange}
+                                disabled
+                                className="form-select"
+                            >
+                                <option value="">Select Class / Section</option>
+                                {classes?.map((cls) => (
+                                    <option key={cls.id || cls.classCode} value={cls.classCode}>
+                                        {cls.classCode}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
 
                         {/* Date */}
-                        <div>
-                            <label className="block text-sm font-medium text-[#334155] mb-2">
-                                Date
-                                <span className="text-red-500 ml-1">*</span>
+                        <div className="flex flex-col w-full min-w-0">
+                            <label className="form-label">
+                                Date <span className="text-red-500">*</span>
                             </label>
 
                             <input
                                 type="date"
+                                name="date"
                                 value={formData.date}
-                                onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        date: e.target.value,
-                                    })
-                                }
-                                max={new Date().toISOString().split("T")[0]}
-                                className="w-full h-11 px-3 rounded-md border border-gray-300 text-sm focus:outline-none focus:ring-2"
+                                onChange={handleInputChange}
+                                max={getTodayDate()}
+                                className="form-input"
                             />
                         </div>
 
@@ -604,44 +583,35 @@ export default function TeacherDailyStudentPerformance() {
 
                     {/* Subject Row */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mt-5">
-                        <div>
-                            <label className="block text-sm font-medium text-[#334155] mb-2">
-                                Subject
-                                <span className="text-red-500 ml-1">*</span>
+                        <div className="flex flex-col w-full min-w-0">
+                            <label className="form-label">
+                                Subject <span className="text-red-500">*</span>
                             </label>
 
-                            <Select
-                                className="w-full"
-                                classNamePrefix="react-select"
-                                menuPortalTarget={document.body}
-                                menuPlacement="auto"
-                                styles={{
-                                    menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                            <select
+                                name="subject"
+                                value={formData.subject}
+                                onChange={(event) => {
+                                    const value = event.target.value;
+                                    const selectedSubject = subjects?.find(
+                                        (subject) => subject.subjectName === value,
+                                    );
+
+                                    setFormData((prev) => ({
+                                        ...prev,
+                                        subject: value,
+                                        subjectId: selectedSubject?.id || null,
+                                    }));
                                 }}
-                                options={[
-                                    { value: "", subjectId: null, label: "Select Subject" },
-                                    ...(subjects?.map((subject) => ({
-                                        value: subject.subjectName,
-                                        subjectId: subject.id,
-                                        label: subject.subjectName,
-                                    })) || []),
-                                ]}
-                                value={[
-                                    { value: "", subjectId: null, label: "Select Subject" },
-                                    ...(subjects?.map((subject) => ({
-                                        value: subject.subjectName,
-                                        subjectId: subject.id,
-                                        label: subject.subjectName,
-                                    })) || []),
-                                ].find((item) => item.value === formData.subject)}
-                                onChange={(selected) =>
-                                    setFormData({
-                                        ...formData,
-                                        subject: selected?.value || "",
-                                        subjectId: selected?.subjectId || null,
-                                    })
-                                }
-                            />
+                                className="form-select"
+                            >
+                                <option value="">Select Subject</option>
+                                {subjects?.map((subject) => (
+                                    <option key={subject.id} value={subject.subjectName}>
+                                        {subject.subjectName}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
                     </div>
 
@@ -708,142 +678,90 @@ export default function TeacherDailyStudentPerformance() {
 
                                         {/* Handwriting */}
                                         <td className="border border-gray-300 px-3 py-2">
-                                            <Select
-                                                className="w-full min-w-[180px]"
-                                                classNamePrefix="react-select"
-                                                menuPortalTarget={document.body}
-                                                menuPlacement="auto"
-                                                menuShouldBlockScroll
-                                                styles={{
-                                                    menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-                                                }}
-                                                options={[
-                                                    { value: "", label: "Select" },
-                                                    ...ACADEMIC_OPTIONS.map((option) => ({
-                                                        value: option,
-                                                        label: option,
-                                                    })),
-                                                ]}
-                                                value={[
-                                                    { value: "", label: "Select" },
-                                                    ...ACADEMIC_OPTIONS.map((option) => ({
-                                                        value: option,
-                                                        label: option,
-                                                    })),
-                                                ].find((item) => item.value === row.handwriting)}
-                                                onChange={(selected) =>
+                                            <select
+                                                value={row.handwriting}
+                                                onChange={(event) =>
                                                     handleAcademicChange(
                                                         originalIndex,
                                                         "handwriting",
-                                                        selected?.value || ""
+                                                        event.target.value,
                                                     )
                                                 }
-                                            />
+                                                className="form-select min-w-[180px]"
+                                            >
+                                                <option value="">Select</option>
+                                                {ACADEMIC_OPTIONS.map((option) => (
+                                                    <option key={option} value={option}>
+                                                        {option}
+                                                    </option>
+                                                ))}
+                                            </select>
                                         </td>
 
                                         {/* Understanding */}
                                         <td className="border border-gray-300 px-3 py-2">
-                                            <Select
-                                                className="w-full min-w-[180px]"
-                                                classNamePrefix="react-select"
-                                                menuPortalTarget={document.body}
-                                                menuPlacement="auto"
-                                                menuShouldBlockScroll
-                                                styles={{
-                                                    menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-                                                }}
-                                                options={[
-                                                    { value: "", label: "Select" },
-                                                    ...ACADEMIC_OPTIONS.map((option) => ({
-                                                        value: option,
-                                                        label: option,
-                                                    })),
-                                                ]}
-                                                value={[
-                                                    { value: "", label: "Select" },
-                                                    ...ACADEMIC_OPTIONS.map((option) => ({
-                                                        value: option,
-                                                        label: option,
-                                                    })),
-                                                ].find((item) => item.value === row.understanding)}
-                                                onChange={(selected) =>
+                                            <select
+                                                value={row.understanding}
+                                                onChange={(event) =>
                                                     handleAcademicChange(
                                                         originalIndex,
                                                         "understanding",
-                                                        selected?.value || ""
+                                                        event.target.value,
                                                     )
                                                 }
-                                            />
+                                                className="form-select min-w-[180px]"
+                                            >
+                                                <option value="">Select</option>
+                                                {ACADEMIC_OPTIONS.map((option) => (
+                                                    <option key={option} value={option}>
+                                                        {option}
+                                                    </option>
+                                                ))}
+                                            </select>
                                         </td>
 
                                         {/* Responding */}
                                         <td className="border border-gray-300 px-3 py-2">
-                                            <Select
-                                                className="w-full min-w-[180px]"
-                                                classNamePrefix="react-select"
-                                                menuPortalTarget={document.body}
-                                                menuPlacement="auto"
-                                                menuShouldBlockScroll
-                                                styles={{
-                                                    menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-                                                }}
-                                                options={[
-                                                    { value: "", label: "Select" },
-                                                    ...ACADEMIC_OPTIONS.map((option) => ({
-                                                        value: option,
-                                                        label: option,
-                                                    })),
-                                                ]}
-                                                value={[
-                                                    { value: "", label: "Select" },
-                                                    ...ACADEMIC_OPTIONS.map((option) => ({
-                                                        value: option,
-                                                        label: option,
-                                                    })),
-                                                ].find((item) => item.value === row.responding)}
-                                                onChange={(selected) =>
+                                            <select
+                                                value={row.responding}
+                                                onChange={(event) =>
                                                     handleAcademicChange(
                                                         originalIndex,
                                                         "responding",
-                                                        selected?.value || ""
+                                                        event.target.value,
                                                     )
                                                 }
-                                            />
+                                                className="form-select min-w-[180px]"
+                                            >
+                                                <option value="">Select</option>
+                                                {ACADEMIC_OPTIONS.map((option) => (
+                                                    <option key={option} value={option}>
+                                                        {option}
+                                                    </option>
+                                                ))}
+                                            </select>
                                         </td>
 
                                         {/* Classwork & Homework */}
                                         <td className="border border-gray-300 px-3 py-2">
-                                            <Select
-                                                className="w-full min-w-[180px]"
-                                                classNamePrefix="react-select"
-                                                menuPortalTarget={document.body}
-                                                menuPlacement="auto"
-                                                menuShouldBlockScroll
-                                                styles={{
-                                                    menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-                                                }}
-                                                options={[
-                                                    { value: "", label: "Select" },
-                                                    ...ACADEMIC_OPTIONS.map((option) => ({
-                                                        value: option,
-                                                        label: option,
-                                                    })),
-                                                ]}
-                                                value={[
-                                                    { value: "", label: "Select" },
-                                                    ...ACADEMIC_OPTIONS.map((option) => ({
-                                                        value: option,
-                                                        label: option,
-                                                    })),
-                                                ].find((item) => item.value === row.classworkHomework)}
-                                                onChange={(selected) =>
+                                            <select
+                                                value={row.classworkHomework}
+                                                onChange={(event) =>
                                                     handleAcademicChange(
                                                         originalIndex,
                                                         "classworkHomework",
-                                                        selected?.value || ""
+                                                        event.target.value,
                                                     )
                                                 }
-                                            />
+                                                className="form-select min-w-[180px]"
+                                            >
+                                                <option value="">Select</option>
+                                                {ACADEMIC_OPTIONS.map((option) => (
+                                                    <option key={option} value={option}>
+                                                        {option}
+                                                    </option>
+                                                ))}
+                                            </select>
                                         </td>
                                     </tr>
                                 ))}
@@ -902,37 +820,24 @@ export default function TeacherDailyStudentPerformance() {
 
                                         {/* Grade */}
                                         <td className="border border-gray-300 px-3 py-2">
-                                            <Select
-                                                className="w-full min-w-[160px]"
-                                                classNamePrefix="react-select"
-                                                menuPortalTarget={document.body}
-                                                menuPlacement="auto"
-                                                menuShouldBlockScroll
-                                                styles={{
-                                                    menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-                                                }}
-                                                options={[
-                                                    { value: "", label: "Select Grade" },
-                                                    ...GRADE_OPTIONS.map((grade) => ({
-                                                        value: grade,
-                                                        label: GRADE_ENUM_MAP[grade] || grade,
-                                                    })),
-                                                ]}
-                                                value={[
-                                                    { value: "", label: "Select Grade" },
-                                                    ...GRADE_OPTIONS.map((grade) => ({
-                                                        value: grade,
-                                                        label: GRADE_ENUM_MAP[grade] || grade,
-                                                    })),
-                                                ].find((item) => item.value === row.grade)}
-                                                onChange={(selected) =>
+                                            <select
+                                                value={row.grade}
+                                                onChange={(event) =>
                                                     handleNonAcademicChange(
                                                         index,
                                                         "grade",
-                                                        selected?.value || ""
+                                                        event.target.value,
                                                     )
                                                 }
-                                            />
+                                                className="form-select min-w-[160px]"
+                                            >
+                                                <option value="">Select Grade</option>
+                                                {GRADE_OPTIONS.map((grade) => (
+                                                    <option key={grade} value={grade}>
+                                                        {GRADE_ENUM_MAP[grade] || grade}
+                                                    </option>
+                                                ))}
+                                            </select>
                                         </td>
 
                                         {/* Remarks */}
@@ -1001,37 +906,20 @@ export default function TeacherDailyStudentPerformance() {
                         <span className="text-red-500 ml-1">*</span>
                     </label>
 
-                    <Select
-                        isDisabled={true}
-                        className="w-full md:w-[300px]"
-                        classNamePrefix="react-select"
-                        menuPortalTarget={document.body}
-                        styles={{
-                            menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-                        }}
-                        options={[
-                            { value: "", label: "Select Performance" },
-                            ...OVERALL_PERFORMANCE_OPTIONS.map((option) => ({
-                                value: option,
-                                label: option,
-                            })),
-                        ]}
-                        value={[
-                            { value: "", label: "Select Performance" },
-                            ...OVERALL_PERFORMANCE_OPTIONS.map((option) => ({
-                                value: option,
-                                label: option,
-                            })),
-                        ].find(
-                            (item) => item.value === formData.overallPerformance
-                        )}
-                        onChange={(selected) =>
-                            setFormData({
-                                ...formData,
-                                overallPerformance: selected?.value || "",
-                            })
-                        }
-                    />
+                    <select
+                        name="overallPerformance"
+                        value={formData.overallPerformance}
+                        onChange={handleInputChange}
+                        disabled
+                        className="form-select w-full md:w-[300px]"
+                    >
+                        <option value="">Select Performance</option>
+                        {OVERALL_PERFORMANCE_OPTIONS.map((option) => (
+                            <option key={option} value={option}>
+                                {option}
+                            </option>
+                        ))}
+                    </select>
                 </div>
 
                 {/* Submit Button */}

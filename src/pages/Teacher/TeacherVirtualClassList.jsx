@@ -105,7 +105,14 @@ export default function TeacherVirtualClassList() {
   const [openMenu, setOpenMenu] = useState(null);
   const [publishToStudent, setPublishToStudent] = useState(true);
   const [publishNote, setPublishNote] = useState("Ready to publish.");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const navigate = useNavigate();
+
+  const totalPages = Math.max(1, Math.ceil(classes.length / rowsPerPage));
+  const visiblePage = Math.min(currentPage, totalPages);
+  const startIndex = (visiblePage - 1) * rowsPerPage;
+  const paginatedClasses = classes.slice(startIndex, startIndex + rowsPerPage);
 
   const handleOpenDetails = (item) => {
     setSelectedClass(item);
@@ -184,14 +191,14 @@ export default function TeacherVirtualClassList() {
               </tr>
             </thead>
             <tbody>
-              {classes.map((item, index) => {
+              {paginatedClasses.map((item, index) => {
                 const statusStyle = getStatusStyle(item.status);
                 return (
                   <tr
                     key={item.id}
                     className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
                   >
-                    <td className="p-3 text-gray-600">{index + 1}</td>
+                    <td className="p-3 text-gray-600">{startIndex + index + 1}</td>
                     <td className="p-3">
                       <div className="font-medium text-gray-800">
                         {item.topic}
@@ -289,7 +296,7 @@ export default function TeacherVirtualClassList() {
 
         {/* Mobile Cards */}
         <div className="md:hidden px-3 pb-3 space-y-3">
-          {classes.map((item, index) => {
+          {paginatedClasses.map((item) => {
             const statusStyle = getStatusStyle(item.status);
             return (
               <div
@@ -362,17 +369,36 @@ export default function TeacherVirtualClassList() {
 
         {/* Pagination */}
         <div className="flex justify-end items-center gap-2 sm:gap-3 p-3 sm:p-4 flex-wrap">
-          <button className="px-3 py-1.5 border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50">
+          <button
+            type="button"
+            onClick={() => setCurrentPage(Math.max(1, visiblePage - 1))}
+            disabled={visiblePage === 1}
+            className="px-3 py-1.5 border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50"
+          >
             Prev
           </button>
-          <button className="px-3 py-1.5 bg-indigo-600 text-white rounded text-sm hover:bg-indigo-700">
+          <button
+            type="button"
+            onClick={() => setCurrentPage(Math.min(totalPages, visiblePage + 1))}
+            disabled={visiblePage === totalPages}
+            className="px-3 py-1.5 bg-indigo-600 text-white rounded text-sm hover:bg-indigo-700 disabled:opacity-50"
+          >
             Next
           </button>
-          <span className="text-sm text-gray-600">Page: 1 of 1</span>
-          <select className="border border-gray-200 px-7 gap-10 py-1.5 rounded text-sm">
-            <option>10</option>
-            <option>25</option>
-            <option>50</option>
+          <span className="text-sm text-gray-600">
+            Page: {visiblePage} of {totalPages}
+          </span>
+          <select
+            value={rowsPerPage}
+            onChange={(event) => {
+              setRowsPerPage(Number(event.target.value));
+              setCurrentPage(1);
+            }}
+            className="form-select w-auto"
+          >
+            <option value={10}>10</option>
+            <option value={25}>25</option>
+            <option value={50}>50</option>
           </select>
         </div>
       </div>

@@ -7,7 +7,6 @@ import { Eye, X } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 import Pagination from "../../components/common/Pagination";
-import Select from "react-select";
 import useToastMessage from "../../utils/useToastMessage";
 
 import {
@@ -30,8 +29,6 @@ const TeacherResultsList = () => {
 
   const [showStudentResultsModal, setShowStudentResultsModal] =
     useState(false);
-
-  const [selectedExam, setSelectedExam] = useState(null);
 
   const [filters, setFilters] = useState({
     academicYearId: "",
@@ -110,10 +107,12 @@ const TeacherResultsList = () => {
       ...prev,
       [key]: value,
     }));
+    setCurrentPage(1);
   };
 
   const handleApplyFilters = () => {
     const filterParams = {};
+    setCurrentPage(1);
 
     if (filters.academicYearId)
       filterParams.academicYearId = parseInt(
@@ -143,8 +142,9 @@ const TeacherResultsList = () => {
     indexOfLast
   );
 
-  const totalPages = Math.ceil(
-    teacherExamResults.length / rowsPerPage
+  const totalPages = Math.max(
+    1,
+    Math.ceil(teacherExamResults.length / rowsPerPage),
   );
 
   return (
@@ -168,108 +168,66 @@ const TeacherResultsList = () => {
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
           {/* Academic Year */}
           <div>
-            <Select
-              className="w-full"
-              classNamePrefix="react-select"
-              options={[
-                { value: "", label: "Academic Year" },
-                ...(academicYears?.map((year) => ({
-                  value: year.id,
-                  label: year.year,
-                })) || []),
-              ]}
-              value={[
-                { value: "", label: "Academic Year" },
-                ...(academicYears?.map((year) => ({
-                  value: year.id,
-                  label: year.year,
-                })) || []),
-              ].find((item) => item.value == filters.academicYearId)}
-              onChange={(selected) =>
-                handleFilterChange(
-                  "academicYearId",
-                  selected?.value || ""
-                )
-              }
-            />
+            <select
+              value={filters.academicYearId}
+              onChange={(event) => handleFilterChange("academicYearId", event.target.value)}
+              className="form-select"
+            >
+              <option value="">Academic Year</option>
+              {academicYears?.map((year) => (
+                <option key={year.id} value={year.id}>
+                  {year.year}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Class */}
           <div>
-            <Select
-              className="w-full"
-              classNamePrefix="react-select"
-              options={[
-                { value: "", label: "Class" },
-                ...(classes?.map((cls) => ({
-                  value: cls.id,
-                  label: cls.classCode || cls.className,
-                })) || []),
-              ]}
-              value={[
-                { value: "", label: "Class" },
-                ...(classes?.map((cls) => ({
-                  value: cls.id,
-                  label: cls.classCode || cls.className,
-                })) || []),
-              ].find((item) => item.value == filters.classId)}
-              onChange={(selected) =>
-                handleFilterChange("classId", selected?.value || "")
-              }
-            />
+            <select
+              value={filters.classId}
+              onChange={(event) => handleFilterChange("classId", event.target.value)}
+              className="form-select"
+            >
+              <option value="">Class</option>
+              {classes?.map((cls) => (
+                <option key={cls.id} value={cls.id}>
+                  {cls.classCode || cls.className}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Subject */}
           <div>
-            <Select
-              className="w-full"
-              classNamePrefix="react-select"
-              options={[
-                { value: "", label: "Subject" },
-                ...(subjects?.map((subject) => ({
-                  value: subject.id,
-                  label: subject.subjectName || subject.name,
-                })) || []),
-              ]}
-              value={[
-                { value: "", label: "Subject" },
-                ...(subjects?.map((subject) => ({
-                  value: subject.id,
-                  label: subject.subjectName || subject.name,
-                })) || []),
-              ].find((item) => item.value == filters.subjectId)}
-              onChange={(selected) =>
-                handleFilterChange("subjectId", selected?.value || "")
-              }
-            />
+            <select
+              value={filters.subjectId}
+              onChange={(event) => handleFilterChange("subjectId", event.target.value)}
+              className="form-select"
+            >
+              <option value="">Subject</option>
+              {subjects?.map((subject) => (
+                <option key={subject.id} value={subject.id}>
+                  {subject.subjectName || subject.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Exam Type */}
           <div>
-            <Select
-              className="w-full"
-              classNamePrefix="react-select"
-              options={[
-                { value: "", label: "Exam Type" },
-                ...(examinationTypes?.map((exam) => ({
-                  value: exam.id,
-                  label: exam.examType || exam.name,
-                })) || []),
-              ]}
-              value={[
-                { value: "", label: "Exam Type" },
-                ...(examinationTypes?.map((exam) => ({
-                  value: exam.id,
-                  label: exam.examType || exam.name,
-                })) || []),
-              ].find((item) => item.value == filters.examinationTypeId)}
-              onChange={(selected) =>
-                handleFilterChange(
-                  "examinationTypeId",
-                  selected?.value || ""
-                )
-              }
-            />
+            <select
+              value={filters.examinationTypeId}
+              onChange={(event) => handleFilterChange("examinationTypeId", event.target.value)}
+              className="form-select"
+            >
+              <option value="">Exam Type</option>
+              {examinationTypes?.map((exam) => (
+                <option key={exam.id} value={exam.id}>
+                  {exam.examType || exam.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Apply Button */}
@@ -378,19 +336,13 @@ const TeacherResultsList = () => {
             </div>
 
             {/* Pagination */}
-            <div className="flex justify-between items-center mt-4">
-              <span className="text-sm text-gray-600">
-                Page {currentPage} of {totalPages}
-              </span>
-
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                rowsPerPage={rowsPerPage}
-                onPageChange={setCurrentPage}
-                onRowsPerPageChange={setRowsPerPage}
-              />
-            </div>
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              rowsPerPage={rowsPerPage}
+              setCurrentPage={setCurrentPage}
+              setRowsPerPage={setRowsPerPage}
+            />
           </>
         )}
 

@@ -7,12 +7,14 @@ const Pagination = ({
   setCurrentPage,
   setRowsPerPage,
 }) => {
+  const pageCount = Math.max(1, totalPages || 0);
+
   return (
     <div className="flex flex-wrap justify-center sm:justify-end items-center gap-2 mt-4 text-[12px]">
       
       {/* PREV */}
       <button
-        disabled={currentPage === 1}
+        disabled={currentPage <= 1}
         onClick={() => setCurrentPage((prev) => prev - 1)}
         className="border px-2 py-[4px] rounded text-gray-600 disabled:opacity-50"
       >
@@ -21,7 +23,7 @@ const Pagination = ({
 
       {/* NEXT */}
       <button
-        disabled={currentPage === totalPages}
+        disabled={currentPage >= pageCount}
         onClick={() => setCurrentPage((prev) => prev + 1)}
         className="bg-brand-600 text-white px-3 py-[4px] rounded disabled:opacity-50"
       >
@@ -30,7 +32,7 @@ const Pagination = ({
 
       {/* PAGE INFO */}
       <span className="text-gray-500 whitespace-nowrap">
-        Page: {currentPage} of {totalPages || 1}
+        Page: {Math.min(Math.max(currentPage, 1), pageCount)} of {pageCount}
       </span>
 
       {/* ROWS */}

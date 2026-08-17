@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { Search } from "lucide-react";
 import Pagination from "../../components/common/Pagination";
 
@@ -108,25 +108,23 @@ export default function TeacherVirtualClassJoinedList() {
     },
   ];
 
-  const filteredData = useMemo(() => {
-    return joinedList.filter((item) => {
-      const teacher = item.instructor
-        .toLowerCase()
-        .includes(searchText.toLowerCase());
+  const filteredData = joinedList.filter((item) => {
+    const teacher = item.instructor
+      .toLowerCase()
+      .includes(searchText.toLowerCase());
 
-      const cls = selectedClass ? item.className === selectedClass : true;
+    const cls = selectedClass ? item.className === selectedClass : true;
 
-      const subject = selectedSubject ? item.subject === selectedSubject : true;
+    const subject = selectedSubject ? item.subject === selectedSubject : true;
 
-      const date = selectedDate
-        ? new Date(item.date.split("-").reverse().join("-"))
-            .toISOString()
-            .slice(0, 10) === selectedDate
-        : true;
+    const date = selectedDate
+      ? new Date(item.date.split("-").reverse().join("-"))
+          .toISOString()
+          .slice(0, 10) === selectedDate
+      : true;
 
-      return teacher && cls && subject && date;
-    });
-  }, [searchText, selectedClass, selectedSubject, selectedDate]);
+    return teacher && cls && subject && date;
+  });
 
   const totalPages = Math.ceil(filteredData.length / pageSize);
 
@@ -172,7 +170,10 @@ export default function TeacherVirtualClassJoinedList() {
                 type="text"
                 placeholder="Search Teacher Name"
                 value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
+                onChange={(e) => {
+                  setSearchText(e.target.value);
+                  setCurrentPage(1);
+                }}
                 className="w-full h-10 border border-gray-300 rounded-md pl-10 pr-3 text-sm"
               />
             </div>
@@ -181,7 +182,10 @@ export default function TeacherVirtualClassJoinedList() {
               <input
                 type="date"
                 value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
+                onChange={(e) => {
+                  setSelectedDate(e.target.value);
+                  setCurrentPage(1);
+                }}
                 className="
 w-full
 h-10
@@ -198,7 +202,10 @@ outline-none
 
             <select
               value={selectedClass}
-              onChange={(e) => setSelectedClass(e.target.value)}
+              onChange={(e) => {
+                setSelectedClass(e.target.value);
+                setCurrentPage(1);
+              }}
               className="w-full h-10 border border-gray-300 rounded-md px-3 text-sm"
             >
               <option value="">Select Class</option>
@@ -214,7 +221,10 @@ outline-none
 
             <select
               value={selectedSubject}
-              onChange={(e) => setSelectedSubject(e.target.value)}
+              onChange={(e) => {
+                setSelectedSubject(e.target.value);
+                setCurrentPage(1);
+              }}
               className="w-full h-10 border border-gray-300 rounded-md px-3 text-sm"
             >
               <option value="">Select Subject</option>

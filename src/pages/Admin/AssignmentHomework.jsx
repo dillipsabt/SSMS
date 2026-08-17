@@ -60,10 +60,6 @@ export default function AssignmentHomework() {
     dispatch(getHomeworkSubmissionsAsync());
   }, [dispatch]);
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [search]);
-
   const openModal = (item) => {
     setSelected(item);
     setOpen(true);
@@ -109,22 +105,25 @@ export default function AssignmentHomework() {
             <input
               placeholder="Search Teacher Name"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="border border-gray-300 px-2 py-[5px] text-[12px] rounded w-[170px] focus:outline-none focus:border-brand-600"
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="form-input w-[170px] text-xs"
             />
             <input
               type="date"
               value={dateFilter}
               onChange={(e) => setDate(e.target.value)}
-              className="border border-gray-300 px-2 py-[5px] text-[12px] rounded focus:outline-none focus:border-brand-600"
+              className="form-input w-auto text-xs"
             />
-            <select className="border border-gray-300 px-2 py-[5px] text-[12px] rounded focus:outline-none">
+            <select className="form-select w-auto text-xs" defaultValue="">
               <option value="">Filter</option>
               <option>Completed</option>
               <option>Pending</option>
               <option>Missed</option>
             </select>
-            <select className="border border-gray-300 px-2 py-[5px] text-[12px] rounded focus:outline-none">
+            <select className="form-select w-auto text-xs" defaultValue="">
               <option value="">Import</option>
               <option>Export CSV</option>
               <option>Export PDF</option>
