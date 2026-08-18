@@ -150,10 +150,6 @@ export default function StudentIdCard() {
               <p className="text-[clamp(5px,1.55vw,9px)] leading-none text-[#f5f1ff]">Date of Birth</p>
               <p className="mt-[9%] truncate text-[clamp(6px,1.8vw,10px)] font-bold leading-none">{valueOrDash(dateOfBirth)}</p>
             </div>
-            <div className="min-w-0">
-              <p className="text-[clamp(5px,1.55vw,9px)] leading-none text-[#f5f1ff]">Blood Group</p>
-              <p className="mt-[9%] truncate text-[clamp(6px,1.8vw,10px)] font-bold leading-none">{valueOrDash(studentDetails.bloodGroup)}</p>
-            </div>
           </div>
 
           <div className="absolute inset-x-[14.8%] top-[84.6%] h-px bg-[#dcc9ff]" />

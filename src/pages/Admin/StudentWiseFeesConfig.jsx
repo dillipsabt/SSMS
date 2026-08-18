@@ -12,6 +12,7 @@ import {
   clearError,
   clearSuccess,
 } from "../../features/Admin/StudentWiseFees/studentWiseFeesSlice";
+import { fetchAcademicYears } from "../../features/Admin/AcademicYear/academicYearSlice";
 
 const StudentWiseFeesConfig = () => {
   const dispatch = useDispatch();
@@ -22,8 +23,12 @@ const StudentWiseFeesConfig = () => {
     error,
     success,
   } = useSelector((state) => state.studentWiseFees);
+  const { academicYears = [] } = useSelector(
+    (state) => state.academicYear || {}
+  );
 
   const [formData, setFormData] = useState({
+    academicYearId: "",
     admissionNo: "",
     studentName: "",
     class: "",
@@ -48,6 +53,7 @@ const StudentWiseFeesConfig = () => {
   useEffect(() => {
     dispatch(clearSuccess());
     dispatch(clearError());
+    dispatch(fetchAcademicYears());
   }, [dispatch]);
 
   useEffect(() => {
@@ -133,12 +139,17 @@ const StudentWiseFeesConfig = () => {
   };
 
   const handleSave = async () => {
-    if (!formData.admissionNo || !formData.concessionFees) {
+    if (
+      !formData.academicYearId ||
+      !formData.admissionNo ||
+      !formData.concessionFees
+    ) {
       toast.error("Please fill all required fields");
       return;
     }
 
     const saveData = {
+      academicYearId: Number(formData.academicYearId),
       admissionNo: formData.admissionNo,
       concessionFees: parseFloat(formData.concessionFees),
     };
@@ -166,6 +177,7 @@ const StudentWiseFeesConfig = () => {
 
       // Reset Form
       setFormData({
+        academicYearId: "",
         admissionNo: "",
         studentName: "",
         class: "",
@@ -178,6 +190,9 @@ const StudentWiseFeesConfig = () => {
       // Refresh Table
       dispatch(
         fetchStudentWiseFeesAsync({
+          startDate: dateRange.startDate,
+          endDate: dateRange.endDate,
+          search: searchQuery,
           page: 0,
           size: 10,
         })
@@ -196,6 +211,7 @@ const StudentWiseFeesConfig = () => {
   const handleEdit = (row) => {
     setEditingId(row.id);
     setFormData({
+      academicYearId: row.academicYearId || row.academicYear?.id || "",
       admissionNo: row.admissionNo,
       studentName: row.studentName,
       class: row.className,
@@ -249,7 +265,7 @@ const StudentWiseFeesConfig = () => {
         <div className="card-section">Add Student Fees Configure</div>
 
         <div className="p-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
             <div>
               <label className="form-label">admission Number *</label>
               <input
@@ -260,6 +276,23 @@ const StudentWiseFeesConfig = () => {
                 placeholder="0/1"
                 className="form-input"
               />
+            </div>
+
+            <div>
+              <label className="form-label">Academic Year *</label>
+              <select
+                name="academicYearId"
+                value={formData.academicYearId}
+                onChange={handleFormChange}
+                className="form-select"
+              >
+                <option value="">Select Academic Year</option>
+                {academicYears.map((academicYear) => (
+                  <option key={academicYear.id} value={academicYear.id}>
+                    {academicYear.year || academicYear.academicYear || academicYear.name}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div>

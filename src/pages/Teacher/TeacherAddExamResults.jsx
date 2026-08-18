@@ -64,7 +64,13 @@ const TeacherAddExamResults = () => {
     clearError,
   });
 
-  const normalizeStudents = (studentsByClass || []).map((student, index) => ({
+  const toArray = (value) =>
+    Array.isArray(value) ? value : Array.isArray(value?.data) ? value.data : [];
+  const academicYearOptions = toArray(academicYears);
+  const classOptions = toArray(classes);
+  const subjectOptions = toArray(subjects);
+  const examinationTypeOptions = toArray(examinationTypes);
+  const normalizeStudents = toArray(studentsByClass).map((student, index) => ({
     id: student.studentId || student.id,
     sNo: index + 1,
     admissionNumber: student.admissionNumber,
@@ -81,7 +87,7 @@ const TeacherAddExamResults = () => {
   const indexOfFirst = indexOfLast - rowsPerPage;
   const currentStudents = filteredStudents.slice(indexOfFirst, indexOfLast);
   const totalPages = Math.ceil(filteredStudents.length / rowsPerPage);
-  const selectedSubject = (subjects || []).find(
+  const selectedSubject = subjectOptions.find(
     (subject) => String(subject.id) === String(formData.subjectId),
   );
   const isAdditionalSubject = isAdditionalExamSubject(selectedSubject);
@@ -284,7 +290,7 @@ const TeacherAddExamResults = () => {
               className="form-select"
             >
               <option value="">Select Academic Year</option>
-              {academicYears?.map((year) => (
+              {academicYearOptions.map((year) => (
                 <option key={year.id} value={year.id}>
                   {year.year || year.name}
                 </option>
@@ -307,7 +313,7 @@ const TeacherAddExamResults = () => {
               className="form-select"
             >
               <option value="">Select Class</option>
-              {classes?.map((cls) => (
+              {classOptions.map((cls) => (
                 <option key={cls.id} value={cls.id}>
                   {cls.classCode || cls.className}
                 </option>
@@ -322,7 +328,7 @@ const TeacherAddExamResults = () => {
               value={formData.subjectId}
               onChange={(event) => {
                 const subjectId = event.target.value;
-                const subject = subjects?.find((item) => String(item.id) === String(subjectId));
+                const subject = subjectOptions.find((item) => String(item.id) === String(subjectId));
                 const additionalSubject = isAdditionalExamSubject(subject);
                 setFormData((current) => ({ ...current, subjectId }));
                 if (additionalSubject) {
@@ -339,7 +345,7 @@ const TeacherAddExamResults = () => {
               className="form-select"
             >
               <option value="">Select Subject</option>
-              {subjects?.map((subject) => (
+              {subjectOptions.map((subject) => (
                 <option key={subject.id} value={subject.id}>
                   {subject.subjectName || subject.name}
                 </option>
@@ -356,7 +362,7 @@ const TeacherAddExamResults = () => {
               className="form-select"
             >
               <option value="">Select Exam Type</option>
-              {examinationTypes?.map((exam) => (
+              {examinationTypeOptions.map((exam) => (
                 <option key={exam.id} value={exam.id}>
                   {exam.examType || exam.name}
                 </option>
@@ -366,15 +372,15 @@ const TeacherAddExamResults = () => {
         </div>
 
         {/* Bulk Upload Button */}
-        <div className="mb-6">
-          <button
-            onClick={() => setShowBulkUploadModal(true)}
-            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
-          >
-            <Upload size={16} />
-            Bulk UploadSheet
-          </button>
-        </div>
+          {/* <div className="mb-6">
+            <button
+              onClick={() => setShowBulkUploadModal(true)}
+              className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+            >
+              <Upload size={16} />
+              Bulk UploadSheet
+            </button>
+          </div> */}
 
         {/* Search Bar */}
         <div className="mb-6">

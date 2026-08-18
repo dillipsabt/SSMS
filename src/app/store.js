@@ -53,6 +53,7 @@ import noticeBoardReducer from "../features/Admin/NoticeBoard/noticeBoardSlice";
 import performanceReducer from "../features/teacher/studentPerformance/performanceSlice";
 import teacherPerformanceReducer from "../features/teacher/studentPerformance/performanceSlice";
 import staffDashboardReducer from "../features/staff/Dashboard/staffDashboardSlice";
+import staffAttendanceReducer from "../features/staff/Attendance/staffAttendanceSlice";
 import parentExamtimetableReducer from "../features/parent/ExamTimetable/parentExamtimetableSlice";
 import parentExamReportsReducer from "../features/parent/ExamReports/parentExamReportsSlice";
 import expensesReducer from "../features/Admin/Expenses/expensesSlice";
@@ -136,6 +137,7 @@ export const store = configureStore({
     adminStudentPerformance: performanceReducer,
     teacherPerformance: teacherPerformanceReducer,
     staffDashboard: staffDashboardReducer,
+    staffAttendance: staffAttendanceReducer,
     parentExamtimetable: parentExamtimetableReducer,
     parentExamReports: parentExamReportsReducer,
     expenses: expensesReducer,

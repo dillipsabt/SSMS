@@ -9,6 +9,7 @@ import {
   CheckSquare,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import PublishModal from "../../components/common/PublishModal";
 
 const classes = [
   {
@@ -501,97 +502,19 @@ export default function VirtualClassList() {
         </div>
       )}
 
-      {/* Publish Virtual Class Modal */}
       {showPublish && selectedClass && (
-        <div
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-3 sm:p-4"
-          onClick={(e) => e.target === e.currentTarget && setShowPublish(false)}
-        >
-          <div className="bg-white rounded-lg w-full max-w-sm shadow-xl">
-            {/* Header */}
-            <div className="bg-indigo-600 text-white px-4 sm:px-5 py-3 sm:py-4 rounded-t-lg flex justify-between items-center">
-              <h2 className="font-semibold text-base sm:text-lg">
-                Publish Virtual Class
-              </h2>
-              <button
-                onClick={() => setShowPublish(false)}
-                className="w-7 h-7 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center"
-              >
-                <X size={16} className="text-white" />
-              </button>
-            </div>
-
-            <div className="p-4 sm:p-5 space-y-4">
-              {/* Class info */}
-              <div>
-                <p className="font-semibold text-gray-800">
-                  {selectedClass.topic}
-                </p>
-                <p className="text-sm text-gray-500">{selectedClass.subject}</p>
-              </div>
-
-              {/* Publish Options */}
-              <div>
-                <p className="font-semibold text-gray-700 mb-2 text-sm">
-                  Publish Options
-                </p>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <div
-                    className={`w-5 h-5 rounded flex items-center justify-center border ${
-                      publishToStudent
-                        ? "bg-indigo-600 border-indigo-600"
-                        : "border-gray-300"
-                    }`}
-                    onClick={() => setPublishToStudent(!publishToStudent)}
-                  >
-                    {publishToStudent && (
-                      <svg
-                        width="12"
-                        height="10"
-                        viewBox="0 0 12 10"
-                        fill="none"
-                      >
-                        <path
-                          d="M1 5L4.5 8.5L11 1.5"
-                          stroke="white"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    )}
-                  </div>
-                  <span className="text-sm text-gray-700">
-                    Publish to student portal
-                  </span>
-                </label>
-              </div>
-
-              {/* Notes */}
-              <div>
-                <p className="font-semibold text-gray-700 mb-2 text-sm">
-                  Notes (Optional)
-                </p>
-                <textarea
-                  value={publishNote}
-                  onChange={(e) => setPublishNote(e.target.value)}
-                  rows={4}
-                  className="w-full border border-gray-200 rounded px-3 py-2 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-indigo-400"
-                  placeholder="Add notes..."
-                />
-              </div>
-
-              <div className="flex justify-end">
-                <button
-                  onClick={() => setShowPublish(false)}
-                  className="px-6 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-sm font-medium"
-                >
-                  Publish
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <PublishModal
+          title="Publish Virtual Class"
+          subtitle={`${selectedClass.topic} · ${selectedClass.subject}`}
+          options={{ publishToStudent }}
+          optionDefinitions={[{ key: "publishToStudent", label: "Publish to student portal" }]}
+          notes={publishNote}
+          onChange={(_, value) => setPublishToStudent(value)}
+          onNotesChange={setPublishNote}
+          onClose={() => setShowPublish(false)}
+          onSubmit={() => setShowPublish(false)}
+          submitLabel="Publish"
+        />
       )}
     </div>
   );

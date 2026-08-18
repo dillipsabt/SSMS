@@ -8,9 +8,9 @@ import {
 
 export const getStaffDashboardAsync = createAsyncThunk(
   "staffDashboard/getStaffDashboard",
-  async (staffId, { rejectWithValue }) => {
+  async ({ staffId, fromDate, toDate }, { rejectWithValue }) => {
     try {
-      const response = await fetchStaffDashboardAPI(staffId);
+      const response = await fetchStaffDashboardAPI(staffId, { fromDate, toDate });
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Failed to fetch dashboard");
@@ -20,9 +20,9 @@ export const getStaffDashboardAsync = createAsyncThunk(
 
 export const getStaffAttendanceChartAsync = createAsyncThunk(
   "staffDashboard/getStaffAttendanceChart",
-  async (staffId, { rejectWithValue }) => {
+  async ({ staffId, fromDate, toDate }, { rejectWithValue }) => {
     try {
-      const response = await fetchStaffAttendanceChartAPI(staffId);
+      const response = await fetchStaffAttendanceChartAPI(staffId, { fromDate, toDate });
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Failed to fetch attendance chart");

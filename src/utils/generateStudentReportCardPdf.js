@@ -593,11 +593,21 @@ const renderStudentReportCard = (doc, report, template = "classic") => {
   y += snapshotCardHeight + 5;
 
   const analysisHeaderHeight = 8;
-  const analysisHeight = 17;
-  const analysisCardHeight = analysisHeaderHeight + analysisHeight;
   const analysisWidth = 120;
   const remarksX = margin + 125;
   const remarksWidth = width - 125;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7);
+  const overallRemarks = doc.splitTextToSize(
+    getOverallRemarks({ ...report, subjects: calculatedSubjects }),
+    remarksWidth - 8,
+  );
+  const remarksLineHeight = 3.4;
+  const analysisHeight = Math.max(
+    17,
+    overallRemarks.length * remarksLineHeight + 8,
+  );
+  const analysisCardHeight = analysisHeaderHeight + analysisHeight;
   roundedCard(doc, margin, y, analysisWidth, analysisCardHeight, colors.paleBlue);
   doc.setFillColor(...colors.navy);
   doc.roundedRect(margin, y, analysisWidth, analysisHeaderHeight, 3, 3, "F");
@@ -629,8 +639,9 @@ const renderStudentReportCard = (doc, report, template = "classic") => {
   doc.setFont("helvetica", "bold");
   doc.setFontSize(7);
   doc.setTextColor(...colors.ink);
-  const overallRemarks = doc.splitTextToSize(getOverallRemarks({ ...report, subjects: calculatedSubjects }), remarksWidth - 8).slice(0, 3);
-  doc.text(overallRemarks, remarksX + 4, y + analysisHeaderHeight + 6, { lineHeightFactor: 1.2 });
+  doc.text(overallRemarks, remarksX + 4, y + analysisHeaderHeight + 6, {
+    lineHeightFactor: 1.2,
+  });
   y += analysisCardHeight + 5;
 
   const attendanceWidth = width / 2;

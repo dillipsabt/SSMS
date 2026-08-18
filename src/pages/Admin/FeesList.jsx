@@ -115,7 +115,7 @@ export default function FeesList() {
                 <th className="px-3 py-2 text-left font-medium">S.No.</th>
                 <th className="px-3 py-2 text-left font-medium">Trans ID</th>
                 <th className="px-3 py-2 text-left font-medium">Trans Date</th>
-                <th className="px-3 py-2 text-left font-medium">Roll Number</th>
+                <th className="px-3 py-2 text-left font-medium">Admission No</th>
                 <th className="px-3 py-2 text-left font-medium">Student Name</th>
                 <th className="px-3 py-2 text-left font-medium">Class</th>
                 <th className="px-3 py-2 text-left font-medium">Full Amount</th>
@@ -129,7 +129,7 @@ export default function FeesList() {
                     <td className="px-3 py-2">{pagination.page * rowsPerPage + i + 1}</td>
                     <td className="px-3 py-2 text-brand-600 font-medium">{row.transactionId}</td>
                     <td className="px-3 py-2 whitespace-nowrap">{row.transactionDate}</td>
-                    <td className="px-3 py-2">{row.rollNo}</td>
+                    <td className="px-3 py-2">{row.admissionNo}</td>
                     <td className="px-3 py-2">{row.studentName}</td>
                     <td className="px-3 py-2">{row.className}</td>
                     <td className="px-3 py-2">

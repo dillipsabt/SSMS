@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { Search, Bell, Mail, User, ChevronDown, X, Eye, Edit, Trash2 } from "lucide-react";
+import PublishModal from "../../components/common/PublishModal";
 import useToastMessage from "../../utils/useToastMessage";
 import {
   fetchAllFeedbacks,
@@ -27,6 +28,9 @@ const FeedbackLists = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [selectedFeedbackId, setSelectedFeedbackId] = useState(null);
+  const [publishOpen, setPublishOpen] = useState(false);
+  const [publishOptions, setPublishOptions] = useState({ publishToStudent: true });
+  const [publishNotes, setPublishNotes] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
@@ -79,6 +83,17 @@ const FeedbackLists = () => {
     return matchesSearch && matchesStatus;
   });
 
+
+  const handlePublish = () => {
+    dispatch(
+      updateFeedbackStatusAsync({
+        feedbackId: selectedFeedbackId,
+        data: { status: "PUBLISHED" },
+      }),
+    );
+    setPublishOpen(false);
+    setSelectedFeedbackId(null);
+  };
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -250,27 +265,34 @@ const FeedbackLists = () => {
             </div>
           </div>
 
-          {/* Publish Button */}
-          <div className="flex justify-end mt-4">
+          <div className="mt-4 flex justify-end">
             <button
+              type="button"
               disabled={!selectedFeedbackId}
-              onClick={async () => {
-                dispatch(
-                  updateFeedbackStatusAsync({
-                    feedbackId: selectedFeedbackId,
-                    data: {
-                      status: "PUBLISHED",
-                    },
-                  })
-                );
-              }}
-              className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition"
+              onClick={() => setPublishOpen(true)}
+              className="rounded-lg bg-blue-600 px-6 py-2 font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400"
             >
               Publish
             </button>
           </div>
         </div>
       </div>
+
+      {publishOpen && (
+        <PublishModal
+          title="Publish Feedback"
+          options={publishOptions}
+          optionDefinitions={[{ key: "publishToStudent", label: "Publish to student portal" }]}
+          notes={publishNotes}
+          onChange={(key, value) =>
+            setPublishOptions((currentOptions) => ({ ...currentOptions, [key]: value }))
+          }
+          onNotesChange={setPublishNotes}
+          onClose={() => setPublishOpen(false)}
+          onSubmit={handlePublish}
+          loading={loading}
+        />
+      )}
 
       {/* View Details Modal */}
       {viewingDetails && (

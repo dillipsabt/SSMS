@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Download, Printer, Search, X } from "lucide-react";
+import { Download, Printer, Search } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 import {
@@ -14,6 +14,7 @@ import {
   generateStudentReportCardsPdf,
   REPORT_CARD_TEMPLATES,
 } from "../../utils/generateStudentReportCardPdf";
+import PublishModal from "../../components/common/PublishModal";
 import {
   getCalculatedExamSubjects,
   getExamResultSubjects,
@@ -343,30 +344,24 @@ export default function StudentWiseResultsList() {
       </div>
 
       {publishOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-lg overflow-hidden rounded-xl bg-white shadow-2xl">
-            <div className="flex items-center justify-between bg-indigo-600 px-6 py-4 text-white">
-              <h2 className="text-xl font-semibold">Publish</h2>
-              <button onClick={() => setPublishOpen(false)} className="rounded p-1 hover:bg-indigo-500" aria-label="Close publish dialog"><X size={22} /></button>
-            </div>
-            <div className="space-y-5 px-6 py-5">
-              <p className="text-lg font-semibold text-gray-800">{examinationTypes.find((item) => String(item.id) === String(examTypeId))?.examType || "Exam Results"}</p>
-              <div>
-                <p className="mb-3 text-sm text-gray-500">{selectedIds.size} student result{selectedIds.size === 1 ? "" : "s"} selected</p>
-                <h3 className="mb-3 text-base font-semibold text-gray-800">Publish Options</h3>
-                <div className="space-y-3">
-                  <label className="flex items-center gap-3 text-sm text-gray-700"><input type="checkbox" checked={publishToPortal} onChange={(event) => setPublishToPortal(event.target.checked)} className="h-4 w-4 accent-indigo-600" />Publish to Parents portal</label>
-                  <label className="flex items-center gap-3 text-sm text-gray-700"><input type="checkbox" checked={publishToWhatsapp} onChange={(event) => setPublishToWhatsapp(event.target.checked)} className="h-4 w-4 accent-indigo-600" />Publish to Whatsapp</label>
-                </div>
-              </div>
-              <div>
-                <label className="mb-2 block text-base font-semibold text-gray-800">Notes (Optional)</label>
-                <textarea value={publishNotes} onChange={(event) => setPublishNotes(event.target.value)} rows={4} className="w-full rounded border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500" />
-              </div>
-            </div>
-            <div className="flex justify-end px-6 pb-6"><button onClick={handlePublish} className="btn-primary px-6">Publish</button></div>
-          </div>
-        </div>
+        <PublishModal
+          title="Publish Student Results"
+          subtitle={`${examinationTypes.find((item) => String(item.id) === String(examTypeId))?.examType || "Exam Results"} · ${selectedIds.size} student result${selectedIds.size === 1 ? "" : "s"} selected`}
+          options={{ publishToPortal, publishToWhatsapp }}
+          optionDefinitions={[
+            { key: "publishToPortal", label: "Publish to Parents portal" },
+            { key: "publishToWhatsapp", label: "Publish to Whatsapp" },
+          ]}
+          notes={publishNotes}
+          onChange={(key, value) => {
+            if (key === "publishToPortal") setPublishToPortal(value);
+            if (key === "publishToWhatsapp") setPublishToWhatsapp(value);
+          }}
+          onNotesChange={setPublishNotes}
+          onClose={() => setPublishOpen(false)}
+          onSubmit={handlePublish}
+          submitLabel="Publish"
+        />
       )}
 
     </div>

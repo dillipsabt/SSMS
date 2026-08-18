@@ -9,6 +9,7 @@ import {
   deleteFeesConfigAsync,
   fetchClassesAsync,
 } from "../../features/Admin/FeesConfig/feesConfigSlice";
+import { fetchAcademicYears } from "../../features/Admin/AcademicYear/academicYearSlice";
 import DeleteConfirmModal from "../../components/common/DeleteConfirmModal";
 import { toast } from "sonner";
 
@@ -17,6 +18,9 @@ const FeesConfig = () => {
 
   const { feesConfigs, classes } = useSelector(
     (state) => state.feesConfig
+  );
+  const { academicYears = [] } = useSelector(
+    (state) => state.academicYear || {}
   );
 
   const [editId, setEditId] = useState(null);
@@ -31,6 +35,7 @@ const FeesConfig = () => {
   });
 
   const [formData, setFormData] = useState({
+    academicYearId: "",
     classId: "",
     admissionFees: "",
     schoolFees: "",
@@ -48,6 +53,7 @@ const FeesConfig = () => {
   useEffect(() => {
     dispatch(fetchFeesConfigsAsync());
     dispatch(fetchClassesAsync());
+    dispatch(fetchAcademicYears());
   }, [dispatch]);
 
   // ==========================================
@@ -103,7 +109,13 @@ const FeesConfig = () => {
   // ==========================================
 
   const handleSubmit = async () => {
+    if (!formData.academicYearId) {
+      toast.error("Please select an academic year");
+      return;
+    }
+
     const payload = {
+      academicYearId: Number(formData.academicYearId),
       classId: Number(formData.classId),
       admissionFees: Number(formData.admissionFees),
       schoolFees: Number(formData.schoolFees),
@@ -153,6 +165,7 @@ const FeesConfig = () => {
       setEditId(null);
 
       setFormData({
+        academicYearId: "",
         classId: "",
         admissionFees: "",
         schoolFees: "",
@@ -182,6 +195,7 @@ const FeesConfig = () => {
     setEditId(row.id);
 
     setFormData({
+      academicYearId: row.academicYearId || row.academicYear?.id || "",
       classId: row.classId || "",
       admissionFees: row.admissionFees || "",
       schoolFees: row.schoolFees || "",
@@ -245,7 +259,7 @@ const FeesConfig = () => {
         </h3>
 
         {/* Row 1 */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 mb-4">
 
           <div>
             <label className="block text-xs font-medium text-gray-700 mb-1">
@@ -266,6 +280,25 @@ const FeesConfig = () => {
                   value={cls.id}
                 >
                   {cls.classCode}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">
+              Academic Year <span className="text-red-500">*</span>
+            </label>
+            <select
+              name="academicYearId"
+              value={formData.academicYearId}
+              onChange={handleFormChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+            >
+              <option value="">Select Academic Year</option>
+              {academicYears.map((academicYear) => (
+                <option key={academicYear.id} value={academicYear.id}>
+                  {academicYear.year || academicYear.academicYear || academicYear.name}
                 </option>
               ))}
             </select>

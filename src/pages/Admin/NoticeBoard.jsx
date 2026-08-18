@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Eye, Edit2, Trash2, Plus, X, Calendar } from "lucide-react";
+import { Eye, Edit2, Trash2, Plus, X } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import Pagination from "../../components/common/Pagination";
 import DeleteConfirmModal from "../../components/common/DeleteConfirmModal";
+import PublishModal from "../../components/common/PublishModal";
 import useToastMessage from "../../utils/useToastMessage";
 import {
   getNoticeBoardListAsync,
@@ -14,11 +15,10 @@ import {
   clearSuccess,
   clearError,
 } from "../../features/Admin/NoticeBoard/noticeBoardSlice";
-import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 const NoticeBoard = () => {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const {
     noticeList,
     pagination,
@@ -67,7 +67,7 @@ const NoticeBoard = () => {
 
   useEffect(() => {
     fetchNotices();
-  }, [currentPage, rowsPerPage, searchTerm, statusFilter, dateRange]);
+  }, [currentPage, rowsPerPage]);
 
   useToastMessage({
     success,
@@ -83,11 +83,15 @@ const NoticeBoard = () => {
     },
   });
 
-  const fetchNotices = () => {
+  const fetchNotices = (page = currentPage) => {
     const params = {
-      page: currentPage - 1,
+      page: page - 1,
       size: rowsPerPage,
     };
+
+    if (searchTerm) {
+      params.keyword = searchTerm;
+    }
 
     if (statusFilter) {
       params.status = statusFilter;
@@ -102,6 +106,19 @@ const NoticeBoard = () => {
     }
 
     dispatch(getNoticeBoardListAsync(params));
+  };
+
+  const handleApplyFilters = () => {
+    setCurrentPage(1);
+    fetchNotices(1);
+  };
+
+  const handleReset = () => {
+    setSearchTerm("");
+    setStatusFilter("");
+    setDateRange({ from: "", to: "" });
+    setCurrentPage(1);
+    dispatch(getNoticeBoardListAsync({ page: 0, size: rowsPerPage }));
   };
 
   const handleAddClick = () => {
@@ -222,57 +239,65 @@ const NoticeBoard = () => {
 
         {/* Filters */}
         <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
-          <div className="flex flex-col gap-3 sm:gap-4">
-            <div className="w-full">
-              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
-                Search
-              </label>
+          <div className="flex flex-col gap-3 md:flex-row md:items-end md:gap-3">
+            <div className="min-w-0 md:flex-1">
+              <label className="form-label">Search</label>
               <input
                 type="text"
                 placeholder="Search by title or notice ID"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-md text-xs sm:text-sm focus:outline-none focus:border-blue-500"
+                className="form-input w-full"
               />
             </div>
 
-            <div className="w-full">
-              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
-                Date Range
-              </label>
-              <div className="flex items-center gap-1 sm:gap-2">
+            <div className="min-w-0 md:flex-[1.25]">
+              <label className="form-label">Date Range</label>
+              <div className="flex items-center gap-1.5">
                 <input
-                  type="text"
-                  placeholder="from"
+                  type="date"
                   value={dateRange.from}
                   onChange={(e) => setDateRange({ ...dateRange, from: e.target.value })}
-                  className="flex-1 px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-md text-xs sm:text-sm focus:outline-none focus:border-blue-500"
+                  className="form-input min-w-0 flex-1"
+                  aria-label="Notice start date"
                 />
                 <span className="text-gray-400">-</span>
                 <input
-                  type="text"
-                  placeholder="to"
+                  type="date"
                   value={dateRange.to}
                   onChange={(e) => setDateRange({ ...dateRange, to: e.target.value })}
-                  className="flex-1 px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-md text-xs sm:text-sm focus:outline-none focus:border-blue-500"
+                  className="form-input min-w-0 flex-1"
+                  aria-label="Notice end date"
                 />
-                <Calendar size={16} className="text-gray-400 flex-shrink-0" />
               </div>
             </div>
 
-            <div className="w-full">
-              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
-                Status
-              </label>
+            <div className="min-w-0 md:w-40">
+              <label className="form-label">Status</label>
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-md text-xs sm:text-sm focus:outline-none focus:border-blue-500"
+                className="form-select w-full"
               >
                 <option value="">All Status</option>
                 <option value="PUBLISHED">Published</option>
                 <option value="DRAFT">Draft</option>
               </select>
+            </div>
+
+            <div className="flex gap-2 md:shrink-0">
+              <button
+                onClick={handleApplyFilters}
+                className="btn-primary min-w-20 px-3 py-2 text-xs sm:text-sm"
+              >
+                Apply
+              </button>
+              <button
+                onClick={handleReset}
+                className="min-w-20 rounded-md bg-gray-500 px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-gray-600 sm:text-sm"
+              >
+                Reset
+              </button>
             </div>
           </div>
         </div>
@@ -601,131 +626,26 @@ const NoticeBoard = () => {
         </div>
       )}
 
-      {/* Publish Modal */}
       {publishModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-3 sm:p-4">
-          <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] flex flex-col">
-            <div className="bg-blue-600 text-white px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between rounded-t-lg flex-shrink-0">
-              <h3 className="text-sm sm:text-lg font-bold">Publish Notice Board</h3>
-              <button
-                onClick={() => setPublishModal(false)}
-                className="text-white hover:text-gray-200"
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            <div className="p-4 sm:p-6 space-y-3 sm:space-y-4 overflow-y-auto flex-1">
-              <div>
-                <h4 className="font-semibold text-gray-900 mb-2 sm:mb-3 text-sm sm:text-base">Publish Options</h4>
-                <div className="space-y-2 sm:space-y-3">
-                  <label className="flex items-center gap-2 sm:gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={publishOptions.publishToStudent}
-                      onChange={(e) =>
-                        setPublishOptions({
-                          ...publishOptions,
-                          publishToStudent: e.target.checked,
-                        })
-                      }
-                      className="w-4 h-4 rounded"
-                    />
-                    <span className="text-xs sm:text-sm text-gray-700">Publish to student portal</span>
-                  </label>
-
-                  <label className="flex items-center gap-2 sm:gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={publishOptions.publishToParent}
-                      onChange={(e) =>
-                        setPublishOptions({
-                          ...publishOptions,
-                          publishToParent: e.target.checked,
-                        })
-                      }
-                      className="w-4 h-4 rounded"
-                    />
-                    <span className="text-xs sm:text-sm text-gray-700">Publish to Parent portal</span>
-                  </label>
-
-                  <label className="flex items-center gap-2 sm:gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={publishOptions.publishToTeacher}
-                      onChange={(e) =>
-                        setPublishOptions({
-                          ...publishOptions,
-                          publishToTeacher: e.target.checked,
-                        })
-                      }
-                      className="w-4 h-4 rounded"
-                    />
-                    <span className="text-xs sm:text-sm text-gray-700">Publish to Teacher portal</span>
-                  </label>
-
-                  <label className="flex items-center gap-2 sm:gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={publishOptions.publishToAdmin}
-                      onChange={(e) =>
-                        setPublishOptions({
-                          ...publishOptions,
-                          publishToAdmin: e.target.checked,
-                        })
-                      }
-                      className="w-4 h-4 rounded"
-                    />
-                    <span className="text-xs sm:text-sm text-gray-700">Publish to Admin portal</span>
-                  </label>
-
-                  <label className="flex items-center gap-2 sm:gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={publishOptions.emailSmsNotification}
-                      onChange={(e) =>
-                        setPublishOptions({
-                          ...publishOptions,
-                          emailSmsNotification: e.target.checked,
-                        })
-                      }
-                      className="w-4 h-4 rounded"
-                    />
-                    <span className="text-xs sm:text-sm text-gray-700">Send Email / SMS Notification</span>
-                  </label>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
-                  Notes (Optional)
-                </label>
-                <textarea
-                  value={publishNotes}
-                  onChange={(e) => setPublishNotes(e.target.value)}
-                  rows="2"
-                  className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-md text-xs sm:text-sm focus:outline-none focus:border-blue-500"
-                />
-              </div>
-
-              <div className="flex justify-end gap-2 sm:gap-3 pt-2 sm:pt-4">
-                <button
-                  onClick={() => setPublishModal(false)}
-                  className="px-3 sm:px-4 py-1.5 sm:py-2 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 font-medium text-xs sm:text-sm"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handlePublish}
-                  disabled={loading}
-                  className="px-4 sm:px-6 py-1.5 sm:py-2 bg-blue-600 text-white font-medium text-xs sm:text-sm rounded-md hover:bg-blue-700 disabled:bg-gray-400"
-                >
-                  {loading ? "Publishing..." : "Submit"}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <PublishModal
+          title="Publish Notice Board"
+          options={publishOptions}
+          optionDefinitions={[
+            { key: "publishToStudent", label: "Publish to student portal" },
+            { key: "publishToParent", label: "Publish to Parent portal" },
+            { key: "publishToTeacher", label: "Publish to Teacher portal" },
+            { key: "publishToAdmin", label: "Publish to Admin portal" },
+            { key: "emailSmsNotification", label: "Send Email / SMS Notification" },
+          ]}
+          notes={publishNotes}
+          onChange={(key, value) =>
+            setPublishOptions((currentOptions) => ({ ...currentOptions, [key]: value }))
+          }
+          onNotesChange={setPublishNotes}
+          onClose={() => setPublishModal(false)}
+          onSubmit={handlePublish}
+          loading={loading}
+        />
       )}
 
       {/* Delete Confirmation Modal */}

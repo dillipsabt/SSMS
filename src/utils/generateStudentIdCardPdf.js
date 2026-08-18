@@ -72,12 +72,11 @@ const mapStudent = (student = {}) => ({
   className: student.classAndSection || student.className || student.class,
   section: student.section,
   academicYear: student.academicYear || student.academicSession,
-  bloodGroup: student.bloodGroup,
-  dateOfBirth: student.dob || student.dateOfBirth,
   gender: student.gender,
   fatherName: student.fatherName || student.father || student.parentName,
   motherName: student.motherName || student.mother,
   address: student.address || student.currentAddress,
+  parentPhoneNo: student.parentPhoneNo || student.guardianContact || student.phone,
   guardianContact: student.parentPhoneNo || student.guardianContact || student.phone,
   emergencyContact: student.emergencyContact,
   transportRoute: student.transportRoute,
@@ -162,7 +161,7 @@ const drawFront = async (doc, card, x, y, width, height) => {
   drawDetailRow(doc, "Roll Number", card.rollNo || card.admissionNo, detailsX, y + 55.5, detailsWidth);
   drawDetailRow(doc, "Father Name", card.fatherName, detailsX, y + 61.5, detailsWidth);
   drawDetailRow(doc, "Class/Sec", [card.className, card.section].filter(Boolean).join("-"), detailsX, y + 67.5, detailsWidth);
-  drawDetailRow(doc, "Blood Group", card.bloodGroup, detailsX, y + 73.5, detailsWidth, [184, 35, 38]);
+  drawDetailRow(doc, "Parent Phone", card.parentPhoneNo, detailsX, y + 73.5, detailsWidth, [184, 35, 38]);
 
   doc.setDrawColor(193, 201, 217);
   doc.setLineWidth(0.25);
@@ -200,25 +199,13 @@ export const generateStudentIdCardsPrint = async (students) => {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const cardWidth = 54;
   const cardHeight = 85.6;
-  const columnGap = 12;
-  const rowGap = 12;
-  const marginX = (210 - cardWidth * 2 - columnGap) / 2;
-  const marginY = (297 - cardHeight * 3 - rowGap * 2) / 2;
+  const cardX = (210 - cardWidth) / 2;
+  const cardY = (297 - cardHeight) / 2;
 
   for (const [index, student] of students.entries()) {
-    const position = index % 6;
-    if (index > 0 && position === 0) doc.addPage();
-    const column = position % 2;
-    const row = Math.floor(position / 2);
+    if (index > 0) doc.addPage();
     const card = mapStudent(student);
-    await drawFront(
-      doc,
-      card,
-      marginX + column * (cardWidth + columnGap),
-      marginY + row * (cardHeight + rowGap),
-      cardWidth,
-      cardHeight,
-    );
+    await drawFront(doc, card, cardX, cardY, cardWidth, cardHeight);
   }
 
   const pdfUrl = URL.createObjectURL(doc.output("blob"));

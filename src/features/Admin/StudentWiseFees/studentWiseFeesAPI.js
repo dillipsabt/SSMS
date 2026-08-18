@@ -35,6 +35,7 @@ export const createStudentWiseFees = (data) => {
   const formData = new FormData();
 
   formData.append("admissionNo", data.admissionNo);
+  formData.append("academicYearId", data.academicYearId);
   formData.append("concessionFees", data.concessionFees);
 
   if (data.document) {
@@ -57,6 +58,10 @@ export const updateStudentWiseFees = (id, data) => {
 
   if (data.admissionNo) {
     formData.append("admissionNo", data.admissionNo);
+  }
+
+  if (data.academicYearId) {
+    formData.append("academicYearId", data.academicYearId);
   }
 
   if (data.concessionFees !== undefined) {

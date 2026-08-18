@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import DeleteConfirmModal from "../../components/common/DeleteConfirmModal";
 import Pagination from "../../components/common/Pagination";
+import PublishModal from "../../components/common/PublishModal";
 import {
   fetchTimetable,
   fetchTimetableDetail,
@@ -354,10 +355,22 @@ export default function TeachersTimetable() {
           </table>
         </div>
         <Pagination currentPage={currentPage} totalPages={totalPages} rowsPerPage={rowsPerPage} setCurrentPage={setCurrentPage} setRowsPerPage={setRowsPerPage} />
-        <div className="flex justify-end mt-4"><button onClick={openPublish} className="btn-primary">Publish</button></div>
+        <div className="mt-4 flex justify-end"><button onClick={openPublish} disabled={!selectedRows.length} className="btn-primary disabled:cursor-not-allowed disabled:opacity-50">Publish</button></div>
       </div>
     </div>
     <DeleteConfirmModal isOpen={Boolean(deleteId)} title="Delete Schedule" message="Are you sure you want to delete this schedule?" onClose={() => setDeleteId(null)} onConfirm={confirmDelete} />
-    {publishOpen && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"><div className="w-full max-w-lg overflow-hidden rounded-xl bg-white shadow-xl"><div className="flex items-center justify-between bg-brand-600 px-5 py-4 text-white"><h3 className="text-lg font-semibold">Publish Teacher Class</h3><button onClick={closePublish} aria-label="Close"><X /></button></div><div className="space-y-5 p-6"><div><p className="mb-3 font-semibold">Publish Options</p><label className="flex items-center gap-3"><input type="checkbox" checked={publishToPortal} onChange={(event) => setPublishToPortal(event.target.checked)} className="h-5 w-5 accent-brand-600" />Publish to Teacher portal</label></div><div><label className="mb-2 block font-semibold">Notes (Optional)</label><textarea value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="Ready to publish." className="form-textarea" /></div><div className="flex justify-end gap-3"><button onClick={closePublish} className="btn-secondary">Cancel</button><button onClick={confirmPublish} className="btn-primary">Publish</button></div></div></div></div>}
+    {publishOpen && (
+      <PublishModal
+        title="Publish Teacher Class"
+        options={{ publishToTeacherPortal: publishToPortal }}
+        optionDefinitions={[{ key: "publishToTeacherPortal", label: "Publish to Teacher portal" }]}
+        notes={notes}
+        onChange={(_, value) => setPublishToPortal(value)}
+        onNotesChange={setNotes}
+        onClose={closePublish}
+        onSubmit={confirmPublish}
+        submitLabel="Publish"
+      />
+    )}
   </div>;
 }

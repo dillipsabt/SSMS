@@ -14,6 +14,14 @@ import StaffPunchAttendance from "./StaffPunchAttendance";
 
 const WEEK_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
+const getCurrentMonthRange = () => {
+  const date = new Date();
+  const fromDate = new Date(date.getFullYear(), date.getMonth(), 1);
+  const toDate = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+  const format = (value) => `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}-${String(value.getDate()).padStart(2, "0")}`;
+  return { fromDate: format(fromDate), toDate: format(toDate) };
+};
+
 // Custom dropdown — avoids native <select> overflow issues on mobile
 function CustomDropdown({ options, value, onChange }) {
   const [open, setOpen] = useState(false);
@@ -114,8 +122,9 @@ export default function StaffDashboard() {
 
   useEffect(() => {
     if (staffId) {
-      dispatch(getStaffDashboardAsync(staffId));
-      dispatch(getStaffAttendanceChartAsync(staffId));
+      const request = { staffId, ...getCurrentMonthRange() };
+      dispatch(getStaffDashboardAsync(request));
+      dispatch(getStaffAttendanceChartAsync(request));
     }
   }, [dispatch, staffId]);
 
@@ -173,7 +182,7 @@ export default function StaffDashboard() {
           {/* PROFILE */}
           <div className="bg-[#050B7C] rounded-md px-8 py-7 h-[170px] flex items-center">
             <img
-              src={profile?.profileImage || profile?.imageUrl || defaultProfileImage}
+              src={profile?.profileUrl || profile?.profileImage || profile?.imageUrl || defaultProfileImage}
               alt={profile?.fullName || "Staff"}
               className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover"
               onError={(event) => {
@@ -195,14 +204,15 @@ export default function StaffDashboard() {
         <StaffPunchAttendance
           onAttendanceSaved={() => {
             if (staffId) {
-              dispatch(getStaffDashboardAsync(staffId));
-              dispatch(getStaffAttendanceChartAsync(staffId));
+              const request = { staffId, ...getCurrentMonthRange() };
+              dispatch(getStaffDashboardAsync(request));
+              dispatch(getStaffAttendanceChartAsync(request));
             }
           }}
         />
 
         {/* CALENDAR */}
-        <div className="hidden xl:block xl:absolute xl:right-0 xl:top-[440px] xl:w-1/3">
+        <div className="hidden xl:block xl:absolute xl:right-0 xl:top-[540px] xl:w-1/3">
           <div className="bg-white border border-gray-200 rounded overflow-hidden">
             <div className="px-4 py-3 border-b border-gray-200">
               <h3 className="text-[16px] font-semibold text-[#333333]">

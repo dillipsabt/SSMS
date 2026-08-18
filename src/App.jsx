@@ -1,6 +1,7 @@
 import React, { useEffect, lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "sonner";
+import AppErrorBoundary from "./components/AppErrorBoundary";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import { checkTokenExpiry } from "./utils/fileUtils";
 import Login from "./pages/Login";
@@ -286,8 +287,9 @@ function App() {
       <Toaster position="top-right" richColors />
 
       <BrowserRouter>
-       {
-          isSuperAdminTenant()
+        <AppErrorBoundary>
+          {
+            isSuperAdminTenant()
             ? (
                 <SuperAdminRoutes />
               )
@@ -1922,6 +1924,7 @@ function App() {
           </Routes>
         </Suspense>
             )}
+        </AppErrorBoundary>
       </BrowserRouter>
     </>
   );

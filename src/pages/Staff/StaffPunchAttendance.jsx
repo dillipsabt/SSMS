@@ -4,12 +4,14 @@ import { Camera, Check, X } from "lucide-react";
 import Webcam from "react-webcam";
 import { toast } from "sonner";
 import {
-  fetchTeacherAttendance,
   enrollTeacherFace,
-  punchInTeacher,
-  punchOutTeacher,
   verifyTeacherFace,
 } from "../../features/teacher/Attendance/teacherAttendanceSlice";
+import {
+  fetchStaffAttendance,
+  punchInStaff,
+  punchOutStaff,
+} from "../../features/staff/Attendance/staffAttendanceSlice";
 import securityIllustration from "../../assets/bannerGirl.png";
 
 const getLocalDateKey = (date = new Date()) => {
@@ -36,8 +38,9 @@ const isAlreadyEnrolledError = (error) =>
 export default function StaffPunchAttendance({ onAttendanceSaved }) {
   const dispatch = useDispatch();
   const { profileId, userId } = useSelector((state) => state.auth);
-  const { todayAttendance, punchLoading, faceLoading } =
-    useSelector((state) => state.teacherAttendance) || {};
+  const { todayAttendance, punchLoading } =
+    useSelector((state) => state.staffAttendance) || {};
+  const { faceLoading } = useSelector((state) => state.teacherAttendance) || {};
   const webcamRef = useRef(null);
   const [currentTime, setCurrentTime] = useState(() => Date.now());
   const [showPunchModal, setShowPunchModal] = useState(false);
@@ -70,7 +73,7 @@ export default function StaffPunchAttendance({ onAttendanceSaved }) {
   };
 
   useEffect(() => {
-    if (profileId) dispatch(fetchTeacherAttendance({ teacherId: profileId }));
+    if (profileId) dispatch(fetchStaffAttendance(profileId));
   }, [dispatch, profileId]);
 
   useEffect(() => {
@@ -227,8 +230,8 @@ export default function StaffPunchAttendance({ onAttendanceSaved }) {
   const saveAttendance = async () => {
     try {
       await dispatch(
-        punchInTeacher({
-          teacherId: Number(profileId),
+        punchInStaff({
+          staffId: Number(profileId),
           date: getLocalDateKey(),
           latitude: location.latitude,
           longitude: location.longitude,
@@ -236,7 +239,7 @@ export default function StaffPunchAttendance({ onAttendanceSaved }) {
       ).unwrap();
       resetPunchIn();
       toast.success("Punch-In recorded successfully");
-      await dispatch(fetchTeacherAttendance({ teacherId: profileId })).unwrap();
+      await dispatch(fetchStaffAttendance(profileId)).unwrap();
       onAttendanceSaved?.();
     } catch (error) {
       toast.error(getErrorMessage(error, "Punch-In failed. Please try again."));
@@ -246,8 +249,8 @@ export default function StaffPunchAttendance({ onAttendanceSaved }) {
   const savePunchOut = async () => {
     try {
       await dispatch(
-        punchOutTeacher({
-          teacherId: Number(profileId),
+        punchOutStaff({
+          staffId: Number(profileId),
           date: getLocalDateKey(),
           latitude: location.latitude,
           longitude: location.longitude,
@@ -255,7 +258,7 @@ export default function StaffPunchAttendance({ onAttendanceSaved }) {
       ).unwrap();
       resetPunchOut();
       toast.success("Punch-Out recorded successfully");
-      await dispatch(fetchTeacherAttendance({ teacherId: profileId })).unwrap();
+      await dispatch(fetchStaffAttendance(profileId)).unwrap();
       onAttendanceSaved?.();
     } catch (error) {
       toast.error(getErrorMessage(error, "Punch-Out failed. Please try again."));

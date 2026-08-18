@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import DeleteConfirmModal from "../../components/common/DeleteConfirmModal";
 import Pagination from "../../components/common/Pagination";
+import PublishModal from "../../components/common/PublishModal";
 import {
   deleteExamScheduleAsync,
   fetchExamSchedules,
@@ -56,38 +57,6 @@ function ScheduleDetails({ exam, onClose }) {
                 ))}
               </tbody>
             </table>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function PublishModal({ options, notes, onChange, onNotesChange, onClose, onSubmit, loading }) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-[460px] rounded-lg bg-white shadow-lg">
-        <div className="flex items-center justify-between rounded-t-lg bg-brand-600 px-4 py-3 text-white">
-          <span className="text-sm font-medium">Publish Exam Schedules</span>
-          <button type="button" onClick={onClose} aria-label="Close publish dialog"><X size={16} /></button>
-        </div>
-        <div className="p-5">
-          {[
-            ["publishToStudentPortal", "Publish to Student Portal"],
-            ["publishToParentPortal", "Publish to Parent Portal"],
-            ["sendNotification", "Send Notification"],
-          ].map(([key, label]) => (
-            <label key={key} className="mb-3 flex items-center gap-2 text-xs text-gray-700">
-              <input type="checkbox" checked={options[key]} onChange={(event) => onChange(key, event.target.checked)} className="accent-brand-600" />
-              {label}
-            </label>
-          ))}
-          <label className="mt-4 block text-xs font-semibold text-gray-700">Notes (Optional)
-            <textarea rows={3} value={notes} onChange={(event) => onNotesChange(event.target.value)} className="mt-1 w-full resize-none rounded border border-gray-300 px-2 py-2 text-xs focus:border-brand-600 focus:outline-none" />
-          </label>
-          <div className="mt-4 flex justify-end gap-2">
-            <button type="button" onClick={onClose} className="rounded border border-gray-300 px-6 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Cancel</button>
-            <button type="button" onClick={onSubmit} disabled={loading} className="rounded bg-brand-600 px-6 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50">{loading ? "Publishing..." : "Publish"}</button>
           </div>
         </div>
       </div>
@@ -329,7 +298,26 @@ export default function ExamScheduleList() {
       </div>
       <div className="mt-3 flex justify-end"><button type="button" onClick={() => setPublishOpen(true)} disabled={!selected.size || hasPublishedSelection || loading} className="rounded bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50">Publish Selected</button></div>
       {viewExam && <ScheduleDetails exam={viewExam} onClose={() => setViewExam(null)} />}
-      {publishOpen && <PublishModal options={publishOptions} notes={publishNotes} onChange={(key, value) => setPublishOptions((currentOptions) => ({ ...currentOptions, [key]: value }))} onNotesChange={setPublishNotes} onClose={handleClosePublish} onSubmit={handlePublish} loading={loading} />}
+      {publishOpen && (
+        <PublishModal
+          title="Publish Exam Schedules"
+          options={publishOptions}
+          optionDefinitions={[
+            { key: "publishToStudentPortal", label: "Publish to Student Portal" },
+            { key: "publishToParentPortal", label: "Publish to Parent Portal" },
+            { key: "sendNotification", label: "Send Notification" },
+          ]}
+          notes={publishNotes}
+          onChange={(key, value) =>
+            setPublishOptions((currentOptions) => ({ ...currentOptions, [key]: value }))
+          }
+          onNotesChange={setPublishNotes}
+          onClose={handleClosePublish}
+          onSubmit={handlePublish}
+          loading={loading}
+          submitLabel="Publish"
+        />
+      )}
       <DeleteConfirmModal isOpen={Boolean(deleteId)} title="Delete Exam Schedule" message="Are you sure you want to delete this exam schedule?" onClose={() => setDeleteId(null)} onConfirm={handleDelete} />
     </div>
   );

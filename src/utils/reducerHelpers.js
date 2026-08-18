@@ -7,6 +7,7 @@ export const handleRejected = (state, action) => {
   state.loading = false;
 
   state.error =
+    action.payload?.message ||
     action.payload ||
     action.error?.message ||
     "Something went wrong";

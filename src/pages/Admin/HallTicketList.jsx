@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 import DeleteConfirmModal from "../../components/common/DeleteConfirmModal";
 import Pagination from "../../components/common/Pagination";
+import PublishModal from "../../components/common/PublishModal";
 import {
     fetchAcademicYears,
     fetchClasses,
@@ -24,59 +25,6 @@ import {
     fetchStudentWiseHallTickets,
     publishHallTicketsAsync,
 } from "../../features/Admin/HallTicket/hallTicketSlice";
-
-const PublishModal = ({ examLabel, classLabel, onClose, onPublish, loading }) => {
-    const [publishToPortal, setPublishToPortal] = useState(true);
-    const [publishToWhatsapp, setPublishToWhatsapp] = useState(false);
-    const [notes, setNotes] = useState("");
-
-    const close = () => {
-        setNotes("");
-        setPublishToPortal(true);
-        setPublishToWhatsapp(false);
-        onClose();
-    };
-
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-            <div className="w-full max-w-md rounded-xl bg-white shadow-xl">
-                <div className="border-b border-gray-100 px-5 py-4">
-                    <h3 className="text-lg font-semibold text-gray-800">Publish Hall Tickets</h3>
-                    <p className="mt-1 text-sm text-gray-500">{examLabel}{classLabel ? ` - ${classLabel}` : ""}</p>
-                </div>
-
-                <div className="space-y-4 px-5 py-5">
-                    <label className="flex items-center gap-2 text-sm text-gray-700">
-                        <input type="checkbox" checked={publishToPortal} onChange={(event) => setPublishToPortal(event.target.checked)} />
-                        Publish to student portal
-                    </label>
-                    <label className="flex items-center gap-2 text-sm text-gray-700">
-                        <input type="checkbox" checked={publishToWhatsapp} onChange={(event) => setPublishToWhatsapp(event.target.checked)} />
-                        Publish to WhatsApp
-                    </label>
-                    <textarea
-                        value={notes}
-                        onChange={(event) => setNotes(event.target.value)}
-                        placeholder="Add notes"
-                        rows={3}
-                        className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-indigo-500"
-                    />
-                </div>
-
-                <div className="flex justify-end gap-2 border-t border-gray-100 px-5 py-4">
-                    <button onClick={close} className="rounded-lg px-4 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50">Cancel</button>
-                    <button
-                        onClick={() => onPublish({ publishToPortal, publishToWhatsapp, notes })}
-                        disabled={loading}
-                        className="rounded-lg bg-indigo-600 px-5 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
-                    >
-                        {loading ? "Publishing..." : "Publish"}
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-};
 
 const getId = (item) => item?.hallTicketId || item?.id;
 
@@ -107,6 +55,11 @@ export default function HallTicketList() {
     const [classId, setClassId] = useState("");
     const [checked, setChecked] = useState(new Set());
     const [publishOpen, setPublishOpen] = useState(false);
+    const [publishOptions, setPublishOptions] = useState({
+        publishToPortal: true,
+        publishToWhatsapp: false,
+    });
+    const [publishNotes, setPublishNotes] = useState("");
     const [openMenuId, setOpenMenuId] = useState(null);
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState("Status");
@@ -776,24 +729,35 @@ export default function HallTicketList() {
 
             {publishOpen && (
                 <PublishModal
-                    examLabel={
+                    title="Publish Hall Tickets"
+                    subtitle={`${
                         examinationTypes.find((exam) => String(exam.examId) === examId)
-                            ?.examinationType ||
-                        ""
-                    }
-                    classLabel={
+                            ?.examinationType || ""
+                    }${
                         classes.find(
                             (classItem) =>
                                 String(classItem.id || classItem.classId) === classId,
-                        )?.classCode ||
-                        classes.find(
-                            (classItem) =>
-                                String(classItem.id || classItem.classId) === classId,
-                        )?.name ||
-                        ""
+                        )?.classCode
+                            ? ` - ${
+                                classes.find(
+                                    (classItem) =>
+                                        String(classItem.id || classItem.classId) === classId,
+                                )?.classCode
+                            }`
+                            : ""
+                    }`}
+                    options={publishOptions}
+                    optionDefinitions={[
+                        { key: "publishToPortal", label: "Publish to student portal" },
+                        { key: "publishToWhatsapp", label: "Publish to WhatsApp" },
+                    ]}
+                    notes={publishNotes}
+                    onChange={(key, value) =>
+                        setPublishOptions((currentOptions) => ({ ...currentOptions, [key]: value }))
                     }
+                    onNotesChange={setPublishNotes}
                     onClose={() => setPublishOpen(false)}
-                    onPublish={handlePublish}
+                    onSubmit={() => handlePublish({ ...publishOptions, notes: publishNotes })}
                     loading={loading}
                 />
             )}
