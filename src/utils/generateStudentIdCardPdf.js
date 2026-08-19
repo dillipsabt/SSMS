@@ -76,7 +76,7 @@ const mapStudent = (student = {}) => ({
   fatherName: student.fatherName || student.father || student.parentName,
   motherName: student.motherName || student.mother,
   address: student.address || student.currentAddress,
-  parentPhoneNo: student.parentPhoneNo || student.guardianContact || student.phone,
+  parentPhone: student.parentPhone || student.guardianContact || student.phone,
   guardianContact: student.parentPhoneNo || student.guardianContact || student.phone,
   emergencyContact: student.emergencyContact,
   transportRoute: student.transportRoute,
@@ -161,7 +161,7 @@ const drawFront = async (doc, card, x, y, width, height) => {
   drawDetailRow(doc, "Roll Number", card.rollNo || card.admissionNo, detailsX, y + 55.5, detailsWidth);
   drawDetailRow(doc, "Father Name", card.fatherName, detailsX, y + 61.5, detailsWidth);
   drawDetailRow(doc, "Class/Sec", [card.className, card.section].filter(Boolean).join("-"), detailsX, y + 67.5, detailsWidth);
-  drawDetailRow(doc, "Parent Phone", card.parentPhoneNo, detailsX, y + 73.5, detailsWidth, [184, 35, 38]);
+  drawDetailRow(doc, "Parent Phone", card.parentPhone, detailsX, y + 73.5, detailsWidth);
 
   doc.setDrawColor(193, 201, 217);
   doc.setLineWidth(0.25);

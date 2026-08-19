@@ -55,6 +55,7 @@ const TeachersList = () => {
   const formatted = (teachers || []).map((t) => ({
     id: t.id || t.teacherId,
     teacherId: t.id || t.teacherId,
+    teacherCode: t.teacherCode || "-",
     name: t.fullName,
     subject: t.subjectName || "-",
     class: "-",
@@ -156,6 +157,7 @@ const TeachersList = () => {
             <thead className="thead-row">
               <tr>
                 <th className="px-4 py-2 text-left">S No.</th>
+                <th className="px-4 py-2 text-left">Teacher Code</th>
                 <th className="px-4 py-2 text-left">Name</th>
                 <th className="px-4 py-2 text-left">Subject</th>
                 <th className="px-4 py-2 text-left">Phone No.</th>
@@ -170,7 +172,8 @@ const TeachersList = () => {
               {currentTeachers.map((item, index) => (
                 <tr key={index} className="border-t border-gray-200 hover:bg-gray-50">
                   <td className="px-4 py-2">{indexOfFirst + index + 1}</td>
-                  <td className="px-4 py-2 font-medium">{item.name}</td>
+                  <td className="px-4 py-2 font-medium">{item.teacherCode}</td>
+                  <td className="px-4 py-2">{item.name}</td>
                   <td className="px-4 py-2">{item.subject}</td>
                   <td className="px-4 py-2">{item.phone}</td>
                   <td className="px-4 py-2">{item.email}</td>

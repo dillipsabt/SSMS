@@ -7,6 +7,8 @@ import {
   createTransferCertificateAsync,
   updateTransferCertificateAsync,
   getTransferCertificateByIdAsync,
+  resetCertificateDetails,
+  resetStudentDetails,
   clearSuccess,
   clearError,
 } from "../../features/Admin/TransferCertificate/transferCertificateSlice";
@@ -66,6 +68,7 @@ const IssueTransferCertificate = () => {
     fatherName: "",
     dateOfLeaving: "",
     reasonForLeaving: "",
+    otherReason: "",
     issueDate: "",
   });
 
@@ -79,6 +82,11 @@ const IssueTransferCertificate = () => {
     if (isEditMode && id) {
       dispatch(getTransferCertificateByIdAsync(id));
     }
+
+    return () => {
+      dispatch(resetStudentDetails());
+      dispatch(resetCertificateDetails());
+    };
   }, [isEditMode, id, dispatch]);
 
   useEffect(() => {
@@ -91,6 +99,7 @@ const IssueTransferCertificate = () => {
         fatherName: certificateDetails.fatherName || "",
         dateOfLeaving: certificateDetails.dateOfLeaving || "",
         reasonForLeaving: certificateDetails.reasonForLeaving || "",
+        otherReason: "",
         issueDate: certificateDetails.issueDate || "",
       });
     }
@@ -133,13 +142,32 @@ const IssueTransferCertificate = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     if (name === "admissionNo" && value.trim()) {
-      dispatch(getStudentDetailsByAdmissionNoAsync(value));
+      dispatch(getStudentDetailsByAdmissionNoAsync(value.trim()));
+    } else if (name === "admissionNo") {
+      dispatch(resetStudentDetails());
+      setForm((prev) => ({
+        ...prev,
+        admissionNo: "",
+        studentName: "",
+        dateOfBirth: "",
+        classSection: "",
+        fatherName: "",
+      }));
+      return;
     }
-    setForm((prev) => ({ ...prev, [name]: value }));
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+      ...(name === "reasonForLeaving" && value !== "Other" ? { otherReason: "" } : {}),
+    }));
   };
 
   const handleSaveAndPreview = () => {
-    if (!form.admissionNo || !form.studentName || !form.dateOfBirth || !form.classSection || !form.fatherName || !form.dateOfLeaving || !form.reasonForLeaving || !form.issueDate) {
+    const reasonForLeaving = form.reasonForLeaving === "Other"
+      ? form.otherReason.trim()
+      : form.reasonForLeaving;
+
+    if (!form.admissionNo || !form.studentName || !form.dateOfBirth || !form.classSection || !form.fatherName || !form.dateOfLeaving || !reasonForLeaving || !form.issueDate) {
       toast.error("Please fill all required fields");
       return;
     }
@@ -147,7 +175,7 @@ const IssueTransferCertificate = () => {
     const payload = {
       admissionNo: form.admissionNo,
       dateOfLeaving: form.dateOfLeaving,
-      reasonForLeaving: form.reasonForLeaving,
+      reasonForLeaving,
       issueDate: form.issueDate,
     };
 
@@ -239,6 +267,16 @@ const IssueTransferCertificate = () => {
               onChange={handleInputChange}
               options={reasonOptions}
             />
+
+            {form.reasonForLeaving === "Other" && (
+              <Input
+                label="Enter Reason"
+                required
+                name="otherReason"
+                value={form.otherReason}
+                onChange={handleInputChange}
+              />
+            )}
 
             <Input
               label="Date Of Issue Transfer Certificate"

@@ -134,8 +134,12 @@ const Fees = () => {
     },
   ]);
 
-  const [gstRate, setGstRate] = useState(5);
+  const [gstRate, setGstRate] = useState(0);
   const [paymentMode, setPaymentMode] = useState("Select Mode");
+  const [paymentDate, setPaymentDate] = useState(() => {
+    const today = new Date();
+    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+  });
 
   // Clear stale messages and register Redux toast handler
   useToastMessage({
@@ -393,6 +397,7 @@ const Fees = () => {
 
     const paymentPayload = {
       admissionNo: String(admissionNo),
+      transactionDate: paymentDate,
       gstPercentage: Number(gstRate),
       paymentMode: paymentModeMap[paymentMode],
       items,
@@ -404,6 +409,15 @@ const Fees = () => {
       );
 
       if (createPaymentTransactionAsync.fulfilled.match(resultAction)) {
+        const transactionId = resultAction.payload?.transactionId || resultAction.payload?.id;
+        if (transactionId) {
+          const savedDates = JSON.parse(localStorage.getItem("feeTransactionDates") || "{}");
+          localStorage.setItem(
+            "feeTransactionDates",
+            JSON.stringify({ ...savedDates, [transactionId]: paymentDate }),
+          );
+        }
+
         // =====================================
         // REFRESH PAYMENT HISTORY
         // =====================================
@@ -422,16 +436,25 @@ const Fees = () => {
             ? historyPayload
             : historyPayload.content || [];
 
-          const historyData = historyArray.map((item, idx) => ({
-            id: idx + 1,
-            transId: item.transactionId || "-",
-            transDate: item.transactionDate || "-",
-            feesType: item.feeType || "-",
-            installments: item.installment || "-",
-            paidAmount:
-              item.paidAmount || item.totalAmount || item.netAmount || 0,
-            dueAmount: item.remainingAmount || item.dueAmount || 0,
-          }));
+          const selectedTransactionId =
+            resultAction.payload?.transactionId || resultAction.payload?.id;
+          const historyData = historyArray.map((item, idx) => {
+            const itemTransactionId = item.transactionId || item.id;
+            const isNewTransaction = selectedTransactionId
+              ? String(itemTransactionId) === String(selectedTransactionId)
+              : idx === 0;
+
+            return {
+              id: idx + 1,
+              transId: item.transactionId || "-",
+              transDate: isNewTransaction ? paymentDate : item.transactionDate || "-",
+              feesType: item.feeType || "-",
+              installments: item.installment || "-",
+              paidAmount:
+                item.paidAmount || item.totalAmount || item.netAmount || 0,
+              dueAmount: item.remainingAmount || item.dueAmount || 0,
+            };
+          });
 
           setTransactionHistory(historyData);
         }
@@ -451,7 +474,9 @@ const Fees = () => {
         ]);
 
         setPaymentMode("Select Mode");
-        setGstRate(5);
+        setGstRate(0);
+        const today = new Date();
+        setPaymentDate(`${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`);
 
         // refresh student fees summary
         const updatedFeesAction = await dispatch(
@@ -842,6 +867,16 @@ const Fees = () => {
                     <span className="font-bold text-lg text-gray-900">
                       {Math.round(netAmount)}
                     </span>
+                  </div>
+
+                  <div className="flex justify-between items-center gap-2 mt-4">
+                    <span className="text-gray-700 block">Payment Date</span>
+                    <input
+                      type="date"
+                      value={paymentDate}
+                      onChange={(e) => setPaymentDate(e.target.value)}
+                      className="form-input text-xs w-32 py-1"
+                    />
                   </div>
 
                   <div className="flex justify-between items-start gap-2 mt-4">

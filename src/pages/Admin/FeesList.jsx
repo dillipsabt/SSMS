@@ -13,6 +13,11 @@ import {
   getReceiptImageSource,
 } from "../../utils/generatePaymentReceiptPdf";
 
+const getSavedTransactionDate = (transactionId) => {
+  const savedDates = JSON.parse(localStorage.getItem("feeTransactionDates") || "{}");
+  return savedDates[transactionId] || "";
+};
+
 export default function FeesList() {
   const dispatch = useDispatch();
   const { receipts, pagination, loading, selectedReceipt } = useSelector(
@@ -128,7 +133,9 @@ export default function FeesList() {
                   <tr key={row.transactionId} className="border-t border-gray-200 hover:bg-gray-50">
                     <td className="px-3 py-2">{pagination.page * rowsPerPage + i + 1}</td>
                     <td className="px-3 py-2 text-brand-600 font-medium">{row.transactionId}</td>
-                    <td className="px-3 py-2 whitespace-nowrap">{row.transactionDate}</td>
+                    <td className="px-3 py-2 whitespace-nowrap">
+                      {getSavedTransactionDate(row.transactionId) || row.transactionDate}
+                    </td>
                     <td className="px-3 py-2">{row.admissionNo}</td>
                     <td className="px-3 py-2">{row.studentName}</td>
                     <td className="px-3 py-2">{row.className}</td>

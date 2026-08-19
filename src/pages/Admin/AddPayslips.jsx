@@ -1,5 +1,8 @@
 import { useState } from "react";
 import { CalendarDays, Eraser, PlusCircle, Save, Trash2 } from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
+import { toast } from "sonner";
+import { createPayslip } from "../../features/Admin/Payslip/payslipSlice";
 
 const initialDetails = {
   staffId: "",
@@ -32,6 +35,8 @@ export default function AddPayslip() {
   const [includeLeaveDeductions, setIncludeLeaveDeductions] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("bank");
   const [remarks, setRemarks] = useState("");
+  const dispatch = useDispatch();
+  const { loading } = useSelector((state) => state.payslip || {});
 
   const totalEarnings = earnings.reduce(
     (total, earning) => total + getAmount(earning.amount),
@@ -78,6 +83,58 @@ export default function AddPayslip() {
     setIncludeLeaveDeductions(false);
     setPaymentMethod("bank");
     setRemarks("");
+  };
+
+  const savePayslip = async () => {
+    if (!details.staffId || !details.designation || !details.paymentDate || !details.salaryMonth || !details.daysPayable) {
+      toast.error("Please fill all required payslip details.");
+      return;
+    }
+
+    const userId = Number(details.staffId);
+    const daysPayable = Number(details.daysPayable);
+    if (!Number.isInteger(userId) || userId <= 0 || !Number.isFinite(daysPayable) || daysPayable < 0) {
+      toast.error("Please enter valid employee ID and payable days.");
+      return;
+    }
+
+    const payload = {
+      userId,
+      designation: details.designation,
+      paymentDate: details.paymentDate,
+      salaryMonthAndYear: details.salaryMonth,
+      daysPayable,
+      earnings: earnings
+        .filter((earning) => earning.label && getAmount(earning.amount) > 0)
+        .map((earning) => ({
+          componentName: earning.label,
+          componentType: "EARNING",
+          amount: getAmount(earning.amount),
+        })),
+      deductions: [
+        { componentName: "Provident Fund (PF)", amount: deductions.providentFund },
+        { componentName: "Professional Tax", amount: deductions.professionalTax },
+        ...(includeLeaveDeductions
+          ? [{ componentName: "Leave Deductions", amount: deductions.leaveDeductions }]
+          : []),
+      ]
+        .filter((deduction) => getAmount(deduction.amount) > 0)
+        .map((deduction) => ({
+          ...deduction,
+          componentType: "DEDUCTION",
+          amount: getAmount(deduction.amount),
+        })),
+      paymentMethod: paymentMethod === "bank" ? "BANK_TRANSFER" : "CHEQUE",
+      remarks,
+    };
+
+    try {
+      await dispatch(createPayslip(payload)).unwrap();
+      toast.success("Payslip saved successfully.");
+      clearForm();
+    } catch (error) {
+      toast.error(error?.message || "Unable to save payslip.");
+    }
   };
 
   return (
@@ -293,7 +350,9 @@ export default function AddPayslip() {
               Clear
             </button>
             <button
-              className="inline-flex items-center gap-2 rounded-md bg-brand-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-brand-700"
+              className="inline-flex items-center gap-2 rounded-md bg-brand-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-60"
+              disabled={loading}
+              onClick={savePayslip}
               type="button"
             >
               <Save size={17} />
