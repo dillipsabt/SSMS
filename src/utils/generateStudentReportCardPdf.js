@@ -10,6 +10,18 @@ const imageDataUrl = (image) => {
 };
 
 const text = (value) => value === null || value === undefined || value === "" ? "-" : String(value);
+
+const getAddressLines = (doc, value, width) => {
+  const address = String(value || "").trim();
+  if (!address) return [];
+
+  return address
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .flatMap((line) => doc.splitTextToSize(line, width));
+};
+
 const numeric = (value) => Number.isFinite(Number(value)) ? Number(value) : 0;
 const formattedNumber = (value) => {
   const number = numeric(value);
@@ -350,47 +362,66 @@ const renderStudentReportCard = (doc, report, template = "classic") => {
   const failSubjects = calculatedSubjects.filter((item) => String(item.status || "").toUpperCase() === "FAIL").length;
   let y = 10;
 
-  const headerLayout = colors.layout;
+  const templateHeaderLayout = colors.layout;
+  const headerLayout = "classic";
+  const isDarkHeader = templateHeaderLayout === "full" || templateHeaderLayout === "banner";
+  const headerFill = isDarkHeader
+    ? colors.navy
+    : templateHeaderLayout === "split"
+      ? colors.paleBlue
+      : templateHeaderLayout === "soft"
+        ? colors.paleGold
+        : [255, 255, 255];
+  const headerTextColor = isDarkHeader ? [255, 255, 255] : colors.navy;
+  const headerMutedColor = isDarkHeader ? [245, 248, 252] : colors.muted;
+  let renderedHeaderHeight = 29;
   if (headerLayout === "classic") {
-    const headerHeight = 46;
-    roundedCard(doc, margin, y, width, headerHeight, [255, 255, 255]);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7);
+    const addressLines = getAddressLines(doc, schoolAddress, width - 18);
+    const addressStartY = y + 17;
+    const addressLineHeight = 7.2;
+    const addressHeight = Math.max(0, Math.min(addressLines.length, 3) - 1) * addressLineHeight;
+    const dividerY = addressLines.length ? addressStartY + addressHeight + 3 : y + 20;
+    const reportTitleY = dividerY + 4;
+    const academicYearY = reportTitleY + 5;
+    const bottomLineY = academicYearY + 3;
+    renderedHeaderHeight = Math.max(36, bottomLineY - y + 1);
+
+    roundedCard(doc, margin, y, width, renderedHeaderHeight, headerFill, isDarkHeader ? colors.navy : colors.line);
     addImageContain(doc, logo, margin + 6, y + 3, 27, 25);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
-    doc.setTextColor(...colors.navy);
-    doc.text(text(report.schoolName || "EDUPORTAL ACADEMY"), margin + 34, y + 10, { align: "left" });
-    if (schoolAddress) {
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(6.2);
-      doc.setTextColor(...colors.muted);
-      const addressLines = doc.splitTextToSize(String(schoolAddress).replace(/\\s*\\n\\s*/g, " "), pageWidth - margin - 39);
-      doc.text(addressLines.slice(0, 3), margin + 34, y + 15.5, {
-        align: "left",
-        lineHeightFactor: 1.05,
+    doc.setTextColor(...headerTextColor);
+    doc.text(text(report.schoolName || "EDUPORTAL ACADEMY"), pageWidth / 2, y + 10, { align: "center" });
+    if (addressLines.length) {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(7);
+      doc.setTextColor(...headerMutedColor);
+      doc.text(addressLines.slice(0, 3), pageWidth / 2, addressStartY, {
+        align: "center",
+        lineHeightFactor: addressLineHeight / 7,
       });
     }
-    doc.setFontSize(6.5);
-    doc.setTextColor(...colors.gold);
-    doc.text("EDUPORTAL · ACADEMIC RECORD", margin + 34, y + 27, { align: "left" });
-    doc.setDrawColor(...colors.line);
+    doc.setDrawColor(...(isDarkHeader ? [220, 230, 240] : colors.line));
     doc.setLineWidth(0.25);
-    doc.line(margin + 34, y + 30, pageWidth - margin - 5, y + 30);
+    doc.line(margin + 34, dividerY, pageWidth - margin - 5, dividerY);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
-    doc.setTextColor(...colors.navy);
-    doc.text("REPORT CARD", pageWidth / 2, y + 35, { align: "center" });
+    doc.setTextColor(...headerTextColor);
+    doc.text("REPORT CARD", pageWidth / 2, reportTitleY, { align: "center" });
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7.5);
-    doc.setTextColor(...colors.muted);
+    doc.setTextColor(...headerMutedColor);
     doc.text(
       `ACADEMIC YEAR : ${text(report.academicYear)}   ·   ${text(report.examType || report.examinationType).toUpperCase()}`,
       pageWidth / 2,
-      y + 41,
+      academicYearY,
       { align: "center" },
     );
     doc.setDrawColor(...colors.gold);
     doc.setLineWidth(0.8);
-    doc.line(margin + 2, y + 45, pageWidth - margin - 2, y + 45);
+    doc.line(margin + 2, bottomLineY, pageWidth - margin - 2, bottomLineY);
   } else if (headerLayout === "full" || headerLayout === "banner") {
     doc.setFillColor(...colors.navy);
     doc.setDrawColor(...colors.navy);
@@ -449,7 +480,7 @@ const renderStudentReportCard = (doc, report, template = "classic") => {
     doc.setTextColor(...colors.navy);
     doc.text(text(report.schoolName || "EDUPORTAL ACADEMY"), pageWidth / 2, y + 25, { align: "center" });
   }
-  y += headerLayout === "classic" ? 50 : 33;
+  y += renderedHeaderHeight + 2;
 
   if (headerLayout !== "classic") {
     doc.setFont("helvetica", "bold");
