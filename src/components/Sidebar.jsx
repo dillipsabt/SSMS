@@ -376,6 +376,14 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         label: "Student",
         children: [
           {
+            to: "/teacher-students-list",
+            label: "Student List",
+          },
+          {
+            to: "/teacher-add-student",
+            label: "Add Student",
+          },
+          {
             to: "/teacher-student-attendance",
             label: "Attendance",
           },

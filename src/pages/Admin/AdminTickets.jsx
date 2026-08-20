@@ -30,6 +30,7 @@ export default function Tickets() {
   const { departments = [] } = useSelector((state) => state.leave);
  
   const [openMenu, setOpenMenu] = useState(null);
+  const [menuPos, setMenuPos] = useState({ top: 0, left: 0 });
   const [popup, setPopup] = useState(false);
   const [type, setType] = useState("");
   const [selected, setSelected] = useState(null);
@@ -363,13 +364,17 @@ export default function Tickets() {
                         className="cursor-pointer"
                         onClick={(e) => {
                           e.stopPropagation();
- 
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          setMenuPos({ top: rect.bottom + 5, left: rect.left - 80 });
                           setOpenMenu(openMenu === i ? null : i);
                         }}
                       />
  
                       {openMenu === i && (
-                        <div className="absolute right-0 mt-2 w-28 bg-white border rounded shadow text-xs z-50">
+                        <div
+                          style={{ position: "fixed", top: menuPos.top, left: menuPos.left, zIndex: 9999 }}
+                          className="w-28 bg-white border rounded shadow text-xs z-50"
+                        >
                           <button
                             onClick={() => openPopup(item, "resolve")}
                             className="block w-full px-3 py-2 text-green-600 hover:bg-gray-100"

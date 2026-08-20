@@ -49,10 +49,15 @@ api.interceptors.response.use(
     const status = error.response?.status;
 
     if (status && !error.config?.skipErrorToast) {
-      toast.error(getErrorMessage(error));
+      const message = getErrorMessage(error);
+      toast.error(message, { id: `error-${message}` });
     }
 
-    if (status === 401 && !error.config?.skipAuth) {
+    if (
+      status === 401 &&
+      !error.config?.skipAuth &&
+      !error.config?.skipAuthRedirect
+    ) {
       clearAuthStorage();
       if (window.location.pathname !== "/") {
         window.location.assign("/");

@@ -26,6 +26,7 @@ export const updateAdminStudent = (id, formData) => {
     headers: {
       ...getAuthHeader(),
     },
+    skipAuthRedirect: true,
   });
 };
 

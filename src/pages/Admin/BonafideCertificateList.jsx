@@ -34,6 +34,7 @@ const BonafideCertificateList = () => {
   } = useSelector((state) => state.bonafideCertificate);
 
   const [openMenu, setOpenMenu] = useState(null);
+  const [menuPos, setMenuPos] = useState({ top: 0, left: 0 });
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(15);
@@ -193,12 +194,14 @@ const BonafideCertificateList = () => {
                         className="cursor-pointer"
                         onClick={(e) => {
                           e.stopPropagation();
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          setMenuPos({ top: rect.bottom + 5, left: rect.left - 80 });
                           setOpenMenu(openMenu === item.id ? null : item.id);
                         }}
                       />
 
                       {openMenu === item.id && (
-                        <div className="absolute right-0 mt-2 w-32 bg-white border rounded shadow z-50 text-xs">
+                        <div style={{ position: "fixed", top: menuPos.top, left: menuPos.left, zIndex: 9999 }} className="w-32 bg-white border rounded shadow z-50 text-xs">
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -268,13 +271,15 @@ const BonafideCertificateList = () => {
                       size={16}
                       className="cursor-pointer"
                       onClick={(e) => {
-                        e.stopPropagation();
-                        setOpenMenu(openMenu === item.id ? null : item.id);
-                      }}
+                          e.stopPropagation();
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          setMenuPos({ top: rect.bottom + 5, left: rect.left - 80 });
+                          setOpenMenu(openMenu === item.id ? null : item.id);
+                        }}
                     />
 
                     {openMenu === item.id && (
-                      <div className="absolute right-0 mt-2 w-28 bg-white border rounded shadow z-50 text-xs">
+                      <div style={{ position: "fixed", top: menuPos.top, left: menuPos.left, zIndex: 9999 }} className="w-28 bg-white border rounded shadow z-50 text-xs">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();

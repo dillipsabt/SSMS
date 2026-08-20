@@ -352,7 +352,8 @@ const renderStudentReportCard = (doc, report, template = "classic") => {
 
   const headerLayout = colors.layout;
   if (headerLayout === "classic") {
-    roundedCard(doc, margin, y, width, 39, [255, 255, 255]);
+    const headerHeight = 46;
+    roundedCard(doc, margin, y, width, headerHeight, [255, 255, 255]);
     addImageContain(doc, logo, margin + 6, y + 3, 27, 25);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
@@ -360,32 +361,36 @@ const renderStudentReportCard = (doc, report, template = "classic") => {
     doc.text(text(report.schoolName || "EDUPORTAL ACADEMY"), margin + 34, y + 10, { align: "left" });
     if (schoolAddress) {
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(6.5);
+      doc.setFontSize(6.2);
       doc.setTextColor(...colors.muted);
-      doc.text(doc.splitTextToSize(String(schoolAddress), 90)[0], margin + 34, y + 16, { align: "left" });
+      const addressLines = doc.splitTextToSize(String(schoolAddress).replace(/\\s*\\n\\s*/g, " "), pageWidth - margin - 39);
+      doc.text(addressLines.slice(0, 3), margin + 34, y + 15.5, {
+        align: "left",
+        lineHeightFactor: 1.05,
+      });
     }
     doc.setFontSize(6.5);
     doc.setTextColor(...colors.gold);
-    doc.text("EDUPORTAL · ACADEMIC RECORD", margin + 34, y + 22, { align: "left" });
+    doc.text("EDUPORTAL · ACADEMIC RECORD", margin + 34, y + 27, { align: "left" });
     doc.setDrawColor(...colors.line);
     doc.setLineWidth(0.25);
-    doc.line(margin + 34, y + 25, pageWidth - margin - 5, y + 25);
+    doc.line(margin + 34, y + 30, pageWidth - margin - 5, y + 30);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
     doc.setTextColor(...colors.navy);
-    doc.text("REPORT CARD", pageWidth / 2, y + 30, { align: "center" });
+    doc.text("REPORT CARD", pageWidth / 2, y + 35, { align: "center" });
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7.5);
     doc.setTextColor(...colors.muted);
     doc.text(
       `ACADEMIC YEAR : ${text(report.academicYear)}   ·   ${text(report.examType || report.examinationType).toUpperCase()}`,
       pageWidth / 2,
-      y + 35,
+      y + 41,
       { align: "center" },
     );
     doc.setDrawColor(...colors.gold);
     doc.setLineWidth(0.8);
-    doc.line(margin + 2, y + 38, pageWidth - margin - 2, y + 38);
+    doc.line(margin + 2, y + 45, pageWidth - margin - 2, y + 45);
   } else if (headerLayout === "full" || headerLayout === "banner") {
     doc.setFillColor(...colors.navy);
     doc.setDrawColor(...colors.navy);
@@ -444,7 +449,7 @@ const renderStudentReportCard = (doc, report, template = "classic") => {
     doc.setTextColor(...colors.navy);
     doc.text(text(report.schoolName || "EDUPORTAL ACADEMY"), pageWidth / 2, y + 25, { align: "center" });
   }
-  y += headerLayout === "classic" ? 43 : 33;
+  y += headerLayout === "classic" ? 50 : 33;
 
   if (headerLayout !== "classic") {
     doc.setFont("helvetica", "bold");

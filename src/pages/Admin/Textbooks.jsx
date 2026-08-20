@@ -49,6 +49,7 @@ const Textbooks = () => {
   const [formData, setFormData] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
   const [openMenuId, setOpenMenuId] = useState(null);
+  const [menuPos, setMenuPos] = useState({ top: 0, left: 0 });
   const [deleteBook, setDeleteBook] = useState(null);
   const [filters, setFilters] = useState({ state: "", board: "", classId: "", subjectId: "", date: "" });
   const [currentPage, setCurrentPage] = useState(1);
@@ -275,11 +276,15 @@ const Textbooks = () => {
                       </button>
                     </td>
                     <td className="relative px-4 py-3 text-center">
-                      <button type="button" onClick={() => setOpenMenuId(openMenuId === book.id ? null : book.id)} aria-label="Textbook actions">
+                      <button type="button" onClick={(event) => {
+                        const rect = event.currentTarget.getBoundingClientRect();
+                        setMenuPos({ top: rect.bottom + 5, left: rect.left - 80 });
+                        setOpenMenuId(openMenuId === book.id ? null : book.id);
+                      }} aria-label="Textbook actions">
                         <MoreVertical size={21} />
                       </button>
                       {openMenuId === book.id && (
-                        <div className="absolute right-4 top-9 z-10 w-28 rounded bg-white py-1 text-left shadow-lg">
+                        <div style={{ position: "fixed", top: menuPos.top, left: menuPos.left, zIndex: 9999 }} className="w-28 rounded bg-white py-1 text-left shadow-lg">
                           <button type="button" onClick={() => handleEdit(book)} className="flex w-full items-center gap-2 px-3 py-2 hover:bg-gray-50">
                             <Pencil size={15} className="text-brand-600" />
                             Edit

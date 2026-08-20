@@ -15,7 +15,9 @@ const useToastMessage = ({
 
   useEffect(() => {
     if (success) {
-      toast.success(successMessage || "Operation completed successfully", {
+      const message = successMessage || "Operation completed successfully";
+      toast.success(message, {
+        id: `success-${message}`,
         duration: 5000,
         position: "top-right",
       });
@@ -42,6 +44,7 @@ const useToastMessage = ({
           : error?.message || "Something went wrong";
 
       toast.error(msg, {
+        id: `error-${msg}`,
         duration: 5000,
         position: "top-right",
       });

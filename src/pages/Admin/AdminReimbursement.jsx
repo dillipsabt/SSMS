@@ -34,6 +34,7 @@ export default function Reimbursement() {
 
   const [data, setData] = useState([]);
   const [openMenu, setOpenMenu] = useState(null);
+  const [menuPos, setMenuPos] = useState({ top: 0, left: 0 });
   const [popup, setPopup] = useState(false);
   const [selected, setSelected] = useState(null);
   const [comment, setComment] = useState("");
@@ -311,11 +312,18 @@ export default function Reimbursement() {
                       <MoreVertical
                         size={16}
                         className="cursor-pointer"
-                        onClick={() => setOpenMenu(openMenu === i ? null : i)}
+                        onClick={(event) => {
+                        const rect = event.currentTarget.getBoundingClientRect();
+                        setMenuPos({ top: rect.bottom + 5, left: rect.left - 80 });
+                        setOpenMenu(openMenu === i ? null : i);
+                      }}
                       />
 
                       {openMenu === i && (
-                        <div className="absolute right-0 mt-2 w-28 bg-white border rounded shadow text-xs z-50">
+                        <div
+                          style={{ position: "fixed", top: menuPos.top, left: menuPos.left, zIndex: 9999 }}
+                          className="w-28 bg-white border rounded shadow text-xs z-50"
+                        >
                           <button
                             onClick={() => handleApprove(item)}
                             className="block w-full text-left px-3 py-2 hover:bg-gray-100 text-green-600"
@@ -355,11 +363,18 @@ export default function Reimbursement() {
                   <div className="relative">
                     <MoreVertical
                       size={16}
-                      onClick={() => setOpenMenu(openMenu === i ? null : i)}
+                      onClick={(event) => {
+                        const rect = event.currentTarget.getBoundingClientRect();
+                        setMenuPos({ top: rect.bottom + 5, left: rect.left - 80 });
+                        setOpenMenu(openMenu === i ? null : i);
+                      }}
                     />
 
                     {openMenu === i && (
-                      <div className="absolute right-0 mt-2 w-28 bg-white border rounded shadow text-xs z-50">
+                      <div
+                          style={{ position: "fixed", top: menuPos.top, left: menuPos.left, zIndex: 9999 }}
+                          className="w-28 bg-white border rounded shadow text-xs z-50"
+                        >
                         <button
                           onClick={() => handleApprove(item)}
                           className="block w-full text-left px-3 py-2 text-green-600"

@@ -80,6 +80,7 @@ export default function TermFees() {
   const [filterClass, setFilterClass] = useState("");
   const [filterDate, setFilterDate] = useState("");
   const [openMenu, setOpenMenu] = useState(null);
+  const [menuPos, setMenuPos] = useState({ top: 0, left: 0 });
 
   useEffect(() => {
     dispatch(fetchClassesAsync());
@@ -341,11 +342,15 @@ export default function TermFees() {
                       })}
                       <td className="px-4 py-3">{formatAmount(annualFees)}</td>
                       <td className="relative px-4 py-3 text-center">
-                        <button aria-label={`Actions for ${item.classSection}`} className="text-gray-800" onClick={() => setOpenMenu(openMenu === item.id ? null : item.id)} type="button">
+                        <button aria-label={`Actions for ${item.classSection}`} className="text-gray-800" onClick={(event) => {
+                            const rect = event.currentTarget.getBoundingClientRect();
+                            setMenuPos({ top: rect.bottom + 5, left: rect.left - 80 });
+                            setOpenMenu(openMenu === item.id ? null : item.id);
+                          }} type="button">
                           <MoreVertical size={20} />
                         </button>
                         {openMenu === item.id && (
-                          <div className="absolute right-6 top-9 z-10 w-28 rounded-md border border-gray-200 bg-white py-1 text-left shadow-lg">
+                          <div style={{ position: "fixed", top: menuPos.top, left: menuPos.left, zIndex: 9999 }} className="w-28 rounded-md border border-gray-200 bg-white py-1 text-left shadow-lg">
                             <button className="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50" onClick={() => handleEdit(item)} type="button"><Edit3 size={15} className="text-brand-600" />Edit</button>
                             <button className="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50" onClick={() => handleDelete(item.id)} type="button"><Trash2 size={15} className="text-rose-600" />Delete</button>
                           </div>

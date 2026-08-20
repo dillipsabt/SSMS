@@ -1290,6 +1290,39 @@ function App() {
 
             {/* TEACHER */}
             <Route
+              path="/teacher-students-list"
+              element={
+                <ProtectedRoute roles={["teacher-portal"]}>
+                  <TeacherLayout>
+                    <StudentList />
+                  </TeacherLayout>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/teacher-add-student"
+              element={
+                <ProtectedRoute roles={["teacher-portal"]}>
+                  <TeacherLayout>
+                    <StudentAdmission />
+                  </TeacherLayout>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/teacher-add-student/:id"
+              element={
+                <ProtectedRoute roles={["teacher-portal"]}>
+                  <TeacherLayout>
+                    <StudentAdmission />
+                  </TeacherLayout>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
               path="/teacher-dashboard"
               element={
                 <ProtectedRoute roles={["teacher-portal"]}>

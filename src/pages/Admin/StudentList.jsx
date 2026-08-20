@@ -27,7 +27,10 @@ const StudentList = () => {
   const [statusFilter, setStatusFilter] = useState("All");
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const canManageStudents = useSelector((state) => state.auth.role) !== "staff-portal";
+  const role = useSelector((state) => state.auth.role);
+  const canManageStudents = role !== "staff-portal";
+  const canViewAndDeleteStudents = role !== "teacher-portal";
+  const studentEditPath = role === "teacher-portal" ? "/teacher-add-student" : "/add-student";
   const {
     students: reduxStudents,
     classes,
@@ -267,21 +270,23 @@ const StudentList = () => {
                         }}
                         className="absolute right-0 mt-2 w-28 bg-white border rounded shadow z-50"
                       >
-                        <button
-                          onClick={() => {
-                            navigate("/student-view", { state: s.raw });
-                            setOpenMenu(null);
-                          }}
-                          className="block w-full px-3 py-2 text-left hover:bg-gray-100"
-                        >
-                          View
-                        </button>
+                        {canViewAndDeleteStudents && (
+                          <button
+                            onClick={() => {
+                              navigate("/student-view", { state: s.raw });
+                              setOpenMenu(null);
+                            }}
+                            className="block w-full px-3 py-2 text-left hover:bg-gray-100"
+                          >
+                            View
+                          </button>
+                        )}
 
                         {canManageStudents && (
                           <>
                             <button
                               onClick={() => {
-                                navigate(`/add-student/${s.raw.id}`);
+                                navigate(`${studentEditPath}/${s.raw.id}`);
                                 setOpenMenu(null);
                               }}
                               className="block w-full px-3 py-2 text-left hover:bg-gray-100"
@@ -289,15 +294,17 @@ const StudentList = () => {
                               Edit
                             </button>
 
-                            <button
-                              onClick={() => {
-                                handleDeleteClick(s.raw.id, "student");
-                                setOpenMenu(null);
-                              }}
-                              className="block w-full px-3 py-2 text-left text-red-500 hover:bg-gray-100"
-                            >
-                              Delete
-                            </button>
+                            {canViewAndDeleteStudents && (
+                              <button
+                                onClick={() => {
+                                  handleDeleteClick(s.raw.id, "student");
+                                  setOpenMenu(null);
+                                }}
+                                className="block w-full px-3 py-2 text-left text-red-500 hover:bg-gray-100"
+                              >
+                                Delete
+                              </button>
+                            )}
                           </>
                         )}
                       </div>
@@ -330,21 +337,23 @@ const StudentList = () => {
                   {/* ✅ DROPDOWN */}
                   {openMenu === i && (
                     <div className="absolute right-0 mt-2 w-28 bg-white border rounded shadow z-50 text-xs">
-                      <button
-                        onClick={() => {
-                          navigate("/student-view", { state: s.raw });
-                          setOpenMenu(null);
-                        }}
-                        className="block w-full text-left px-3 py-2 hover:bg-gray-100"
-                      >
-                        View
-                      </button>
+                      {canViewAndDeleteStudents && (
+                        <button
+                          onClick={() => {
+                            navigate("/student-view", { state: s.raw });
+                            setOpenMenu(null);
+                          }}
+                          className="block w-full text-left px-3 py-2 hover:bg-gray-100"
+                        >
+                          View
+                        </button>
+                      )}
 
                       {canManageStudents && (
                         <>
                           <button
                             onClick={() => {
-                              navigate(`/add-student/${s.raw.id}`);
+                              navigate(`${studentEditPath}/${s.raw.id}`);
                               setOpenMenu(null);
                             }}
                             className="block w-full text-left px-3 py-2 hover:bg-gray-100"
@@ -352,15 +361,17 @@ const StudentList = () => {
                             Edit
                           </button>
 
-                          <button
-                            onClick={() => {
-                              handleDeleteClick(s.raw.id, "student");
-                              setOpenMenu(null);
-                            }}
-                            className="block w-full text-left px-3 py-2 text-red-500 hover:bg-gray-100"
-                          >
-                            Delete
-                          </button>
+                          {canViewAndDeleteStudents && (
+                            <button
+                              onClick={() => {
+                                handleDeleteClick(s.raw.id, "student");
+                                setOpenMenu(null);
+                              }}
+                              className="block w-full text-left px-3 py-2 text-red-500 hover:bg-gray-100"
+                            >
+                              Delete
+                            </button>
+                          )}
                         </>
                       )}
                     </div>

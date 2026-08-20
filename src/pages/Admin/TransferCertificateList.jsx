@@ -27,6 +27,7 @@ const TransferCertificateList = () => {
   } = useSelector((state) => state.transferCertificate);
 
   const [openMenu, setOpenMenu] = useState(null);
+  const [menuPos, setMenuPos] = useState({ top: 0, left: 0 });
   const [search, setSearch] = useState("");
   const [issueDate, setIssueDate] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -203,12 +204,14 @@ const TransferCertificateList = () => {
                       className="cursor-pointer"
                       onClick={(e) => {
                         e.stopPropagation();
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        setMenuPos({ top: rect.bottom + 5, left: rect.left - 80 });
                         setOpenMenu(openMenu === item.id ? null : item.id);
                       }}
                     />
 
                     {openMenu === item.id && (
-                      <div className="absolute right-0 mt-2 w-32 bg-white border rounded shadow z-50 text-xs">
+                      <div style={{ position: "fixed", top: menuPos.top, left: menuPos.left, zIndex: 9999 }} className="w-32 bg-white border rounded shadow z-50 text-xs">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -262,13 +265,15 @@ const TransferCertificateList = () => {
                     size={16}
                     className="cursor-pointer"
                     onClick={(e) => {
-                      e.stopPropagation();
-                      setOpenMenu(openMenu === item.id ? null : item.id);
-                    }}
+                        e.stopPropagation();
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        setMenuPos({ top: rect.bottom + 5, left: rect.left - 80 });
+                        setOpenMenu(openMenu === item.id ? null : item.id);
+                      }}
                   />
 
                   {openMenu === item.id && (
-                    <div className="absolute right-0 mt-2 w-28 bg-white border rounded shadow z-50 text-xs">
+                    <div style={{ position: "fixed", top: menuPos.top, left: menuPos.left, zIndex: 9999 }} className="w-28 bg-white border rounded shadow z-50 text-xs">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();

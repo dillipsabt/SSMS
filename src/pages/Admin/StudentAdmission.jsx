@@ -118,6 +118,8 @@ const StudentAdmission = () => {
 
   const { id } = useParams();
   const dispatch = useDispatch();
+  const role = useSelector((state) => state.auth.role);
+  const studentListPath = role === "teacher-portal" ? "/teacher-students-list" : "/students_list";
   const {
     student,
     success,
@@ -383,7 +385,7 @@ const StudentAdmission = () => {
     onSuccess: () => {
       dispatch(getStudentsAsync());
       setTimeout(() => {
-        navigate("/students_list");
+        navigate(studentListPath);
       }, 500);
     },
   });
@@ -795,7 +797,7 @@ console.log("Form Data Before Submission:", formData);
       <div className="flex justify-end gap-3 p-4 border-t border-gray-100">
           <button
             type="button"
-            onClick={() => navigate("/students_list")}
+            onClick={() => navigate(studentListPath)}
             className="btn-secondary"
           >
             Cancel
